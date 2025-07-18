@@ -18,9 +18,9 @@
     <tbody>
         @foreach ($usuarios as $usuario)
         <tr>
-            <td>{{ $usuario->id }}</td>
-            <td>{{ $usuario->name }}</td>
-            <td>{{ $usuario->email }}</td>
+            <td>{{ $usuario->idUsuario}}</td>
+            <td>{{ $usuario->usuario }}</td>
+            <td>{{ $usuario->correo }}</td>
             <td>
                 @if($usuario->activo)
                     <span class="badge bg-success">Activo</span>
@@ -29,7 +29,7 @@
                 @endif
             </td>
             <td>
-                <a href="{{ route('admin.usuarios.edit', $usuario->idUsuario) }}">Editar</a>
+                <a href="{{ route('admin.usuarios.edit', $usuario->idUsuario) }}" class="btn btn-sm btn-warning">Editar</a>
 
             <form action="{{ route('admin.usuarios.destroy', $usuario) }}" method="POST" style="display:inline;">
 

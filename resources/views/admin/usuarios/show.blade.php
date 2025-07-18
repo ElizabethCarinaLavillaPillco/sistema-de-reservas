@@ -4,8 +4,8 @@
 <h1 class="mt-4">Detalle del Usuario</h1>
 
 <ul class="list-group">
-    <li class="list-group-item"><strong>Nombre:</strong> {{ $usuario->name }}</li>
-    <li class="list-group-item"><strong>Email:</strong> {{ $usuario->email }}</li>
+    <li class="list-group-item"><strong>Nombre:</strong> {{ $usuario->usuario }}</li>
+    <li class="list-group-item"><strong>Email:</strong> {{ $usuario->correo }}</li>
     <li class="list-group-item"><strong>Estado:</strong>
         @if($usuario->activo)
             <span class="badge bg-success">Activo</span>

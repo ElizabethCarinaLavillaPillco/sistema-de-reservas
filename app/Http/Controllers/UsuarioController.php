@@ -2,75 +2,89 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UsuarioPantalla;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
-use App\Models\User;
 
 class UsuarioController extends Controller
 {
-    // Mostrar listado de usuarios
     public function index()
     {
-        $usuarios = UsuarioPantalla::all(); // Obtenemos todos los usuarios
+        $usuarios = Usuario::all();
         return view('admin.usuarios.index', compact('usuarios'));
     }
 
-    // Mostrar formulario de creación
     public function create()
     {
         return view('admin.usuarios.create');
     }
 
-    // Guardar un nuevo usuario
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+public function store(Request $request)
+{
+    $request->validate([
+        'usuario' => 'required|string|max:255',
+        'correo' => 'required|email|unique:usuarios,correo',
+        'password' => 'required|string|min:8',
+    ]);
 
-            'password' => 'required|string|min:8|confirmed'
-        ]);
+    $idGenerado = $this->generarIdUnico();
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password)
-        ]);
+    
 
-        return redirect()->route('admin.usuarios.index')->with('success', 'Usuario registrado correctamente.');
-    }
+    Usuario::create([
+        'idUsuario' => $idGenerado,
+        'usuario' => $request->usuario,
+        'correo' => $request->correo,
+        'password' => bcrypt($request->password),
+        'activo' => $request->activo ?? 1
+    ]);
 
-    // Mostrar formulario de edición
+    return redirect()->route('admin.usuarios.index')->with('success', 'Usuario registrado correctamente.');
+}
+
+
     public function edit($id)
     {
-        $usuario = User::findOrFail($id);
+        $usuario = Usuario::findOrFail($id);
         return view('admin.usuarios.edit', compact('usuario'));
     }
 
-    // Actualizar datos del usuario
     public function update(Request $request, $id)
     {
-        $usuario = User::findOrFail($id);
+        $usuario = Usuario::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:usuarios,email,' . $usuario->id,
+            'usuario' => 'required|string|max:255',
+            'correo' => 'required|email|unique:usuarios,correo,' . $usuario->idUsuario . ',idUsuario',
         ]);
 
         $usuario->update([
-            'name' => $request->name,
-            'email' => $request->email,
+            'usuario' => $request->usuario,
+            'correo' => $request->correo,
+                    'activo' => $request->activo,
+
         ]);
 
         return redirect()->route('admin.usuarios.index')->with('success', 'Usuario actualizado correctamente.');
     }
 
-    // Eliminar usuario
     public function destroy($id)
     {
-        $usuario = User::findOrFail($id);
+        $usuario = Usuario::findOrFail($id);
         $usuario->delete();
 
         return redirect()->route('admin.usuarios.index')->with('success', 'Usuario eliminado correctamente.');
     }
+
+    private function generarIdUnico()
+{
+    $ultimoId = Usuario::orderBy('idUsuario', 'desc')->first();
+    
+    if (!$ultimoId) {
+        return 'U001';
+    }
+
+    $numero = intval(substr($ultimoId->idUsuario, 1)) + 1;
+    return 'U' . str_pad($numero, 3, '0', STR_PAD_LEFT);
+}
+
 }

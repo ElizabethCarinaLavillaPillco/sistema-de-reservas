@@ -62,7 +62,7 @@ return [
     'providers' => [
     'users' => [
         'driver' => 'eloquent',
-        'model' => App\Models\User::class, // Tu modelo personalizado
+        'model' => App\Models\Usuario::class, // Tu modelo personalizado
         ],
     ],
 
