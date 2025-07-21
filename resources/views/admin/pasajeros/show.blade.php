@@ -1,0 +1,25 @@
+@extends('layouts.template')
+
+@section('content')
+<h1 class="mt-4">Detalles del Pasajero</h1>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">{{ $pasajero->nombre }} {{ $pasajero->apellido }}</h5>
+        <p><strong>Documento:</strong> {{ $pasajero->documento }}</p>
+        <p><strong>Fecha de nacimiento:</strong> {{ $pasajero->fecha_nacimiento }}</p>
+        <p><strong>Tarifa:</strong> {{ $pasajero->tarifa }}</p>
+        <p><strong>País de nacimiento:</strong> {{ $pasajero->pais_nacimiento }}</p>
+        <p><strong>País de residencia:</strong> {{ $pasajero->pais_residencia }}</p>
+        <p><strong>Ciudad:</strong> {{ $pasajero->ciudad ?? 'No especificado' }}</p>
+        <p><strong>Teléfono:</strong> {{ $pasajero->telefono ?? 'No registrado' }}</p>
+        <p><strong>Reserva Asociada:</strong>
+            <a href="{{ route('admin.reservas.show', $pasajero->reserva_id) }}">
+                {{ $pasajero->reserva_id }}
+            </a>
+        </p>
+    </div>
+</div>
+
+<a href="{{ route('admin.pasajeros.index') }}" class="btn btn-secondary mt-3">Volver a la lista</a>
+@endsection
