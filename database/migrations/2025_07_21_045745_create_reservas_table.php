@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // database/migrations/xxxx_xx_xx_create_reservas_table.php
-
+        // Actualizar tabla de reservas: agregar tipo_reserva y proveedor_id (nullable)
         Schema::create('reservas', function (Blueprint $table) {
-            $table->string('id')->primary(); // ID personalizado: R0001, etc.
+            $table->string('id')->primary();
+            $table->enum('tipo_reserva', ['Directo', 'Recomendacion', 'Publicidad', 'Agencia']);
+            $table->unsignedBigInteger('proveedor_id')->nullable();
+            $table->foreign('proveedor_id')->references('id')->on('proveedores')->onDelete('set null');
             $table->foreignId('titular_id')->constrained('titulares')->onDelete('cascade');
             $table->unsignedInteger('cantidad_pasajeros');
             $table->date('fecha_llegada');
@@ -26,7 +28,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
+        
     }
 
     /**

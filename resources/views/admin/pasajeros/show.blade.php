@@ -6,6 +6,7 @@
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">{{ $pasajero->nombre }} {{ $pasajero->apellido }}</h5>
+
         <p><strong>Documento:</strong> {{ $pasajero->documento }}</p>
         <p><strong>Fecha de nacimiento:</strong> {{ $pasajero->fecha_nacimiento }}</p>
         <p><strong>Tarifa:</strong> {{ $pasajero->tarifa }}</p>
@@ -13,10 +14,16 @@
         <p><strong>País de residencia:</strong> {{ $pasajero->pais_residencia }}</p>
         <p><strong>Ciudad:</strong> {{ $pasajero->ciudad ?? 'No especificado' }}</p>
         <p><strong>Teléfono:</strong> {{ $pasajero->telefono ?? 'No registrado' }}</p>
+
         <p><strong>Reserva Asociada:</strong>
-            <a href="{{ route('admin.reservas.show', $pasajero->reserva_id) }}">
-                {{ $pasajero->reserva_id }}
-            </a>
+            @if ($pasajero->reserva)
+                <a href="{{ route('admin.reservas.show', $pasajero->reserva->id) }}">
+                    {{ $pasajero->reserva->id }}
+                    - {{ $pasajero->reserva->titular->nombre ?? '' }} {{ $pasajero->reserva->titular->apellido ?? '' }}
+                </a>
+            @else
+                <span class="text-muted">No asociada</span>
+            @endif
         </p>
     </div>
 </div>

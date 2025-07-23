@@ -13,14 +13,14 @@ class ReservaController extends Controller
     // Mostrar lista de reservas
     public function index()
     {
-        $reservas = Reserva::with('titular')->get();
+        $reservas = Reserva::with('titular')->orderByDesc('created_at')->get();
         return view('admin.reservas.index', compact('reservas'));
     }
 
     // Mostrar formulario de creación
     public function create()
     {
-        $titulares = Titular::all(); // para seleccionar al titular
+        $titulares = Titular::all();
         return view('admin.reservas.create', compact('titulares'));
     }
 
@@ -29,13 +29,14 @@ class ReservaController extends Controller
     {
         $request->validate([
             'titular_id' => 'required|exists:titulares,id',
+            'tipo_reserva' => 'required|in:Directo,Recomendacion,Publicidad,Agencia',
+            'proveedor_id' => 'nullable|exists:proveedores,id',
             'cantidad_pasajeros' => 'required|integer|min:1',
             'fecha_llegada' => 'required|date',
             'fecha_salida' => 'required|date|after_or_equal:fecha_llegada',
             'cantidad_tours' => 'required|integer|min:0',
             'total' => 'required|numeric|min:0',
             'adelanto' => 'nullable|numeric|min:0',
-            // Validaciones opcionales para pasajeros si los envías desde aquí
         ]);
 
         DB::beginTransaction();
@@ -45,11 +46,12 @@ class ReservaController extends Controller
             $num = $last ? (int)substr($last->id, 1) + 1 : 1;
             $id = 'R' . str_pad($num, 4, '0', STR_PAD_LEFT);
 
-
-            // Crear la reserva
+            // Crear reserva
             $reserva = Reserva::create([
                 'id' => $id,
                 'titular_id' => $request->titular_id,
+                'tipo_reserva' => $request->tipo_reserva,
+                'proveedor_id' => $request->proveedor_id,
                 'cantidad_pasajeros' => $request->cantidad_pasajeros,
                 'fecha_llegada' => $request->fecha_llegada,
                 'fecha_salida' => $request->fecha_salida,
@@ -58,18 +60,18 @@ class ReservaController extends Controller
                 'adelanto' => $request->adelanto ?? 0,
             ]);
 
-            // (opcional) Crear pasajeros si los recibes desde el form
+            // Guardar pasajeros (si vienen del formulario)
             if ($request->has('pasajeros')) {
-                foreach ($request->pasajeros as $data) {
-                    $reserva->pasajeros()->create($data);
+                foreach ($request->pasajeros as $pasajero) {
+                    $reserva->pasajeros()->create($pasajero);
                 }
             }
 
             DB::commit();
             return redirect()->route('admin.reservas.index')->with('success', 'Reserva registrada con éxito.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->withErrors('Error al registrar: ' . $e->getMessage());
+            return back()->withErrors('Error al registrar la reserva: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -79,16 +81,17 @@ class ReservaController extends Controller
         $reserva = Reserva::with('pasajeros')->findOrFail($id);
         $titulares = Titular::all();
         return view('admin.reservas.edit', compact('reserva', 'titulares'));
-
     }
 
-    // Actualizar reserva
+    // Actualizar una reserva existente
     public function update(Request $request, $id)
     {
         $reserva = Reserva::findOrFail($id);
 
         $request->validate([
             'titular_id' => 'required|exists:titulares,id',
+            'tipo_reserva' => 'required|in:Directo,Recomendacion,Publicidad,Agencia',
+            'proveedor_id' => 'nullable|exists:proveedores,id',
             'cantidad_pasajeros' => 'required|integer|min:1',
             'fecha_llegada' => 'required|date',
             'fecha_salida' => 'required|date|after_or_equal:fecha_llegada',
@@ -99,6 +102,8 @@ class ReservaController extends Controller
 
         $reserva->update($request->only([
             'titular_id',
+            'tipo_reserva',
+            'proveedor_id',
             'cantidad_pasajeros',
             'fecha_llegada',
             'fecha_salida',
@@ -110,12 +115,12 @@ class ReservaController extends Controller
         return redirect()->route('admin.reservas.index')->with('success', 'Reserva actualizada correctamente.');
     }
 
+    // Mostrar detalles
     public function show($id)
     {
-        $reserva = Reserva::with(['titular', 'pasajeros', 'tours'])->findOrFail($id);
+        $reserva = Reserva::with(['titular', 'pasajeros'])->findOrFail($id);
         return view('admin.reservas.show', compact('reserva'));
     }
-
 
     // Eliminar reserva
     public function destroy($id)
@@ -123,6 +128,6 @@ class ReservaController extends Controller
         $reserva = Reserva::findOrFail($id);
         $reserva->delete();
 
-        return redirect()->route('admin.reservas.index')->with('success', 'Reserva eliminada.');
+        return redirect()->route('admin.reservas.index')->with('success', 'Reserva eliminada correctamente.');
     }
 }

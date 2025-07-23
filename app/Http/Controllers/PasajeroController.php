@@ -11,7 +11,7 @@ class PasajeroController extends Controller
     // Mostrar lista de pasajeros
     public function index()
     {
-        $pasajeros = Pasajero::with('reserva')->get();
+        $pasajeros = Pasajero::with('reserva.titular')->get(); // Carga también titular
         return view('admin.pasajeros.index', compact('pasajeros'));
     }
 
@@ -26,7 +26,7 @@ class PasajeroController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'reserva_id' => 'required|exists:reservas,id',
+            'reserva_id' => 'nullable|exists:reservas,id', // puede no tener reserva al inicio
             'documento' => 'required|string|max:255',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
@@ -46,7 +46,7 @@ class PasajeroController extends Controller
     // Mostrar detalle de pasajero
     public function show($id)
     {
-        $pasajero = Pasajero::with('reserva')->findOrFail($id);
+        $pasajero = Pasajero::with('reserva.titular')->findOrFail($id);
         return view('admin.pasajeros.show', compact('pasajero'));
     }
 
@@ -62,7 +62,7 @@ class PasajeroController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'reserva_id' => 'required|exists:reservas,id',
+            'reserva_id' => 'nullable|exists:reservas,id',
             'documento' => 'required|string|max:255',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',

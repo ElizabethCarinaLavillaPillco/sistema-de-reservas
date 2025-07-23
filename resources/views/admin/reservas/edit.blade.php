@@ -7,6 +7,19 @@
     @csrf
     @method('PUT')
 
+    <!-- Tipo de Reserva -->
+    <div class="mb-3">
+        <label for="tipo_reserva">Tipo de Reserva:</label>
+        <select name="tipo_reserva" id="tipo_reserva" class="form-control" required>
+            <option value="">-- Seleccionar tipo --</option>
+            <option value="Directo" {{ $reserva->tipo_reserva == 'Directo' ? 'selected' : '' }}>Directo</option>
+            <option value="Recomendacion" {{ $reserva->tipo_reserva == 'Recomendacion' ? 'selected' : '' }}>Recomendación</option>
+            <option value="Publicidad" {{ $reserva->tipo_reserva == 'Publicidad' ? 'selected' : '' }}>Publicidad</option>
+            <option value="Agencia" {{ $reserva->tipo_reserva == 'Agencia' ? 'selected' : '' }}>Agencia</option>
+        </select>
+    </div>
+
+    <!-- Titular -->
     <div class="mb-3">
         <label for="titular_id">Titular:</label>
         <select name="titular_id" class="form-control" required>
@@ -18,11 +31,13 @@
         </select>
     </div>
 
+    <!-- Cantidad de Pasajeros -->
     <div class="mb-3">
         <label for="cantidad_pasajeros">Cantidad de Pasajeros:</label>
         <input type="number" name="cantidad_pasajeros" class="form-control" min="1" value="{{ $reserva->cantidad_pasajeros }}" required>
     </div>
 
+    <!-- Fechas y datos -->
     <div class="mb-3">
         <label for="fecha_llegada">Fecha de Llegada:</label>
         <input type="date" name="fecha_llegada" class="form-control" value="{{ $reserva->fecha_llegada }}" required>

@@ -3,36 +3,39 @@
 @section('content')
 <h1 class="mt-4">Detalles de la Reserva {{ $reserva->id }}</h1>
 
-<a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary mb-3">Volver</a>
+<a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary mb-3">← Volver a la lista</a>
 
-{{-- Información general de la reserva --}}
+{{-- Información general --}}
 <div class="card mb-4">
-    <div class="card-header">Información de la Reserva</div>
+    <div class="card-header">Información General</div>
     <div class="card-body">
         <p><strong>Titular:</strong> {{ $reserva->titular->nombre }} {{ $reserva->titular->apellido }}</p>
+        <p><strong>Tipo de Reserva:</strong> {{ $reserva->tipo_reserva }}</p>
         <p><strong>Cantidad de Pasajeros:</strong> {{ $reserva->cantidad_pasajeros }}</p>
-        <p><strong>Fecha de Llegada:</strong> {{ $reserva->fecha_llegada }}</p>
-        <p><strong>Fecha de Salida:</strong> {{ $reserva->fecha_salida }}</p>
+        <p><strong>Fechas:</strong> 
+            {{ \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d/m/Y') }} 
+            – 
+            {{ \Carbon\Carbon::parse($reserva->fecha_salida)->format('d/m/Y') }}
+        </p>
         <p><strong>Cantidad de Tours:</strong> {{ $reserva->cantidad_tours }}</p>
-        <p><strong>Total:</strong> S/ {{ $reserva->total }}</p>
-        <p><strong>Adelanto:</strong> S/ {{ $reserva->adelanto }}</p>
-        <p><strong>Saldo:</strong> S/ {{ $reserva->saldo }}</p>
+        <p><strong>Total:</strong> S/ {{ number_format($reserva->total, 2) }}</p>
+        <p><strong>Adelanto:</strong> S/ {{ number_format($reserva->adelanto, 2) }}</p>
+        <p><strong>Saldo:</strong> S/ {{ number_format($reserva->total - $reserva->adelanto, 2) }}</p>
     </div>
 </div>
 
 {{-- Lista de pasajeros --}}
 <div class="card mb-4">
-    <div class="card-header">Pasajeros</div>
+    <div class="card-header">Pasajeros Asociados</div>
     <div class="card-body">
         @if ($reserva->pasajeros->isEmpty())
-            <p>No hay pasajeros registrados.</p>
+            <p class="text-muted">No hay pasajeros registrados en esta reserva.</p>
         @else
-            <table class="table table-sm">
+            <table class="table table-sm table-striped">
                 <thead>
                     <tr>
                         <th>Documento</th>
                         <th>Nombre</th>
-                        <th>Apellido</th>
                         <th>País Nacimiento</th>
                         <th>País Residencia</th>
                         <th>Ciudad</th>
@@ -42,17 +45,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($reserva->pasajeros as $pasajero)
+                    @foreach ($reserva->pasajeros as $p)
                     <tr>
-                        <td>{{ $pasajero->documento }}</td>
-                        <td>{{ $pasajero->nombre }}</td>
-                        <td>{{ $pasajero->apellido }}</td>
-                        <td>{{ $pasajero->pais_nacimiento }}</td>
-                        <td>{{ $pasajero->pais_residencia }}</td>
-                        <td>{{ $pasajero->ciudad }}</td>
-                        <td>{{ $pasajero->fecha_nacimiento }}</td>
-                        <td>{{ $pasajero->tarifa }}</td>
-                        <td>{{ $pasajero->telefono }}</td>
+                        <td>{{ $p->documento }}</td>
+                        <td>{{ $p->nombre }} {{ $p->apellido }}</td>
+                        <td>{{ $p->pais_nacimiento }}</td>
+                        <td>{{ $p->pais_residencia }}</td>
+                        <td>{{ $p->ciudad }}</td>
+                        <td>{{ $p->fecha_nacimiento }}</td>
+                        <td>{{ $p->tarifa }}</td>
+                        <td>{{ $p->telefono ?? 'No registrado' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -61,14 +63,14 @@
     </div>
 </div>
 
-{{-- Tours --}}
+{{-- Lista de tours --}}
 <div class="card mb-4">
-    <div class="card-header">Tours Contratados</div>
+    <div class="card-header">Tours Asociados</div>
     <div class="card-body">
         @if ($reserva->tours->isEmpty())
-            <p>No hay tours registrados para esta reserva.</p>
+            <p class="text-muted">No hay tours registrados para esta reserva.</p>
         @else
-            <table class="table table-sm">
+            <table class="table table-sm table-striped">
                 <thead>
                     <tr>
                         <th>ID</th>

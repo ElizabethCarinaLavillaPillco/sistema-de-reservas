@@ -5,31 +5,38 @@
 
 <a href="{{ route('admin.reservas.create') }}" class="btn btn-primary mb-3">Nueva Reserva</a>
 
-<table class="table table-bordered">
-    <thead>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
         <tr>
             <th>ID</th>
             <th>Titular</th>
+            <th>Tipo</th>
             <th>Pasajeros</th>
-            <th>Llegada</th>
-            <th>Salida</th>
+            <th>Fechas</th>
             <th>Tours</th>
+            <th>Total (S/)</th>
+            <th>Adelanto (S/)</th>
+            <th>Saldo (S/)</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
-        @foreach ($reservas as $reserva)
+        @forelse ($reservas as $reserva)
         <tr>
             <td>{{ $reserva->id }}</td>
             <td>{{ $reserva->titular->nombre }} {{ $reserva->titular->apellido }}</td>
+            <td>{{ $reserva->tipo_reserva }}</td>
             <td>{{ $reserva->cantidad_pasajeros }}</td>
-            <td>{{ $reserva->fecha_llegada }}</td>
-            <td>{{ $reserva->fecha_salida }}</td>
+            <td>
+                <small>{{ $reserva->fecha_llegada }}<br>al<br>{{ $reserva->fecha_salida }}</small>
+            </td>
             <td>{{ $reserva->cantidad_tours }}</td>
+            <td>S/ {{ number_format($reserva->total, 2) }}</td>
+            <td>S/ {{ number_format($reserva->adelanto, 2) }}</td>
+            <td>S/ {{ number_format($reserva->total - $reserva->adelanto, 2) }}</td>
             <td>
                 <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn btn-sm btn-info">Ver</a>
                 <a href="{{ route('admin.reservas.edit', $reserva->id) }}" class="btn btn-sm btn-warning">Editar</a>
-
                 <form action="{{ route('admin.reservas.destroy', $reserva->id) }}" method="POST" style="display:inline;">
                     @csrf
                     @method('DELETE')
@@ -37,7 +44,11 @@
                 </form>
             </td>
         </tr>
-        @endforeach
+        @empty
+        <tr>
+            <td colspan="10" class="text-center">No hay reservas registradas.</td>
+        </tr>
+        @endforelse
     </tbody>
 </table>
 @endsection
