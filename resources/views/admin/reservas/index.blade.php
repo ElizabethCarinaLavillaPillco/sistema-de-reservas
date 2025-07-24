@@ -24,7 +24,7 @@
         @forelse ($reservas as $reserva)
         <tr>
             <td>{{ $reserva->id }}</td>
-            <td>{{ $reserva->titular->nombre }} {{ $reserva->titular->apellido }}</td>
+            <td>{{ $reserva->pasajero->nombre }} {{ $reserva->pasajero->apellido }}</td>
             <td>{{ $reserva->tipo_reserva }}</td>
             <td>{{ $reserva->cantidad_pasajeros }}</td>
             <td>

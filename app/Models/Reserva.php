@@ -10,7 +10,6 @@ class Reserva extends Model
     use HasFactory;
 
     protected $table = 'reservas';
-
     public $incrementing = false; // ID es tipo string (ej: R0001)
     protected $keyType = 'string';
 
@@ -34,28 +33,38 @@ class Reserva extends Model
     // Titular de la reserva
     public function titular()
     {
-        return $this->belongsTo(Titular::class);
+        return $this->belongsTo(Pasajero::class, 'titular_id');
     }
 
-    // Pasajeros de la reserva
+    // Pasajeros asociados a esta reserva (N:N)
     public function pasajeros()
     {
-        return $this->hasMany(Pasajero::class, 'reserva_id', 'id');
+        return $this->belongsToMany(Pasajero::class, 'pasajero_reserva', 'reserva_id', 'pasajero_id')->withTimestamps();
     }
 
-    // Proveedor asociado (nullable)
+    // Proveedor (solo si es una agencia)
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class);
     }
 
-    // Relación con tours si tienes tabla intermedia (mejor usar belongsToMany si corresponde)
+    // Tours contratados (N:N)
     public function tours()
     {
-        // Esta línea solo sirve si hay una relación 1:N con tours, pero lo más probable es N:N
-        // return $this->hasMany(Tour::class);
-
-        // Si tienes una tabla pivote como reserva_tour (por ejemplo), usa esto:
-        return $this->belongsToMany(Tour::class, 'reserva_tour', 'reserva_id', 'tour_id')->withTimestamps();
+        return $this->belongsToMany(Tour::class, 'tours_reserva', 'reserva_id', 'tour_id')->withPivot([
+            'empresa', 'fecha', 'cantidad_personas', 'precio_unitario', 'total', 'observaciones'
+        ])->withTimestamps();
     }
+
+    // Estadías (1:N)
+    public function estadias()
+    {
+        return $this->hasMany(Estadia::class, 'reserva_id');
+    }
+    
+    public function tourReservas()
+    {
+        return $this->hasMany(TourReserva::class, 'reserva_id', 'id');
+    }
+
 }

@@ -19,13 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('tours_proveedores', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
-            $table->foreignId('tours_proveedores_id')->constrained('tours_proveedores')->onDelete('cascade');
-            $table->decimal('precio', 10, 2);
-            $table->timestamps();
-        });
+        
 
     }
 
@@ -34,6 +28,5 @@ return new class extends Migration
      */
     public function down(): void {
         Schema::dropIfExists('proveedores');
-        Schema::dropIfExists('tours_proveedores');
     }
 };

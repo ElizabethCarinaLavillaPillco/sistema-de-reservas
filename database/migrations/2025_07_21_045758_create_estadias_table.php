@@ -14,13 +14,11 @@ return new class extends Migration
         Schema::create('estadias', function (Blueprint $table) {
             $table->id();
             $table->string('reserva_id'); // CAMBIADO: de unsignedBigInteger a string
-            $table->string('hotel');
-            $table->string('ubicacion'); // Ejemplo: Cusco, Aguas Calientes
-            $table->date('fecha_entrada');
-            $table->date('fecha_salida');
-            $table->timestamps();
-
             $table->foreign('reserva_id')->references('id')->on('reservas')->onDelete('cascade');
+
+            $table->string('hotel')->nullable(); // ejemplo: "Hostal Chakana"
+            $table->date('fecha')->nullable();   // fecha de inicio o check-in
+            $table->unsignedInteger('noches')->nullable(); // total de noches
 
         });
 
