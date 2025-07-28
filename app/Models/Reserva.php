@@ -26,10 +26,6 @@ class Reserva extends Model
         'adelanto',
     ];
 
-    /**
-     * Relaciones
-     */
-
     // Titular de la reserva
     public function titular()
     {
@@ -48,23 +44,15 @@ class Reserva extends Model
         return $this->belongsTo(Proveedor::class);
     }
 
-    // Tours contratados (N:N)
-    public function tours()
-    {
-        return $this->belongsToMany(Tour::class, 'tours_reserva', 'reserva_id', 'tour_id')->withPivot([
-            'empresa', 'fecha', 'cantidad_personas', 'precio_unitario', 'total', 'observaciones'
-        ])->withTimestamps();
-    }
-
     // Estadías (1:N)
     public function estadias()
     {
         return $this->hasMany(Estadia::class, 'reserva_id');
     }
-    
-    public function tourReservas()
-    {
-        return $this->hasMany(TourReserva::class, 'reserva_id', 'id');
-    }
 
+    // Tours escritos como texto
+    public function toursEscritos()
+    {
+        return $this->hasMany(TourReserva::class, 'reserva_id');
+    }
 }

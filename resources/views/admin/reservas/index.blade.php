@@ -24,16 +24,28 @@
         @forelse ($reservas as $reserva)
         <tr>
             <td>{{ $reserva->id }}</td>
-            <td>{{ $reserva->pasajero->nombre }} {{ $reserva->pasajero->apellido }}</td>
+            <td>
+                {{ $reserva->titular->nombre ?? '-' }} {{ $reserva->titular->apellido ?? '' }}
+            </td>
             <td>{{ $reserva->tipo_reserva }}</td>
             <td>{{ $reserva->cantidad_pasajeros }}</td>
             <td>
                 <small>{{ $reserva->fecha_llegada }}<br>al<br>{{ $reserva->fecha_salida }}</small>
             </td>
-            <td>{{ $reserva->cantidad_tours }}</td>
+            <td>
+                {{ $reserva->cantidad_tours }}<br>
+                <small>
+                    @foreach($reserva->toursEscritos->take(2) as $tour)
+                        • {{ $tour->nombre_tour }}<br>
+                    @endforeach
+                    @if($reserva->toursEscritos->count() > 2)
+                        <em>+{{ $reserva->toursEscritos->count() - 2 }} más</em>
+                    @endif
+                </small>
+            </td>
             <td>S/ {{ number_format($reserva->total, 2) }}</td>
             <td>S/ {{ number_format($reserva->adelanto, 2) }}</td>
-            <td>S/ {{ number_format($reserva->total - $reserva->adelanto, 2) }}</td>
+            <td>S/ {{ number_format($reserva->saldo, 2) }}</td>
             <td>
                 <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn btn-sm btn-info">Ver</a>
                 <a href="{{ route('admin.reservas.edit', $reserva->id) }}" class="btn btn-sm btn-warning">Editar</a>
@@ -46,7 +58,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="10" class="text-center">No hay reservas registradas.</td>
+            <td colspan="10" class="text-center">No hay reservas registradas xd.</td>
         </tr>
         @endforelse
     </tbody>

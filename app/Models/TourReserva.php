@@ -9,7 +9,7 @@ class TourReserva extends Model
 {
     use HasFactory;
 
-    protected $table = 'tour_reservas';
+    protected $table = 'tours_reserva';
 
     protected $fillable = [
         'reserva_id',
@@ -23,7 +23,7 @@ class TourReserva extends Model
 
     public function reserva()
     {
-        return $this->belongsTo(Reserva::class, 'reserva_id');
+        return $this->belongsTo(Reserva::class);
     }
 
     public function tour()
