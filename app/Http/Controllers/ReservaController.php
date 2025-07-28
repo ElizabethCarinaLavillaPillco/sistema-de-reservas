@@ -118,20 +118,56 @@ class ReservaController extends Controller
             'adelanto' => 'nullable|numeric|min:0',
         ]);
 
-        $reserva->update($request->only([
-            'titular_id',
-            'tipo_reserva',
-            'proveedor_id',
-            'cantidad_pasajeros',
-            'fecha_llegada',
-            'fecha_salida',
-            'cantidad_tours',
-            'total',
-            'adelanto',
-        ]));
+        DB::beginTransaction();
+        try {
+            // Actualizar los datos principales
+            $reserva->update([
+                'titular_id' => $request->titular_id,
+                'tipo_reserva' => $request->tipo_reserva,
+                'proveedor_id' => $request->proveedor_id,
+                'cantidad_pasajeros' => $request->cantidad_pasajeros,
+                'fecha_llegada' => $request->fecha_llegada,
+                'fecha_salida' => $request->fecha_salida,
+                'cantidad_tours' => $request->cantidad_tours,
+                'total' => $request->total,
+                'adelanto' => $request->adelanto ?? 0,
+            ]);
 
-        return redirect()->route('admin.reservas.index')->with('success', 'Reserva actualizada correctamente.');
+            // Actualizar pasajeros (detach + attach)
+            $reserva->pasajeros()->detach();
+            if ($request->has('pasajeros')) {
+                foreach ($request->pasajeros as $pasajero_id) {
+                    $reserva->pasajeros()->attach($pasajero_id);
+                }
+            }
+
+            // Actualizar tours: eliminar anteriores y agregar nuevos
+            DB::table('tours_reserva')->where('reserva_id', $reserva->id)->delete();
+
+            if ($request->has('tours')) {
+                foreach ($request->tours as $tourData) {
+                    DB::table('tours_reserva')->insert([
+                        'reserva_id'      => $reserva->id,
+                        'nombre_tour'     => $tourData['nombre_tour'] ?? null,
+                        'fecha'           => $tourData['fecha_tour'] ?? null,
+                        'empresa'         => $tourData['empresa_tour'] ?? null,
+                        'precio_unitario' => $tourData['precio_unitario_tour'] ?? 0,
+                        'cantidad'        => $tourData['cantidad_tour'] ?? 1,
+                        'observaciones'   => $tourData['observaciones_tour'] ?? null,
+                        'created_at'      => now(),
+                        'updated_at'      => now(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('admin.reservas.index')->with('success', 'Reserva actualizada correctamente.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withErrors('Error al actualizar la reserva: ' . $e->getMessage())->withInput();
+        }
     }
+
 
     public function show($id)
     {
