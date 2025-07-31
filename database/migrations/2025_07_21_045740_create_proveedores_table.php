@@ -13,10 +13,15 @@ return new class extends Migration
     {
         Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
+            $table->string('reserva_id')->nullable(); // CAMBIADO: de unsignedBigInteger a string
+            $table->string('nombreAgencia');
+            $table->string('nombreEncargado');
             $table->string('pais');
+            $table->string('telefono')->nullable();
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');
             $table->timestamps();
+
+            $table->foreign('reserva_id')->references('id')->on('reservas')->nullOnDelete();
         });
 
         
