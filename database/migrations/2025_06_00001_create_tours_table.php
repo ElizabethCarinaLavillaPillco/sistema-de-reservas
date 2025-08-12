@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pasajero_reserva', function (Blueprint $table) {
+        Schema::create('tours', function (Blueprint $table) {
             $table->id();
-            $table->string('reserva_id');
-            $table->foreign('reserva_id')->references('id')->on('reservas')->onDelete('cascade');
-
-            $table->unsignedBigInteger('pasajero_id');
-            $table->foreign('pasajero_id')->references('id')->on('pasajeros')->onDelete('cascade');
-
+            $table->string('nombreTour');
+            $table->text('descripcion')->nullable();
             $table->timestamps();
         });
 
@@ -29,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pasajero_reserva');
+        Schema::dropIfExists('tours');
     }
 };

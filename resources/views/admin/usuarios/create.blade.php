@@ -8,8 +8,6 @@
 <form action="{{ route('admin.usuarios.store') }}" method="POST">
     @csrf
 
-  
-
     <div class="mb-3">
         <label>Nombre de Usuario:</label>
         <input type="text" name="usuario" class="form-control" required>

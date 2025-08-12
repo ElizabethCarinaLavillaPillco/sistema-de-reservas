@@ -2,63 +2,66 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tour;
 use Illuminate\Http\Request;
 
 class ToursController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $tours = Tour::all();
+        return view('admin.tours.index', compact('tours'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
     {
-        //
+        return view('admin.tours.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nombreTour' => 'required|string|max:255',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        Tour::create($request->all());
+        return redirect()->route('admin.tours.index')->with('success', 'Tour registrado con éxito.');
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    
     public function edit(string $id)
     {
-        //
+        $tours = Tour::findOrFail($id);
+        return view('admin.tours.edit', compact('tours'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'nombreTour' => 'required|string|max:255',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $tours = Tour::findOrFail($id);
+        $tours->update($request->all());
+
+        return redirect()->route('admin.tours.index')->with('success', 'Tour actualizado correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $tours = Tour::findOrFail($id);
+        $tours->delete();
+
+        return redirect()->route('admin.tours.index')->with('success', 'Tour eliminado.');
     }
 }

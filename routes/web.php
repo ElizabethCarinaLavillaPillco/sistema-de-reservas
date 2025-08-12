@@ -8,15 +8,14 @@ use App\Http\Controllers\{
     UsuarioController,
     ReservaController,
     PasajeroController,
-    FacturasController,
-    ContabilidadController,
-    PublicidadController,
+    FacturaController,
     ToursController,
-    HospedajeController,
-    AnticiposController,
-    TrenesTuristicosController,
-    TransporteController,
-    BoletasController
+    ProveedoresController,
+    DepositosController,
+    FacturacionController,
+    EstadiaController,
+    TourReservaController,
+    ContabilidadController
 };
 
 // Rutas de login
@@ -40,36 +39,25 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Recursos principales
     Route::resource('usuarios', UsuarioController::class);
     Route::resource('reservas', ReservaController::class);
-    Route::resource('pasajeros', PasajeroController::class); // NUEVO AGREGADO
-    Route::resource('facturas', FacturasController::class);
-    Route::resource('boletas', BoletasController::class);
-    Route::resource('contabilidad', ContabilidadController::class);
-    Route::resource('publicidad', PublicidadController::class);
-    Route::resource('tours', ToursController::class);
-    Route::resource('hospedaje', HospedajeController::class);
-    Route::resource('anticipos', AnticiposController::class);
-    Route::resource('trenes', TrenesTuristicosController::class);
-    Route::resource('transporte', TransporteController::class);
     Route::resource('pasajeros', PasajeroController::class);
+    Route::resource('tours', ToursController::class);
+    Route::resource('proveedores', ProveedoresController::class);
+    
+    // Relacionados con reservas
+    Route::resource('depositos', DepositosController::class);
+    Route::resource('facturacion', FacturacionController::class); // plural correcto
+    Route::resource('estadias', EstadiaController::class);
+    Route::resource('tours-reserva', TourReservaController::class); // kebab-case para coherencia
 
+    // Independientes
+    Route::resource('facturas', FacturaController::class);
+    Route::resource('contabilidad', ContabilidadController::class);
 
     // Subrutas específicas de reserva
     Route::prefix('reservas/{reserva}')->name('reservas.')->group(function () {
         Route::get('pasajeros', [ReservaController::class, 'verPasajeros'])->name('pasajeros');
+        Route::get('proveedores', [ReservaController::class, 'verProveedores'])->name('proveedores');
         Route::get('tours', [ReservaController::class, 'verTours'])->name('tours');
-        Route::get('anticipos', [ReservaController::class, 'verAnticipos'])->name('anticipos');
     });
 
-    // Subrutas específicas de tour
-    Route::prefix('tours/{tour}')->name('tours.')->group(function () {
-        Route::get('transporte', [ToursController::class, 'verTransporte'])->name('transporte');
-        Route::get('tipo-entrada', [ToursController::class, 'verTipoEntrada'])->name('tipo_entrada');
-    });
-
-    // Subrutas específicas de contabilidad
-    Route::prefix('contabilidad')->name('contabilidad.')->group(function () {
-        Route::get('boletas', [ContabilidadController::class, 'verBoletas'])->name('boletas');
-        Route::get('facturas-recibidas', [ContabilidadController::class, 'verFacturasRecibidas'])->name('facturas_recibidas');
-        Route::get('contadora', [ContabilidadController::class, 'verPagosContadora'])->name('contadora');
-    });
 });

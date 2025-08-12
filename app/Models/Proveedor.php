@@ -12,19 +12,12 @@ class Proveedor extends Model
     protected $table = 'proveedores';
 
     protected $fillable = [
-        'nombre',
-        'ruc',
+        'id',
+        'nombreAgencia',
+        'nombreEncargado',
+        'pais',
         'telefono',
-        'direccion',
-        'correo',
-        'observaciones',
+        'estado',
     ];
 
-    /**
-     * Relación con reservas (1:N)
-     */
-    public function reservas()
-    {
-        return $this->hasMany(Reserva::class);
-    }
 }

@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Tour extends Model
 {
-    public function tourReservas()
-{
-    return $this->hasMany(TourReserva::class, 'reserva_id', 'id');
-}
-
+    use HasFactory;
+    protected $table = 'tours';
+    protected $fillable = [
+        'id',
+        'nombreTour',
+        'descripcion',
+    ];
 }

@@ -16,23 +16,32 @@ class TourReserva extends Model
         'tour_id',
         'fecha',
         'empresa',
+        'tipo_tour',
+        'idioma',
+        'lugar_recojo',
+        'hora_recojo',
         'precio_unitario',
         'cantidad',
         'observaciones',
+        'incluye_entrada',
+        'incluye_tren',
     ];
 
+    // Una TourReserva pertenece a una reserva
     public function reserva()
     {
-        return $this->belongsTo(Reserva::class);
+        return $this->belongsTo(Reserva::class, 'reserva_id');
     }
 
+    // Una TourReserva puede estar asociada a un tour
     public function tour()
     {
         return $this->belongsTo(Tour::class, 'tour_id');
     }
-
-    public function getPrecioTotalAttribute()
+    
+    public function detalleMachupicchu()
     {
-        return $this->precio_unitario * $this->cantidad;
+        return $this->hasOne(DetalleTourMachupicchu::class, 'tours_reserva_id');
     }
+
 }

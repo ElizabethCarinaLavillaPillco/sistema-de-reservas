@@ -14,14 +14,25 @@ return new class extends Migration
         // Actualizar tabla de reservas: agregar tipo_reserva y proveedor_id (nullable)
         Schema::create('reservas', function (Blueprint $table) {
             $table->string('id')->primary();
+
             $table->enum('tipo_reserva', ['Directo', 'Recomendacion', 'Publicidad', 'Agencia']);
             $table->unsignedBigInteger('proveedor_id')->nullable();
             $table->foreign('proveedor_id')->references('id')->on('proveedores')->onDelete('set null');
-            $table->foreignId('titular_id')->constrained('titulares')->onDelete('cascade');
+            $table->foreignId('titular_id')->constrained('pasajeros')->onDelete('cascade');
+            
+
+            $table->date('fecha_llegada')->nullable();
+            $table->string('hora_llegada')->nullable();
+            $table->string('nro_vuelo_llegada')->nullable();
+
+            $table->date('fecha_salida')->nullable();
+            $table->string('hora_salida')->nullable();
+            $table->string('nro_vuelo_retorno')->nullable();
+
             $table->unsignedInteger('cantidad_pasajeros');
-            $table->date('fecha_llegada');
-            $table->date('fecha_salida');
             $table->unsignedInteger('cantidad_tours');
+            $table->unsignedInteger('cantidad_estadias');
+        
             $table->decimal('total', 10, 2);
             $table->decimal('adelanto', 10, 2)->default(0);
             $table->decimal('saldo', 10, 2)->virtualAs('`total` - `adelanto`');
@@ -31,9 +42,6 @@ return new class extends Migration
         
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('reservas');

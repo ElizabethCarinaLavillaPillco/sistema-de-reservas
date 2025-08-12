@@ -60,32 +60,36 @@
                             <a class="nav-link" href="{{ route('admin.pasajeros.index') }}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                                 Pasajeros
-                            
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                                Facturación
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                    <a class="nav-link collapsed" href="{{ route('admin.facturas.index') }}" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                        Facturas
-                                    </a>
-                                    
-                                    <a class="nav-link collapsed" href="{{ route('admin.boletas.index') }}" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
-                                        Boletas
-                                    </a>
-                                    
-                                </nav>
-                            </div>
-                            <a class="nav-link" href="{{ route('admin.publicidad.index') }}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Publicidad
+                            <a class="nav-link" href="{{ route('admin.tours.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Tours
                             </a>
+                            <a class="nav-link" href="{{ route('admin.proveedores.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Proveedores
+                            </a>
+
+                            <a class="nav-link" href="{{ route('admin.depositos.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Depositos
+                            </a>
+
+                            <a class="nav-link" href="{{ route('admin.facturacion.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Facturación emitida
+                            </a>
+                                    
+                            <a class="nav-link" href="{{ route('admin.facturas.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Facturas recibidas
+                            </a>
+
                             <a class="nav-link" href="{{ route('admin.contabilidad.index') }}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                contabilidad
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Pagos Contadora
                             </a>
+                        
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">

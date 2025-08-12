@@ -1,335 +1,199 @@
-@extends('layouts.template')
+@extends('layouts.admin')
 
 @section('content')
-<h1 class="mt-4">Editar Reserva</h1>
+<div class="container">
+    <h1 class="mt-4">Editar Reserva</h1>
 
-<form action="{{ route('admin.reservas.update', $reserva->id) }}" method="POST">
-    @csrf
-    @method('PUT')
+    <form action="{{ route('admin.reservas.update', $reserva->id) }}" method="POST">
+        @csrf
+        @method('PUT')
 
-    <!-- TIPO DE RESERVA -->
-    <div class="mb-3">
-        <label for="tipo_reserva">Tipo de Reserva:</label>
-        <select name="tipo_reserva" id="tipo_reserva" class="form-control" required>
-            <option value="Directo" {{ $reserva->tipo_reserva == 'Directo' ? 'selected' : '' }}>Directo</option>
-            <option value="Recomendacion" {{ $reserva->tipo_reserva == 'Recomendacion' ? 'selected' : '' }}>Recomendacion</option>
-            <option value="Publicidad" {{ $reserva->tipo_reserva == 'Publicidad' ? 'selected' : '' }}>Publicidad</option>
-            <option value="Agencia" {{ $reserva->tipo_reserva == 'Agencia' ? 'selected' : '' }}>Agencia</option>
+        {{-- Tipo de Reserva --}}
+        <div class="mb-3">
+            <label for="tipo_reserva" class="form-label">Tipo de Reserva</label>
+            <select name="tipo_reserva" id="tipo_reserva" class="form-control" required>
+                <option value="">Seleccione</option>
+                @foreach(['Directo', 'Recomendacion', 'Publicidad', 'Agencia'] as $tipo)
+                    <option value="{{ $tipo }}" {{ old('tipo_reserva', $reserva->tipo_reserva) == $tipo ? 'selected' : '' }}>
+                        {{ $tipo }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-        </select>
-    </div>
+        {{-- Proveedor --}}
+        <div class="mb-3">
+            <label for="proveedor_id" class="form-label">Proveedor</label>
+            <select name="proveedor_id" id="proveedor_id" class="form-control">
+                <option value="">Seleccione</option>
+                @foreach($proveedores as $proveedor)
+                    <option value="{{ $proveedor->id }}" {{ old('proveedor_id', $reserva->proveedor_id) == $proveedor->id ? 'selected' : '' }}>
+                        {{ $proveedor->nombre }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-    <!-- PROVEEDOR (solo si tipo = Agencia) -->
-    <div class="mb-3" id="proveedor_container" style="display:none">
-        <label for="proveedor_id">Proveedor:</label>
-        <select name="proveedor_id" class="form-control">
-            <option value="">-- Seleccionar proveedor --</option>
-            @foreach ($proveedores as $proveedor)
+        {{-- Titular --}}
+        <div class="mb-3">
+            <label for="titular_id" class="form-label">Titular</label>
+            <select name="titular_id" id="titular_id" class="form-control" required>
+                <option value="">Seleccione</option>
+                @foreach($pasajeros as $pasajero)
+                    <option value="{{ $pasajero->id }}" {{ old('titular_id', $reserva->titular_id) == $pasajero->id ? 'selected' : '' }}>
+                        {{ $pasajero->nombre }} {{ $pasajero->apellido }} ({{ $pasajero->documento }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-                <option value="{{ $proveedor->id }}">{{ $proveedor->nombre }}</option>
-            @endforeach
-        </select>
-    </div>
+        {{-- Fechas y vuelos --}}
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="fecha_llegada" class="form-label">Fecha Llegada</label>
+                <input type="date" name="fecha_llegada" class="form-control" value="{{ old('fecha_llegada', $reserva->fecha_llegada) }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="hora_llegada" class="form-label">Hora Llegada</label>
+                <input type="time" name="hora_llegada" class="form-control" value="{{ old('hora_llegada', $reserva->hora_llegada) }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="nro_vuelo_llegada" class="form-label">Nro Vuelo Llegada</label>
+                <input type="text" name="nro_vuelo_llegada" class="form-control" value="{{ old('nro_vuelo_llegada', $reserva->nro_vuelo_llegada) }}">
+            </div>
 
-    <!-- TITULAR -->
-    <div class="mb-3">
-        <label for="titular_id">Titular:</label>
-        <select name="titular_id" id="titular_id" class="form-control" required>
-            <option value="">-- Seleccionar titular (pasajero) --</option>
-            @foreach ($pasajeros as $pasajero)
-                <option value="{{ $pasajero->id }}" {{ $pasajero->id == $reserva->titular_id ? 'selected' : '' }}>
-                    {{ $pasajero->nombre }} {{ $pasajero->apellido }} ({{ $pasajero->documento }})
-                </option>
-            @endforeach
-        </select>
-    </div>
-
-
-    <!-- PASAJEROS -->
-    <div class="mb-3">
-    <label for="busquedaPasajero">Buscar pasajeros:</label>
-    <input list="listaPasajeros" id="busquedaPasajero" class="form-control" placeholder="Escribe el nombre del pasajero">
-    <datalist id="listaPasajeros">
-        @foreach ($pasajeros as $pasajero)
-            <option value="{{ $pasajero->nombre }} {{ $pasajero->apellido }} ({{ $pasajero->documento }})" data-id="{{ $pasajero->id }}"></option>
-        @endforeach
-    </datalist>
-
-    <button type="button" onclick="agregarPasajero()" class="btn btn-sm btn-secondary mt-2">Agregar pasajero</button>
-    </div>
-
-    <div id="pasajerosSeleccionados" class="mb-3">
-        <label>Pasajeros seleccionados:</label>
-        <ul id="listaPasajerosAgregados" class="list-group">
-            @foreach ($reserva->pasajeros as $pasajero)
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ $pasajero->nombre }} {{ $pasajero->apellido }}
-                    <input type="hidden" name="pasajeros[]" value="{{ $pasajero->id }}">
-                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarPasajero(this, '{{ $pasajero->id }}')">Eliminar</button>
-                </li>
-            @endforeach
-
-        </ul>
-    </div>
-
-    <input type="hidden" name="cantidad_pasajeros" id="cantidad_pasajeros" value="0">
-
-
-    <!-- FECHAS -->
-    <div class="mb-3">
-        <label for="fecha_llegada">Fecha de Llegada:</label>
-        <input type="date" name="fecha_llegada" value="{{ $reserva->fecha_llegada }}">
-    </div>
-    <div class="mb-3">
-        <label for="fecha_salida">Fecha de Salida:</label>
-        <input type="date" name="fecha_salida" value="{{ $reserva->fecha_salida }}">
-    </div>
-
-    <!-- TOTAL Y ADELANTO -->
-    <div class="mb-3">
-        <label for="total">Total (S/.):</label>
-        <input type="number" step="0.01" name="total" value="{{ $reserva->total }}">
-    </div>
-    <div class="mb-3">
-        <label for="adelanto">Adelanto (S/.):</label>
-        <input type="number" step="0.01" name="adelanto" value="{{ $reserva->adelanto }}">
-    </div>
-
-    <!-- TOURS -->
-    <div class="mb-3">
-        <label>Tours Contratados:</label>
-
-        <div class="border p-3 mb-3">
-            <div class="row">
-                <div class="col-md-6 mb-2">
-                    <label>Nombre del tour:</label>
-                    <input type="text" id="nombre_tour" class="form-control" placeholder="Ej. Machupicchu Full Day">
-                </div>
-                <div class="col-md-6 mb-2">
-                    <label>Fecha:</label>
-                    <input type="date" id="fecha_tour" class="form-control">
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label>Empresa:</label>
-                    <input type="text" id="empresa_tour" class="form-control">
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label>Precio Unitario:</label>
-                    <input type="number" id="precio_unitario_tour" step="0.01" class="form-control">
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label>Cantidad:</label>
-                    <input type="number" id="cantidad_tour" min="1" value="1" class="form-control">
-                </div>
-                <div class="col-md-12 mb-2">
-                    <label>Observaciones:</label>
-                    <input type="text" id="observaciones_tour" class="form-control">
-                </div>
-                <div class="col-12 text-end">
-                    <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="agregarTour()">Agregar Tour</button>
-                </div>
+            <div class="col-md-6 mb-3">
+                <label for="fecha_salida" class="form-label">Fecha Salida</label>
+                <input type="date" name="fecha_salida" class="form-control" value="{{ old('fecha_salida', $reserva->fecha_salida) }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="hora_salida" class="form-label">Hora Salida</label>
+                <input type="time" name="hora_salida" class="form-control" value="{{ old('hora_salida', $reserva->hora_salida) }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="nro_vuelo_retorno" class="form-label">Nro Vuelo Retorno</label>
+                <input type="text" name="nro_vuelo_retorno" class="form-control" value="{{ old('nro_vuelo_retorno', $reserva->nro_vuelo_retorno) }}">
             </div>
         </div>
 
-    <ul id="listaToursAgregados" class="list-group mb-3">
-        @foreach ($reserva->toursEscritos as $i => $tour)
-        <li class="list-group-item">
-            <div><strong>Nombre del tour:</strong> {{ $tour->nombre_tour }}</div>
-            <div><strong>Fecha:</strong> {{ $tour->fecha }}</div>
-            <div><strong>Empresa:</strong> {{ $tour->empresa }}</div>
-            <div><strong>Precio Unitario:</strong> {{ $tour->precio_unitario }}</div>
-            <div><strong>Cantidad:</strong> {{ $tour->cantidad }}</div>
-            <div><strong>Observaciones:</strong> {{ $tour->observaciones }}</div>
-            
-            <input type="hidden" name="tours[{{ $i }}][nombre_tour]" value="{{ $tour->nombre_tour }}">
-            <input type="hidden" name="tours[{{ $i }}][fecha_tour]" value="{{ $tour->fecha }}">
-            <input type="hidden" name="tours[{{ $i }}][empresa_tour]" value="{{ $tour->empresa }}">
-            <input type="hidden" name="tours[{{ $i }}][precio_unitario_tour]" value="{{ $tour->precio_unitario }}">
-            <input type="hidden" name="tours[{{ $i }}][cantidad_tour]" value="{{ $tour->cantidad }}">
-            <input type="hidden" name="tours[{{ $i }}][observaciones_tour]" value="{{ $tour->observaciones }}">
+        {{-- Pasajeros --}}
+        <div class="mb-3">
+            <label class="form-label">Pasajeros</label>
+            <div class="input-group mb-2">
+                <select id="select-pasajero" class="form-control">
+                    <option value="">Seleccione pasajero</option>
+                    @foreach($pasajeros as $pasajero)
+                        <option value="{{ $pasajero->id }}" data-nombre="{{ $pasajero->nombre }} {{ $pasajero->apellido }}">
+                            {{ $pasajero->nombre }} {{ $pasajero->apellido }} ({{ $pasajero->documento }})
+                        </option>
+                    @endforeach
+                </select>
+                <button type="button" class="btn btn-success" onclick="agregarPasajero()">Agregar</button>
+            </div>
+            <ul id="lista-pasajeros" class="list-group">
+                @foreach($reserva->pasajeros as $p)
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ $p->nombre }} {{ $p->apellido }}
+                        <input type="hidden" name="pasajeros[]" value="{{ $p->id }}">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarPasajero(this)">Eliminar</button>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
 
-            <button type="button" class="btn btn-sm btn-danger mt-2" onclick="eliminarTour(this)">Eliminar</button>
-            <button type="button" class="btn btn-sm btn-warning" onclick="editarTour(this)">Editar</button>
-        
-        </li>
-        @endforeach
+        {{-- Tours --}}
+        <div class="mb-3">
+            <label class="form-label">Tours</label>
+            <div class="input-group mb-2">
+                <select id="select-tour" class="form-control">
+                    <option value="">Seleccione tour</option>
+                    @foreach($tours as $tour)
+                        <option value="{{ $tour->id }}" data-nombre="{{ $tour->nombreTour }}">
+                            {{ $tour->nombreTour }}
+                        </option>
+                    @endforeach
+                </select>
+                <button type="button" class="btn btn-success" onclick="agregarTour()">Agregar</button>
+            </div>
+            <ul id="lista-tours" class="list-group">
+                @foreach($reserva->toursReserva as $i => $tour)
+                    <li class="list-group-item">
+                        <div><strong>Tour:</strong> {{ $tour->tour->nombreTour }}</div>
+                        <div><strong>Fecha:</strong> {{ $tour->fecha ?? '-' }}</div>
+                        <div><strong>Empresa:</strong> {{ $tour->empresa ?? '-' }}</div>
+                        <div><strong>Precio Unitario:</strong> S/. {{ $tour->precio_unitario ?? '0.00' }}</div>
+                        <div><strong>Cantidad:</strong> {{ $tour->cantidad ?? 1 }}</div>
+                        <div><strong>Observaciones:</strong> {{ $tour->observaciones ?? '-' }}</div>
+                        <input type="hidden" name="tours[{{ $i }}][tour_id]" value="{{ $tour->tour_id }}">
+                        <input type="hidden" name="tours[{{ $i }}][nombre_tour]" value="{{ $tour->tour->nombreTour }}">
+                        <input type="hidden" name="tours[{{ $i }}][fecha]" value="{{ $tour->fecha }}">
+                        <input type="hidden" name="tours[{{ $i }}][empresa]" value="{{ $tour->empresa }}">
+                        <input type="hidden" name="tours[{{ $i }}][precio_unitario]" value="{{ $tour->precio_unitario }}">
+                        <input type="hidden" name="tours[{{ $i }}][cantidad]" value="{{ $tour->cantidad }}">
+                        <input type="hidden" name="tours[{{ $i }}][observaciones]" value="{{ $tour->observaciones }}">
+                        <button type="button" class="btn btn-sm btn-danger mt-2" onclick="eliminarTour(this)">Eliminar</button>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
 
+        {{-- Totales --}}
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="total" class="form-label">Total</label>
+                <input type="number" step="0.01" name="total" class="form-control" value="{{ old('total', $reserva->total) }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="adelanto" class="form-label">Adelanto</label>
+                <input type="number" step="0.01" name="adelanto" class="form-control" value="{{ old('adelanto', $reserva->adelanto) }}">
+            </div>
+        </div>
 
-    </ul>
-    </div>
-
-    <input type="hidden" name="cantidad_tours" id="cantidad_tours" value="0">
-
-
-    <button type="submit" class="btn btn-success">Actualizar Reserva</button>
-
-    <a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary">Cancelar</a>
-
-</form>
+        <button type="submit" class="btn btn-primary">Actualizar Reserva</button>
+        <a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
 
 <script>
-    const tipoReservaSelect = document.getElementById('tipo_reserva');
-    const proveedorContainer = document.getElementById('proveedor_container');
-
-    tipoReservaSelect.addEventListener('change', function () {
-        proveedorContainer.style.display = this.value === 'Agencia' ? 'block' : 'none';
-    });
-
-    const cantidadInput = document.getElementById('cantidad_pasajeros');
-    let pasajerosSeleccionados = [];
-
-    const listaPasajerosAgregados = document.getElementById('listaPasajerosAgregados');
-    const inputBusqueda = document.getElementById('busquedaPasajero');
-    const cantidadPasajerosInput = document.getElementById('cantidad_pasajeros');
-    const pasajerosYaAgregados = new Set();
-
     function agregarPasajero() {
-        const nombreCompleto = inputBusqueda.value.trim();
-        if (!nombreCompleto) return;
+        const select = document.getElementById('select-pasajero');
+        const id = select.value;
+        const nombre = select.options[select.selectedIndex].dataset.nombre;
 
-        // Buscar el ID del pasajero según el texto
-        const options = document.querySelectorAll('#listaPasajeros option');
-        let pasajeroId = null;
-
-        options.forEach(opt => {
-            if (opt.value === nombreCompleto) {
-                pasajeroId = opt.dataset.id;
-            }
-        });
-
-        if (!pasajeroId) {
-            alert("Selecciona un pasajero válido de la lista.");
-            return;
-        }
-
-        if (pasajerosYaAgregados.has(pasajeroId)) {
-            alert("Este pasajero ya fue agregado.");
-            return;
-        }
-
-        pasajerosYaAgregados.add(pasajeroId);
+        if (!id) return;
 
         const li = document.createElement('li');
-        li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-        li.innerHTML = `
-            ${nombreCompleto}
-            <input type="hidden" name="pasajeros[]" value="${pasajeroId}">
-            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarPasajero(this, '${pasajeroId}')">Eliminar</button>
-        `;
-        listaPasajerosAgregados.appendChild(li);
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `${nombre}<input type="hidden" name="pasajeros[]" value="${id}"><button type="button" class="btn btn-sm btn-danger" onclick="eliminarPasajero(this)">Eliminar</button>`;
+        document.getElementById('lista-pasajeros').appendChild(li);
 
-        actualizarCantidadPasajeros();
-        inputBusqueda.value = '';
+        select.value = '';
     }
 
-
-    function eliminarPasajero(btn, id) {
-        pasajerosYaAgregados.delete(id);
+    function eliminarPasajero(btn) {
         btn.parentElement.remove();
-        actualizarCantidadPasajeros();
     }
-
-    function actualizarCantidadPasajeros() {
-        cantidadPasajerosInput.value = pasajerosYaAgregados.size;
-    }
-
-    let tourIndex = 0;
-    const listaToursAgregados = document.getElementById('listaToursAgregados');
-    const cantidadToursInput = document.getElementById('cantidad_tours');
 
     function agregarTour() {
-        const nombre = document.getElementById('nombre_tour').value.trim();
-        const fecha = document.getElementById('fecha_tour').value;
-        const empresa = document.getElementById('empresa_tour').value.trim();
-        const precio = document.getElementById('precio_unitario_tour').value;
-        const cantidad = document.getElementById('cantidad_tour').value;
-        const observaciones = document.getElementById('observaciones_tour').value.trim();
+        const select = document.getElementById('select-tour');
+        const id = select.value;
+        const nombre = select.options[select.selectedIndex].dataset.nombre;
 
-        if (!nombre) {
-            alert("El nombre del tour es obligatorio.");
-            return;
-        }
+        if (!id) return;
 
         const li = document.createElement('li');
-        li.classList.add('list-group-item');
-        li.innerHTML = `
-            <div><strong>Tour:</strong> ${nombre}</div>
-            <div><strong>Fecha:</strong> ${fecha || '-'}</div>
-            <div><strong>Empresa:</strong> ${empresa || '-'}</div>
-            <div><strong>Precio Unitario:</strong> S/. ${precio || '0.00'}</div>
-            <div><strong>Cantidad:</strong> ${cantidad || '1'}</div>
-            <div><strong>Observaciones:</strong> ${observaciones || '-'}</div>
-            <input type="hidden" name="tours[${tourIndex}][nombre_tour]" value="${nombre}">
-            <input type="hidden" name="tours[${tourIndex}][fecha]" value="${fecha}">
-            <input type="hidden" name="tours[${tourIndex}][empresa]" value="${empresa}">
-            <input type="hidden" name="tours[${tourIndex}][precio_unitario]" value="${precio}">
-            <input type="hidden" name="tours[${tourIndex}][cantidad]" value="${cantidad}">
-            <input type="hidden" name="tours[${tourIndex}][observaciones]" value="${observaciones}">
-            <button type="button" class="btn btn-sm btn-danger mt-2" onclick="eliminarTour(this)">Eliminar</button>
-        `;
-        listaToursAgregados.appendChild(li);
-        tourIndex++;
+        li.className = 'list-group-item';
+        li.innerHTML = `<div><strong>Tour:</strong> ${nombre}</div>
+            <input type="hidden" name="tours[][tour_id]" value="${id}">
+            <input type="hidden" name="tours[][nombre_tour]" value="${nombre}">
+            <button type="button" class="btn btn-sm btn-danger mt-2" onclick="eliminarTour(this)">Eliminar</button>`;
+        document.getElementById('lista-tours').appendChild(li);
 
-        actualizarCantidadTours();
-
-        // Limpiar inputs
-        document.getElementById('nombre_tour').value = '';
-        document.getElementById('fecha_tour').value = '';
-        document.getElementById('empresa_tour').value = '';
-        document.getElementById('precio_unitario_tour').value = '';
-        document.getElementById('cantidad_tour').value = 1;
-        document.getElementById('observaciones_tour').value = '';
+        select.value = '';
     }
 
     function eliminarTour(btn) {
         btn.parentElement.remove();
-        actualizarCantidadTours();
     }
-
-    function editarTour(btn) {
-        const li = btn.closest('li');
-
-        const nombre = li.querySelector('input[name*="[nombre_tour]"]').value;
-        const fecha = li.querySelector('input[name*="[fecha_tour]"]').value;
-        const empresa = li.querySelector('input[name*="[empresa_tour]"]').value;
-        const precio = li.querySelector('input[name*="[precio_unitario_tour]"]').value;
-        const cantidad = li.querySelector('input[name*="[cantidad_tour]"]').value;
-        const observaciones = li.querySelector('input[name*="[observaciones_tour]"]').value;
-
-        document.getElementById('nombre_tour').value = nombre;
-        document.getElementById('fecha_tour').value = fecha;
-        document.getElementById('empresa_tour').value = empresa;
-        document.getElementById('precio_unitario_tour').value = precio;
-        document.getElementById('cantidad_tour').value = cantidad;
-        document.getElementById('observaciones_tour').value = observaciones;
-
-        li.remove();
-        actualizarCantidadTours();
-    }
-
-
-
-    function actualizarCantidadTours() {
-        cantidadToursInput.value = listaToursAgregados.children.length;
-    }
-
-    tourIndex = {{ $reserva->toursEscritos->count() }};
-
-    @foreach ($reserva->pasajeros as $p)
-        pasajerosYaAgregados.add('{{ $p->id }}');
-    @endforeach
-
 </script>
-
-<style>
-    .sugerencia-item {
-        padding: 4px;
-        background-color: #f0f0f0;
-        cursor: pointer;
-        margin-bottom: 2px;
-    }
-    .sugerencia-item:hover {
-        background-color: #ddd;
-    }
-</style>
 @endsection

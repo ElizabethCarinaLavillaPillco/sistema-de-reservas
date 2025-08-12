@@ -6,31 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('titulares', function (Blueprint $table) {
-            $table->id(); // id automático
-            $table->string('documento')->unique();
+        Schema::create('pasajeros', function (Blueprint $table) {
+            $table->id();
+            $table->string('reserva_id')->nullable(); // ahora nullable
+            $table->string('documento');
             $table->string('nombre');
             $table->string('apellido');
             $table->string('pais_nacimiento');
             $table->string('pais_residencia');
             $table->string('ciudad')->nullable();
             $table->date('fecha_nacimiento');
+            $table->enum('tarifa', ['Adulto', 'Niño', 'Estudiante']);
             $table->string('telefono')->nullable();
             $table->timestamps();
+
         });
 
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('titulares');
+        Schema::dropIfExists('pasajeros');
     }
 };
