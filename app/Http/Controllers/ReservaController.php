@@ -6,16 +6,15 @@ use App\Models\Reserva;
 use App\Models\Pasajero;
 use App\Models\Proveedor;
 use App\Models\Tour;
-use App\Models\ToursReserva;
-use App\Models\DetallesTourMachupicchu;
+use App\Models\TourReserva;
+use App\Models\DetalleTourMachupicchu;
 use App\Models\Estadia;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class ReservaController extends Controller
 {
-        public function index()
+    public function index()
     {
         $reservas = Reserva::with(['proveedor', 'pasajeros'])->get();
         return view('admin.reservas.index', compact('reservas'));
@@ -26,8 +25,32 @@ class ReservaController extends Controller
         $proveedores = Proveedor::all();
         $pasajeros   = Pasajero::all();
         $tours       = Tour::all();
+        
 
         return view('admin.reservas.create', compact('proveedores', 'pasajeros', 'tours'));
+    }
+
+    private function generarCodigoReserva()
+    {
+        $ultimo = Reserva::orderBy('id', 'desc')->first();
+        if (!$ultimo) {
+            return 'R00001';
+        }
+        $numero = intval(substr($ultimo->id, 1)) + 1;
+        return 'R' . str_pad($numero, 5, '0', STR_PAD_LEFT);
+    }
+
+    private function esMachupicchuEspecial($tourId)
+    {
+        $especiales = [
+            'Machupicchu Full Day',
+            'Machupicchu Conexión',
+            'Machupicchu 2D/1N',
+            'Machupicchu By car'
+        ];
+
+        $tour = Tour::find($tourId);
+        return $tour && in_array($tour->nombreTour, $especiales);
     }
 
     public function store(Request $request)
@@ -50,15 +73,15 @@ class ReservaController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            // Crear la reserva principal
+            // Crear reserva con ID incremental
             $data       = $request->all();
-            $data['id'] = Str::uuid();
+            $data['id'] = $this->generarCodigoReserva();
             $reserva    = Reserva::create($data);
 
-            // Guardar Tours asociados
+            // Guardar tours asociados
             if ($request->has('tours') && is_array($request->tours)) {
                 foreach ($request->tours as $tourData) {
-                    $tourReserva = ToursReserva::create([
+                    $tourReserva = TourReserva::create([
                         'reserva_id'       => $reserva->id,
                         'tour_id'          => $tourData['tour_id'] ?? null,
                         'fecha'            => $tourData['fecha'] ?? null,
@@ -74,9 +97,9 @@ class ReservaController extends Controller
                         'incluye_tren'     => !empty($tourData['incluye_tren']),
                     ]);
 
-                    // Si es tour de Machupicchu, guardamos detalles
-                    if (isset($tourData['detalles_machu'])) {
-                        DetallesTourMachupicchu::create(array_merge(
+                    // Guardar detalles Machupicchu si aplica
+                    if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
+                        DetalleTourMachupicchu::create(array_merge(
                             $tourData['detalles_machu'],
                             ['tours_reserva_id' => $tourReserva->id]
                         ));
@@ -84,16 +107,16 @@ class ReservaController extends Controller
                 }
             }
 
-            // Guardar Estadías asociadas
+            // Guardar estadías asociadas
             if ($request->has('estadias') && is_array($request->estadias)) {
                 foreach ($request->estadias as $estadiaData) {
                     Estadia::create([
-                        'reserva_id'    => $reserva->id,
-                        'tipo_estadia'  => $estadiaData['tipo_estadia'] ?? 'Hostal',
-                        'nombre_estadia'=> $estadiaData['nombre_estadia'] ?? '',
-                        'ubicacion'     => $estadiaData['ubicacion'] ?? null,
-                        'fecha'         => $estadiaData['fecha'] ?? null,
-                        'habitacion'    => $estadiaData['habitacion'] ?? null,
+                        'reserva_id'     => $reserva->id,
+                        'tipo_estadia'   => $estadiaData['tipo_estadia'] ?? 'Hostal',
+                        'nombre_estadia' => $estadiaData['nombre_estadia'] ?? '',
+                        'ubicacion'      => $estadiaData['ubicacion'] ?? null,
+                        'fecha'          => $estadiaData['fecha'] ?? null,
+                        'habitacion'     => $estadiaData['habitacion'] ?? null,
                     ]);
                 }
             }
@@ -108,19 +131,18 @@ class ReservaController extends Controller
         $reserva = Reserva::with([
             'proveedor',
             'pasajeros',
-            'toursEscritos.detallesMachupicchu',
-            'estadias.hotel', // si estadía tiene relación con hotel
+            'tourReserva.detalleMachupicchu',
+            'estadias',
             'depositos',
-            'facturaciones.detalles' // si facturación tiene detalles
+            'facturaciones.detalles'
         ])->findOrFail($id);
 
         return view('admin.reservas.show', compact('reserva'));
     }
 
-
     public function edit($id)
     {
-        $reserva     = Reserva::with(['toursEscritos.detallesMachupicchu', 'estadias'])->findOrFail($id);
+        $reserva     = Reserva::with(['tourReserva.detalleMachupicchu', 'estadias'])->findOrFail($id);
         $proveedores = Proveedor::all();
         $pasajeros   = Pasajero::all();
         $tours       = Tour::all();
@@ -151,13 +173,14 @@ class ReservaController extends Controller
             $reserva = Reserva::findOrFail($id);
             $reserva->update($request->all());
 
-            // Eliminar relaciones viejas y volver a guardar
-            ToursReserva::where('reserva_id', $reserva->id)->delete();
+            // Limpiar relaciones anteriores
+            TourReserva::where('reserva_id', $reserva->id)->delete();
             Estadia::where('reserva_id', $reserva->id)->delete();
 
+            // Guardar tours actualizados
             if ($request->has('tours') && is_array($request->tours)) {
                 foreach ($request->tours as $tourData) {
-                    $tourReserva = ToursReserva::create([
+                    $tourReserva = TourReserva::create([
                         'reserva_id'       => $reserva->id,
                         'tour_id'          => $tourData['tour_id'] ?? null,
                         'fecha'            => $tourData['fecha'] ?? null,
@@ -173,8 +196,8 @@ class ReservaController extends Controller
                         'incluye_tren'     => !empty($tourData['incluye_tren']),
                     ]);
 
-                    if (isset($tourData['detalles_machu'])) {
-                        DetallesTourMachupicchu::create(array_merge(
+                    if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
+                        DetalleTourMachupicchu::create(array_merge(
                             $tourData['detalles_machu'],
                             ['tours_reserva_id' => $tourReserva->id]
                         ));
@@ -182,15 +205,16 @@ class ReservaController extends Controller
                 }
             }
 
+            // Guardar estadías actualizadas
             if ($request->has('estadias') && is_array($request->estadias)) {
                 foreach ($request->estadias as $estadiaData) {
                     Estadia::create([
-                        'reserva_id'    => $reserva->id,
-                        'tipo_estadia'  => $estadiaData['tipo_estadia'] ?? 'Hostal',
-                        'nombre_estadia'=> $estadiaData['nombre_estadia'] ?? '',
-                        'ubicacion'     => $estadiaData['ubicacion'] ?? null,
-                        'fecha'         => $estadiaData['fecha'] ?? null,
-                        'habitacion'    => $estadiaData['habitacion'] ?? null,
+                        'reserva_id'     => $reserva->id,
+                        'tipo_estadia'   => $estadiaData['tipo_estadia'] ?? 'Hostal',
+                        'nombre_estadia' => $estadiaData['nombre_estadia'] ?? '',
+                        'ubicacion'      => $estadiaData['ubicacion'] ?? null,
+                        'fecha'          => $estadiaData['fecha'] ?? null,
+                        'habitacion'     => $estadiaData['habitacion'] ?? null,
                     ]);
                 }
             }
@@ -209,4 +233,3 @@ class ReservaController extends Controller
             ->with('success', 'Reserva eliminada correctamente.');
     }
 }
-

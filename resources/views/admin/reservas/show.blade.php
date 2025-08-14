@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.template')
 
 @section('content')
 <div class="container">
@@ -47,7 +47,7 @@
             <strong>Tours</strong>
         </div>
         <div class="card-body">
-            @if($reserva->toursReserva->count())
+            @if($reserva->tourReserva->count())
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -60,7 +60,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($reserva->toursReserva as $tour)
+                        @foreach($reserva->tourReserva as $tour)
                             <tr>
                                 <td>{{ $tour->tour->nombreTour }}</td>
                                 <td>{{ $tour->fecha ?? '-' }}</td>

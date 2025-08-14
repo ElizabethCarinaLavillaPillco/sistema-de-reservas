@@ -30,9 +30,18 @@ class TourReservaController extends Controller
         $tourReserva = TourReserva::create($request->all());
 
         // Detectar si es un tour Machupicchu especial
-        if ($this->esMachupicchuEspecial($request->input('tour_id'))) {
-            $tourReserva->detalleMachupicchu()->create([
+        if ($this->esMachupicchuEspecial($request->tour_id)) {
+            $detalleData = [
+                'tours_reserva_id' => $tourReserva->id,
+                'hay_entrada' => $request->input('hay_entrada'),
+                'comentario_entrada' => $request->input('comentario_entrada'),
+                'tiene_ticket' => $request->input('tiene_ticket'),
+                'comentario_ticket' => $request->input('comentario_ticket'),
+                // demás campos existentes
                 'tipo_entrada' => $request->input('tipo_entrada'),
+                'ruta1' => $request->input('ruta1'),
+                'ruta2' => $request->input('ruta2'),
+                'ruta3' => $request->input('ruta3'),
                 'horario_entrada' => $request->input('horario_entrada'),
                 'tipo_tren' => $request->input('tipo_tren'),
                 'empresa_tren' => $request->input('empresa_tren'),
@@ -41,9 +50,14 @@ class TourReservaController extends Controller
                 'horario_retorno' => $request->input('horario_retorno'),
                 'fecha_tren_ida' => $request->input('fecha_tren_ida'),
                 'fecha_tren_retorno' => $request->input('fecha_tren_retorno'),
-                'hospedaje' => $request->input('hospedaje'),
-            ]);
+                'fecha_ida' => $request->input('fecha_ida'),
+                'fecha_retorno' => $request->input('fecha_retorno'),
+                'hospedaje' => $request->input('hospedaje')
+            ];
+
+            DetalleTourMachupicchu::create($detalleData);
         }
+
 
         return back()->with('success', 'Tour agregado a la reserva.');
     }
@@ -84,6 +98,8 @@ class TourReservaController extends Controller
         ]);
 
         $tourReserva->update($request->all());
+        $detalle->update($detalleData);
+
 
         return back()->with('success', 'Tour actualizado correctamente.');
     }

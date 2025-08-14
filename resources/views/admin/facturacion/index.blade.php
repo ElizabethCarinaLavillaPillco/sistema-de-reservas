@@ -30,7 +30,7 @@
                 <td>{{ $f->reserva_id }}</td>
                 <td>{{ $f->pais }}</td>
                 <td>{{ $f->servicio }}</td>
-                <td>{{ $f->fecha_giro ? $f->fecha_giro->format('Y-m-d') : '-' }}</td>
+                <td>{{ $f->fecha_giro ? $f->fecha_giro->format('d-m-Y') : '-' }}</td>
                 <td>{{ $f->tipo }}</td>
                 <td>{{ number_format($f->total_facturado, 2) }}</td>
                 <td>{{ $f->estado }}</td>

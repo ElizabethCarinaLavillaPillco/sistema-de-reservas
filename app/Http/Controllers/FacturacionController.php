@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Facturacion;
+use App\Models\Pasajero;
 use App\Models\Reserva;
 use Illuminate\Http\Request;
 
@@ -55,7 +56,7 @@ class FacturacionController extends Controller
         $request->validate([
             'documento' => 'required|string|max:255',
             'titular' => 'required|string|max:255',
-            'reserva_id' => 'required|exists:reservas,id',
+            'reserva_id' => 'nullable|exists:reservas,id',
             'pais' => 'required|string|max:255',
             'servicio' => 'required|in:Machupicchu,Comision',
             'fecha_giro' => 'required|date',

@@ -10,7 +10,7 @@ class DepositosController extends Controller
 {
     public function index()
     {
-        $depositos = Deposito::with('reserva')->orderByDesc('created_at')->get();
+        $depositos = Deposito::orderBy('created_at', 'desc')->paginate(10); // <--- paginar
         return view('admin.depositos.index', compact('depositos'));
     }
 

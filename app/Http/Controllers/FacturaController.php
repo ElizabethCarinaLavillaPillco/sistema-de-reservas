@@ -45,15 +45,15 @@ class FacturaController extends Controller
     /**
      * Mostrar el formulario para editar una factura.
      */
-    public function edit(Factura $facturas)
+    public function edit(Factura $factura)
     {
-        return view('admin.facturas.edit', compact('facturas'));
+        return view('admin.facturas.edit', compact('factura'));
     }
 
     /**
      * Actualizar una factura en la base de datos.
      */
-    public function update(Request $request, Factura $facturas)
+    public function update(Request $request, Factura $factura)
     {
         $request->validate([
             'titular' => 'required|string|max:255',
@@ -63,7 +63,7 @@ class FacturaController extends Controller
             'descripcion' => 'nullable|string',
         ]);
 
-        $facturas->update($request->all());
+        $factura->update($request->all());
 
         return redirect()->route('admin.facturas.index')->with('success', 'Factura actualizada con éxito.');
     }
@@ -71,9 +71,9 @@ class FacturaController extends Controller
     /**
      * Eliminar una factura.
      */
-    public function destroy(Factura $facturas)
+    public function destroy(Factura $factura)
     {
-        $facturas->delete();
+        $factura->delete();
         return redirect()->route('admin.facturas.index')->with('success', 'Factura eliminada con éxito.');
     }
 }

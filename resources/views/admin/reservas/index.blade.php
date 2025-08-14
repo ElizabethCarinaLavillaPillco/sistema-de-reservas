@@ -35,11 +35,11 @@
             <td>
                 {{ $reserva->cantidad_tours }}<br>
                 <small>
-                    @foreach($reserva->toursEscritos->take(2) as $tour)
+                    @foreach($reserva->tourReserva->take(2) as $tour)
                         • {{ $tour->nombre_tour }}<br>
                     @endforeach
-                    @if($reserva->toursEscritos->count() > 2)
-                        <em>+{{ $reserva->toursEscritos->count() - 2 }} más</em>
+                    @if($reserva->tourReserva->count() > 2)
+                        <em>+{{ $reserva->tourReserva->count() - 2 }} más</em>
                     @endif
                 </small>
             </td>

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('ubicacion')->nullable();
             $table->date('fecha')->nullable();   // fecha de inicio o check-in
             $table->string('habitacion')->nullable(); 
+            $table->timestamps();
         });
 
     }

@@ -20,17 +20,7 @@ class ContabilidadController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
-        $data['total'] = ($request->essalud ?? 0)
-                    + ($request->afp ?? 0)
-                    + ($request->servicios ?? 0)
-                    + ($request->ir ?? 0)
-                    + ($request->renta_anual ?? 0);
-
-        Contabilidad::create($data);
-
-
-
+        // 1️⃣ Validar primero
         $validated = $request->validate([
             'fecha_pago'   => 'required|date',
             'mes_recibo'   => 'required|string|max:20',
@@ -40,9 +30,17 @@ class ContabilidadController extends Controller
             'servicios'    => 'required|numeric|min:0',
             'ir'           => 'nullable|numeric|min:0',
             'renta_anual'  => 'nullable|numeric|min:0',
-            'total'        => 'required|numeric|min:0'
         ]);
 
+        // 2️⃣ Calcular el total automáticamente
+        $validated['total'] =
+            ($validated['essalud'] ?? 0) +
+            ($validated['afp'] ?? 0) +
+            ($validated['servicios'] ?? 0) +
+            ($validated['ir'] ?? 0) +
+            ($validated['renta_anual'] ?? 0);
+
+        // 3️⃣ Crear el registro una sola vez
         Contabilidad::create($validated);
 
         return redirect()->route('admin.contabilidad.index')
@@ -56,16 +54,7 @@ class ContabilidadController extends Controller
 
     public function update(Request $request, Contabilidad $contabilidad)
     {
-
-        $data = $request->all();
-        $data['total'] = ($request->essalud ?? 0)
-                    + ($request->afp ?? 0)
-                    + ($request->servicios ?? 0)
-                    + ($request->ir ?? 0)
-                    + ($request->renta_anual ?? 0);
-
-        Contabilidad::create($data);
-
+        // 1️⃣ Validar
         $validated = $request->validate([
             'fecha_pago'   => 'required|date',
             'mes_recibo'   => 'required|string|max:20',
@@ -75,9 +64,17 @@ class ContabilidadController extends Controller
             'servicios'    => 'required|numeric|min:0',
             'ir'           => 'nullable|numeric|min:0',
             'renta_anual'  => 'nullable|numeric|min:0',
-            'total'        => 'required|numeric|min:0'
         ]);
 
+        // 2️⃣ Calcular total
+        $validated['total'] =
+            ($validated['essalud'] ?? 0) +
+            ($validated['afp'] ?? 0) +
+            ($validated['servicios'] ?? 0) +
+            ($validated['ir'] ?? 0) +
+            ($validated['renta_anual'] ?? 0);
+
+        // 3️⃣ Actualizar el registro
         $contabilidad->update($validated);
 
         return redirect()->route('admin.contabilidad.index')

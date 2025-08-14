@@ -38,7 +38,12 @@
                     <td>S/ {{ number_format($item->total, 2) }}</td>
 
                     <td>
-                        <a href="{{ route('admin.contabilidad.edit', $item->id) }}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{{ route('admin.contabilidad.edit', $item->id) }}" class="btn btn-warning btn-sm-2">Editar</a>
+                        <form action="{{ route('admin.contabilidad.destroy', $item->id) }}" method="POST" style="display:inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Eliminar este REGISTRO?')">Eliminar</button>
+                    </form>
                     </td>
                 </tr>
             @empty

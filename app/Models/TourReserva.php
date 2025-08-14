@@ -27,21 +27,32 @@ class TourReserva extends Model
         'incluye_tren',
     ];
 
-    // Una TourReserva pertenece a una reserva
+    protected $casts = [
+        'incluye_entrada' => 'boolean',
+        'incluye_tren'    => 'boolean',
+        'fecha'           => 'date',
+        'hora_recojo'     => 'datetime:H:i',
+    ];
+
+    /*
+     * Relaciones
+     */
+
+    // Una TourReserva pertenece a una Reserva
     public function reserva()
     {
-        return $this->belongsTo(Reserva::class, 'reserva_id');
+        return $this->belongsTo(Reserva::class, 'reserva_id', 'id');
     }
 
-    // Una TourReserva puede estar asociada a un tour
+    // Una TourReserva pertenece a un Tour
     public function tour()
     {
-        return $this->belongsTo(Tour::class, 'tour_id');
-    }
-    
-    public function detalleMachupicchu()
-    {
-        return $this->hasOne(DetalleTourMachupicchu::class, 'tours_reserva_id');
+        return $this->belongsTo(Tour::class, 'tour_id', 'id');
     }
 
+    // Una TourReserva puede tener un detalle de Machupicchu (solo si es tour especial)
+    public function detalleMachupicchu()
+    {
+        return $this->hasOne(DetalleTourMachupicchu::class, 'tours_reserva_id', 'id');
+    }
 }

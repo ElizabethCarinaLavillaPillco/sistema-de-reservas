@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.template')
 
 @section('content')
 <div class="container">
@@ -116,7 +116,7 @@
                 <button type="button" class="btn btn-success" onclick="agregarTour()">Agregar</button>
             </div>
             <ul id="lista-tours" class="list-group">
-                @foreach($reserva->toursReserva as $i => $tour)
+                @foreach($reserva->tourReserva as $i => $tour)
                     <li class="list-group-item">
                         <div><strong>Tour:</strong> {{ $tour->tour->nombreTour }}</div>
                         <div><strong>Fecha:</strong> {{ $tour->fecha ?? '-' }}</div>

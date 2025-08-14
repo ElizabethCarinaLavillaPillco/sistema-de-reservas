@@ -32,6 +32,28 @@ class Reserva extends Model
         'saldo'
     ];
 
+    // Generar ID personalizado incremental con prefijo "R"
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            // Buscar la última reserva
+            $lastReserva = self::orderBy('id', 'desc')->first();
+
+            if ($lastReserva) {
+                // Obtener número eliminando la letra R
+                $lastNumber = intval(substr($lastReserva->id, 1));
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+
+            // Formatear con ceros a la izquierda
+            $model->id = 'R' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        });
+    }
+
     // Titular de la reserva
     public function titular()
     {
@@ -50,36 +72,59 @@ class Reserva extends Model
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
 
-    public function tours()
+    // Tours reservados (relación intermedia)
+    public function tourReserva()
     {
         return $this->hasMany(TourReserva::class, 'reserva_id', 'id');
     }
 
-    public function toursEscritos()
+    // Tours asociados a la reserva (a través de TourReserva)
+    public function tours()
     {
-        return $this->hasMany(TourReserva::class, 'reserva_id');
+        return $this->hasManyThrough(
+            Tour::class,
+            TourReserva::class,
+            'reserva_id', // Foreign key en tour_reservas
+            'id',         // Foreign key en tours
+            'id',         // Local key en reservas
+            'tour_id'     // Local key en tour_reservas
+        );
     }
 
+    // Detalles Machupicchu (a través de tours reservados)
+    public function detallesMachupicchu()
+    {
+        return $this->hasManyThrough(
+            DetalleTourMachupicchu::class,
+            TourReserva::class,
+            'reserva_id',       // Foreign key en tour_reservas
+            'tours_reserva_id', // Foreign key en detalles
+            'id',               // Local key en reservas
+            'id'                // Local key en tour_reservas
+        );
+    }
+
+    // Estadías asociadas
     public function estadias()
     {
-        return $this->hasMany(Estadia::class, 'reserva_id');
+        return $this->hasMany(Estadia::class, 'reserva_id', 'id');
     }
 
+    // Depósitos de pago
     public function depositos()
     {
-        return $this->hasMany(Deposito::class, 'reserva_id');
+        return $this->hasMany(Deposito::class, 'reserva_id', 'id');
     }
 
+    // Facturaciones asociadas
     public function facturaciones()
     {
-        return $this->hasMany(Facturacion::class, 'reserva_id');
+        return $this->hasMany(Facturacion::class, 'reserva_id', 'id');
     }
 
+    // Facturas asociadas
     public function facturas()
     {
-        return $this->hasMany(Factura::class, 'reserva_id');
+        return $this->hasMany(Factura::class, 'reserva_id', 'id');
     }
-
-
-
 }

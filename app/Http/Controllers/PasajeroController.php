@@ -11,22 +11,20 @@ class PasajeroController extends Controller
     // Mostrar lista de pasajeros
     public function index()
     {
-        $pasajeros = Pasajero::with('reserva.titular')->get(); // Carga también titular
+        $pasajeros = Pasajero::with('reserva.titular')->get();
         return view('admin.pasajeros.index', compact('pasajeros'));
     }
 
     // Formulario para crear pasajero
     public function create()
     {
-        $reservas = Reserva::with('titular')->get();
-        return view('admin.pasajeros.create', compact('reservas'));
+        return view('admin.pasajeros.create'); // Sin lista de reservas
     }
 
     // Guardar nuevo pasajero
     public function store(Request $request)
     {
         $request->validate([
-            'reserva_id' => 'nullable|exists:reservas,id', // puede no tener reserva al inicio
             'documento' => 'required|string|max:255',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
@@ -38,7 +36,18 @@ class PasajeroController extends Controller
             'telefono' => 'nullable|string|max:255',
         ]);
 
-        Pasajero::create($request->all());
+        // Creamos pasajero sin asignar reserva todavía
+        Pasajero::create($request->only([
+            'documento',
+            'nombre',
+            'apellido',
+            'pais_nacimiento',
+            'pais_residencia',
+            'ciudad',
+            'fecha_nacimiento',
+            'tarifa',
+            'telefono'
+        ]));
 
         return redirect()->route('admin.pasajeros.index')->with('success', 'Pasajero registrado con éxito.');
     }
@@ -54,15 +63,13 @@ class PasajeroController extends Controller
     public function edit($id)
     {
         $pasajero = Pasajero::findOrFail($id);
-        $reservas = Reserva::with('titular')->get();
-        return view('admin.pasajeros.edit', compact('pasajero', 'reservas'));
+        return view('admin.pasajeros.edit', compact('pasajero')); // Sin lista de reservas
     }
 
     // Actualizar pasajero
     public function update(Request $request, $id)
     {
         $request->validate([
-            'reserva_id' => 'nullable|exists:reservas,id',
             'documento' => 'required|string|max:255',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
@@ -75,7 +82,17 @@ class PasajeroController extends Controller
         ]);
 
         $pasajero = Pasajero::findOrFail($id);
-        $pasajero->update($request->all());
+        $pasajero->update($request->only([
+            'documento',
+            'nombre',
+            'apellido',
+            'pais_nacimiento',
+            'pais_residencia',
+            'ciudad',
+            'fecha_nacimiento',
+            'tarifa',
+            'telefono'
+        ]));
 
         return redirect()->route('admin.pasajeros.index')->with('success', 'Pasajero actualizado correctamente.');
     }
