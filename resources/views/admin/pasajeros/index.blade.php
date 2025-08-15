@@ -11,6 +11,26 @@
 
 <a href="{{ route('admin.pasajeros.create') }}" class="btn btn-primary mb-3">Nuevo Pasajero</a>
 
+    <!-- Formulario de búsqueda -->
+    <form method="GET" action="{{ route('admin.pasajeros.index') }}" class="mb-3">
+        <div class="input-group">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Buscar por nombre o apellido"
+                value="{{ request('search') }}" >
+
+            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+
+            {{-- botón de limpiar solo cuando hay una búsqueda activa --}}
+            @if(request('search'))
+                <a href="{{ route('admin.pasajeros.index') }}" class="btn btn-outline-danger">Limpiar</a>
+            @endif
+        </div>
+    </form>
+
+
 <table class="table table-bordered table-striped">
     <thead class="table-dark">
         <tr>
@@ -36,9 +56,7 @@
                 <td>
                     @if ($pasajero->reserva)
                         <a href="{{ route('admin.reservas.show', $pasajero->reserva_id) }}">
-                            {{ $pasajero->reserva_id }} -
-                            {{ $pasajero->reserva->titular->nombre ?? '' }} {{ $pasajero->reserva->titular->apellido ?? '' }}
-                        </a>
+                            {{ $pasajero->reserva_id }}                        </a>
                     @else
                         <span class="text-muted">No asociada</span>
                     @endif

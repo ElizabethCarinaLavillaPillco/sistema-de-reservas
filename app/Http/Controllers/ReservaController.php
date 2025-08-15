@@ -26,8 +26,9 @@ class ReservaController extends Controller
         $pasajeros   = Pasajero::all();
         $tours       = Tour::all();
         
-
-        return view('admin.reservas.create', compact('proveedores', 'pasajeros', 'tours'));
+        $pasajerosSinReserva = Pasajero::whereNull('reserva_id')->get();
+        return view('admin.reservas.create', compact('proveedores', 'pasajeros', 'tours','pasajerosSinReserva'));
+        
     }
 
     private function generarCodigoReserva()
@@ -73,10 +74,16 @@ class ReservaController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            // Crear reserva con ID incremental
+            // Generar código y crear la reserva una sola vez
             $data       = $request->all();
             $data['id'] = $this->generarCodigoReserva();
             $reserva    = Reserva::create($data);
+
+            // Asociar pasajeros
+            if ($request->filled('pasajeros')) {
+                Pasajero::whereIn('id', $request->pasajeros)
+                    ->update(['reserva_id' => $reserva->id]);
+            }
 
             // Guardar tours asociados
             if ($request->has('tours') && is_array($request->tours)) {
@@ -125,6 +132,7 @@ class ReservaController extends Controller
         return redirect()->route('admin.reservas.index')
             ->with('success', 'Reserva creada correctamente.');
     }
+
 
     public function show($id)
     {

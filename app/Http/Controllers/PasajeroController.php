@@ -5,20 +5,34 @@ namespace App\Http\Controllers;
 use App\Models\Pasajero;
 use App\Models\Reserva;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PasajeroController extends Controller
 {
     // Mostrar lista de pasajeros
-    public function index()
+    public function index(Request $request)
     {
         $pasajeros = Pasajero::with('reserva.titular')->get();
+        $query = Pasajero::with('reserva.titular');
+
+        if ($request->filled('search')) {
+            $busqueda = $request->search;
+            $query->where(function ($q) use ($busqueda) {
+                $q->where(DB::raw("CONCAT(nombre,' ',apellido)"), 'LIKE', "%{$busqueda}%");
+            });
+        }
+
+        $pasajeros = $query->get();
+
         return view('admin.pasajeros.index', compact('pasajeros'));
     }
 
     // Formulario para crear pasajero
     public function create()
     {
-        return view('admin.pasajeros.create'); // Sin lista de reservas
+        $reservas = Reserva::with('titular')->get();
+        return view('admin.pasajeros.create', compact('reservas'));
+        //return view('admin.pasajeros.create'); // Sin lista de reservas
     }
 
     // Guardar nuevo pasajero
@@ -46,7 +60,8 @@ class PasajeroController extends Controller
             'ciudad',
             'fecha_nacimiento',
             'tarifa',
-            'telefono'
+            'telefono',
+            'reserva_id' // <- si viene vacío, quedará null
         ]));
 
         return redirect()->route('admin.pasajeros.index')->with('success', 'Pasajero registrado con éxito.');
@@ -63,8 +78,11 @@ class PasajeroController extends Controller
     public function edit($id)
     {
         $pasajero = Pasajero::findOrFail($id);
-        return view('admin.pasajeros.edit', compact('pasajero')); // Sin lista de reservas
+        $reservas = Reserva::with('titular')->get(); // <-- OBTENER TODAS LAS RESERVAS
+
+        return view('admin.pasajeros.edit', compact('pasajero','reservas'));
     }
+
 
     // Actualizar pasajero
     public function update(Request $request, $id)

@@ -12,7 +12,7 @@
             <option value="">-- Seleccionar reserva --</option>
             @foreach ($reservas as $reserva)
                 <option value="{{ $reserva->id }}" {{ old('reserva_id') == $reserva->id ? 'selected' : '' }}>
-                    {{ $reserva->id }} - {{ $reserva->titular->nombre }} {{ $reserva->titular->apellido }}
+                    {{ $reserva->id }}
                 </option>
             @endforeach
         </select>
@@ -20,6 +20,7 @@
             <small class="text-danger">{{ $message }}</small>
         @enderror
     </div>
+
 
     <div class="mb-3">
         <label for="documento">Documento:</label>

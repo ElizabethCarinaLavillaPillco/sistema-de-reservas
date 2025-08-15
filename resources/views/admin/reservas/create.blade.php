@@ -72,7 +72,7 @@
     </div>
 
     <div id="pasajerosSeleccionados" class="mb-3">
-        <label>Pasajeros seleccionados:</label>
+        <strong><label>Pasajeros seleccionados:</label></strong>
         <ul id="listaPasajerosAgregados" class="list-group"></ul>
     </div>
 
@@ -110,61 +110,117 @@
     </div>
 
     <!-- TOTAL Y ADELANTO -->
-    <div class="mb-3">
-        <label for="total">Total (S/.):</label>
-        <input type="number" step="0.01" name="total" id="total" class="form-control" required>
-    </div>
-    <div class="mb-3">
-        <label for="adelanto">Adelanto (S/.):</label>
-        <input type="number" step="0.01" name="adelanto" id="adelanto" class="form-control">
+    <div class="row mb-2">
+        <div class="col-md-4">
+            <label for="total">Total ($):</label>
+            <input type="number" step="0.01" name="total" id="total" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+            <label for="adelanto">Adelanto ($):</label>
+            <input type="number" step="0.01" name="adelanto" id="adelanto" class="form-control">
+        </div>
+        <div class="col-md-4">
+            <label for="saldo">Saldo ($):</label>
+            <input type="number" step="0.01" name="saldo" id="saldo" class="form-control">
+        </div>
     </div>
 
     <!-- TOURS (BUSCADOR + CAMPOS ADICIONALES) -->
     <div class="mb-3">
-        <label>Tours Contratados:</label>
+        <strong><label>Tours Contratados:</label></strong>
 
         <div class="border p-3 mb-2">
             <div class="row">
 
-                <!-- SELECCIONAR UN TOUR -->
-                <div class="input-group mb-2">
-                    <select id="select-tour" class="form-control">
-                        <option value="">Seleccione tour</option>
-                        @foreach($tours as $tour)
-                            <option value="{{ $tour->id }}" data-nombre="{{ $tour->nombreTour }}">
-                                {{ $tour->nombreTour }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <input type="hidden" id="id_tour">
-                    <input type="hidden" id="nombreTour">
+                <div class="row mb-3">
+                    <!-- SELECCIONAR UN TOUR -->
+                    <div class="col-md-4">
+                        <label>Seleccione tour:</label>
+                        <select id="select-tour" class="form-control">
+                            <option value="">Seleccione</option>
+                            @foreach($tours as $tour)
+                                <option value="{{ $tour->id }}" data-nombre="{{ $tour->nombreTour }}">
+                                    {{ $tour->nombreTour }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <input type="hidden" id="id_tour">
+                        <input type="hidden" id="nombreTour">
+                    </div>
+
+                    <!-- FECHA DE VISITA -->
+                    <div class="col-md-4">
+                        <label>Fecha de visita:</label>
+                        <input type="date" id="fecha_tour" class="form-control">
+                    </div>
+
+                    <!-- TIPO DE SERIVICIO -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Servicio:</label>
+                            <select name="tipo_tour" id="tipo_tour" class="form-control">
+                                <option value="Grupal">Grupal</option>
+                                <option value="Privado">Privado</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- CAMPOS GENERALES DEL TOUR -->
-                <div class="col-md-6 mb-2">
-                    <label>Fecha:</label>
-                    <input type="date" id="fecha_tour" class="form-control">
+
+                <div class="row mb-2">
+                    <!-- LUGAR DE RECOJO -->
+                    <div class="col md">
+                        <label>Lugar Recojo:</label>
+                        <input type="text" id="lugar_recojo" class="form-control">
+                    </div>
+
+                    <!-- HORA DE RECOJO -->
+                    <div class="col md">
+                        <label>Hora de Recojo:</label>
+                        <input type="text" id="hora_recojo" class="form-control">
+                    </div>
                 </div>
 
-                <div class="col-md-4 mb-2">
-                    <label>Empresa:</label>
-                    <input type="text" id="empresa_tour" class="form-control">
+
+                <div class="row mb-3">
+                    <!-- IDIOMA DEL TOUR -->
+                    <div class="col-md-4">
+                        <label>Idioma:</label>
+                        <input type="text" id="idioma" class="form-control">
+                    </div>
+
+                    <!-- PRECIO POR PERSONA -->
+                    <div class="col-md-4">
+                        <label>Precio Unitario:</label>
+                        <input type="number" id="precio_unitario_tour" step="0.01" class="form-control">
+                    </div>
+
+                    <!-- CANTIDAD DE PERSONAS QUE IRAN AL TOUR -->
+                    <div class="col-md-4">
+                        <label>Cantidad:</label>
+                        <input type="number" id="cantidad_tour" min="1" value="1" class="form-control">
+                    </div>
                 </div>
 
-                <div class="col-md-4 mb-2">
-                    <label>Precio Unitario:</label>
-                    <input type="number" id="precio_unitario_tour" step="0.01" class="form-control">
+
+                <div class="row mb-2">
+                    <!-- EMPRESA QUE BRINDA EL TOUR -->
+                    <div class="col md">
+                        <div class="form-group" id="empresa_tour_field" style="display:none;">
+                            <label>Empresa:</label>
+                            <input type="text" id="empresa_tour" class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- OBSERVACIONES -->
+                    <div class="col md">
+                        <div class="form-group" id="observaciones_tour_field" style="display:none;">
+                            <label>Observaciones:</label>
+                            <input type="text" id="observaciones_tour" class="form-control">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-md-4 mb-2">
-                    <label>Cantidad:</label>
-                    <input type="number" id="cantidad_tour" min="1" value="1" class="form-control">
-                </div>
-
-                <div class="col-md-12 mb-2">
-                    <label>Observaciones:</label>
-                    <input type="text" id="observaciones_tour" class="form-control">
-                </div>
 
                 <!-- CAMPOS ESPECIALES MACHUPICCHU -->
                 <div id="machupicchu-details" class="col-12 mt-3" style="display:none; border-top:1px solid #ccc; padding-top:10px;">
@@ -195,26 +251,26 @@
                         <!-- Rutas según circuito -->
                         <div class="form-group" id="ruta1-field" style="display:none;">
                             <label>Seleccione ruta de recorrido:</label>
-                                <select id="ruta1" class="form-control">
-                                    <option value="">-- Seleccione --</option>
-                                    <option value="ruta1a">Ruta 1-A: Ruta Montaña Machupicchu</option>
-                                    <option value="ruta1b">Ruta 1-B: Ruta terraza superior</option>
-                                    <option value="ruta1c">Ruta 1-C: Ruta Portada Intipunku</option>
-                                    <option value="ruta1d">Ruta 1-D: Ruta Puente Inka</option>
-                                </select>
-                            </div>
+                            <select id="ruta1" class="form-control">
+                                <option value="">-- Seleccione --</option>
+                                <option value="ruta1a">Ruta 1-A: Ruta Montaña Machupicchu</option>
+                                <option value="ruta1b">Ruta 1-B: Ruta terraza superior</option>
+                                <option value="ruta1c">Ruta 1-C: Ruta Portada Intipunku</option>
+                                <option value="ruta1d">Ruta 1-D: Ruta Puente Inka</option>
+                            </select>
+                        </div>
 
                         <div class="form-group" id="ruta2-field" style="display:none;">
                             <label>Seleccione ruta de recorrido:</label>
-                                <select id="ruta2" class="form-control">
-                                    <option value="">-- Seleccione --</option>
-                                    <option value="ruta2a">Ruta 2-A: Ruta clásico diseñada</option>
-                                    <option value="ruta2b">Ruta 2-B: Ruta terraza inferior</option>
-                                </select>
-                            </div>
+                            <select id="ruta2" class="form-control">
+                                <option value="">-- Seleccione --</option>
+                                <option value="ruta2a">Ruta 2-A: Ruta clásico diseñada</option>
+                                <option value="ruta2b">Ruta 2-B: Ruta terraza inferior</option>
+                            </select>
+                        </div>
 
                         <div class="form-group" id="ruta3-field" style="display:none;">
-                        <label>Seleccione ruta de recorrido:</label>
+                            <label>Seleccione ruta de recorrido:</label>
                             <select id="ruta3" class="form-control">
                                 <option value="">-- Seleccione --</option>
                                 <option value="ruta3a">Ruta 3-A: Ruta Montaña Waynapicchu</option>
@@ -229,6 +285,7 @@
                             <label>Horario Entrada:</label>
                             <input type="time" id="horario_entrada" class="form-control">
                         </div>
+
                     </div>
 
                     <!-- Comentario entrada -->
@@ -263,6 +320,10 @@
                             <label>Código de Tren</label>
                             <input type="text" name="codigo_tren" class="form-control">
                         </div>
+                    </div>
+
+                        <!-- horarios -->
+                    <div id="tren-horarios-fields" style="display:none;">
                         <div class="form-group">
                             <label>Horario Ida</label>
                             <input type="time" name="horario_ida" class="form-control">
@@ -270,8 +331,7 @@
                         <div class="form-group">
                             <label>Horario Retorno</label>
                             <input type="time" name="horario_retorno" class="form-control">
-                        </div>
-                        
+                        </div> 
 
                     </div>
                     
@@ -287,14 +347,21 @@
                             </select>
                         </div>
 
+                        
                         <div id="ticket-fields" style="display:none;">
-                            <div class="form-group">
-                                <label>Horario Ida</label>
-                                <input type="time" name="horario_ida" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label>Horario Retorno</label>
-                                <input type="time" name="horario_retorno" class="form-control">
+                            <div class="row mb-2">
+                                <div class="col mb">
+                                    <div class="form-group">
+                                        <label>Horario Ida</label>
+                                        <input type="time" name="horario_ida" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col mb">
+                                    <div class="form-group">
+                                        <label>Horario Retorno</label>
+                                        <input type="time" name="horario_retorno" class="form-control">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -319,10 +386,10 @@
                     <hr>
 
                     <!-- Hospedaje -->
-                        <div class="hospedaje-fields" style="display:none;">
-                            <label>Hospedaje</label>
-                            <input type="text" name="hospedaje" class="form-control">
-                        </div>
+                    <div class="hospedaje-fields" style="display:none;">
+                        <label>Hospedaje</label>
+                        <input type="text" name="hospedaje" class="form-control">
+                    </div>
 
 
                     <!-- By Car fechas -->
@@ -344,27 +411,26 @@
 
                 </div>
 
+                <!-- Botones para agregar/actualizar tour -->
                 <div class="col-12 text-end">
                     <button type="button" class="btn btn-success" onclick="agregarTour()">Agregar Tour</button>
                     <input type="hidden" id="tour_edit_index" value="">
                     <button type="button" class="btn btn-sm btn-warning"  id="btnActualizarTour" onclick="actualizarTour()" style="display:none;">Actualizar tour</button>
 
                 </div>
+
             </div>
-
-
         </div>
 
-        
         <ul id="listaToursAgregados" class="list-group mb-3"></ul>
-    </div>
 
+    </div>
     <input type="hidden" name="cantidad_tours" id="cantidad_tours" value="0">
 
 
     <!-- ESTADÍAS (MÚLTIPLES) -->
     <div class="mb-3">
-        <label>Estadías:</label>
+        <strong><label>Estadías:</label></strong>
         <div class="border p-3 mb-2">
             <div class="row">
                 <div class="col-md-4 mb-2">
@@ -510,7 +576,30 @@
         cantidadPasajerosInput.value = pasajerosYaAgregados.size;
     }
 
+    /* ---------------- CALCULAR SALDO SOLO FRONTEND ---------------- */
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalInput = document.getElementById('total');
+        const adelantoInput = document.getElementById('adelanto');
+        const saldoInput = document.getElementById('saldo');
+        
+        function calcularSaldo() {
+            const total = parseFloat(totalInput.value) || 0;
+            const adelanto = parseFloat(adelantoInput.value) || 0;
+            saldoInput.value = (total - adelanto).toFixed(2);
+        }
+        
+        totalInput.addEventListener('input', calcularSaldo);
+        adelantoInput.addEventListener('input', calcularSaldo);
+        
+        // Calcular inicialmente si hay valores
+        calcularSaldo();
+    });
+
     /* ---------------- TOURS (MÚLTIPLES) ---------------- */
+    // Variable global para usar en otros eventos
+    let nombreNormalizado = "";
+
+/* ---------------- TOURS (MÚLTIPLES) ---------------- */
     const especiales = [
         'Machupicchu Full Day',
         'Machupicchu Conexión',
@@ -519,33 +608,39 @@
     ];
 
     document.getElementById('select-tour').addEventListener('change', function() {
+        limpiarCampos();
         const option = this.options[this.selectedIndex];
         const id = option.value;
         const nombre = (option.dataset.nombre || '').trim();
 
         document.getElementById('id_tour').value = id;
         document.getElementById('nombreTour').value = nombre;
+        document.getElementById('empresa_tour_field').style.display = 'block';
+        document.getElementById('observaciones_tour_field').style.display = 'block';
 
-        // Normalizamos el texto para comparar (minúsculas y sin espacios extra)
-        const nombreNormalizado = nombre.toLowerCase();
+        // Guardar globalmente para el evento del tren
+        nombreNormalizado = nombre.toLowerCase().trim();
 
         const especialesNormalizados = especiales.map(e => e.toLowerCase().trim());
 
         if (especialesNormalizados.includes(nombreNormalizado)) {
             document.getElementById('machupicchu-details').style.display = 'block';
 
-            // Si es By Car, mostrar fechas ida/retorno
+            // Si es By Car
             if (nombreNormalizado === 'machupicchu by car') {
                 document.getElementById('bycar-fields').style.display = 'block';
+                document.getElementById('empresa_tour_field').style.display = 'none';
+                document.getElementById('observaciones_tour_field').style.display = 'none';
             } else {
                 document.getElementById('bycar-fields').style.display = 'none';
+                document.getElementById('empresa_tour_field').style.display = 'none';
+                document.getElementById('observaciones_tour_field').style.display = 'none';
             }
         } else {
             document.getElementById('machupicchu-details').style.display = 'none';
             document.getElementById('bycar-fields').style.display = 'none';
         }
     });
-
 
      // Entrada
     document.getElementById('hay_entrada').addEventListener('change', function() {
@@ -569,39 +664,102 @@
         document.getElementById('ruta3-field').style.display = (this.value === 'circuito3') ? 'block' : 'none';
     });
 
-    // Tren
+    // ---------------- TREN ----------------
     document.getElementById('tipo_tren').addEventListener('change', function() {
         if (this.value === 'Turístico') {
             document.getElementById('tren-turistico-fields').style.display = 'block';
-            document.getElementById('tren-fechas-fields').style.display = 'block';
+            document.getElementById('tren-horarios-fields').style.display = 'block';
             document.getElementById('tren-local-fields').style.display = 'none';
+
+            if (nombreNormalizado === 'machupicchu full day') {
+                document.getElementById('tren-fechas-fields').style.display = 'none';
+            } else {
+                document.getElementById('tren-fechas-fields').style.display = 'block';
+            }
+
         } else if (this.value === 'Local') {
             document.getElementById('tren-turistico-fields').style.display = 'none';
             document.getElementById('tren-local-fields').style.display = 'block';
-            document.getElementById('tren-fechas-fields').style.display = 'block';
+
+            // En Local siempre hay horarios
+            document.getElementById('tren-horarios-fields').style.display = 'block';
+
+            if (nombreNormalizado === 'machupicchu full day') {
+                document.getElementById('tren-fechas-fields').style.display = 'none';
+            } else {
+                document.getElementById('tren-fechas-fields').style.display = 'block';
+            }
+
         } else {
             document.getElementById('tren-turistico-fields').style.display = 'none';
             document.getElementById('tren-local-fields').style.display = 'none';
-            ocument.getElementById('tren-fechas-fields').style.display = 'none';
+            document.getElementById('tren-fechas-fields').style.display = 'none';
+            document.getElementById('tren-horarios-fields').style.display = 'none';
         }
     });
 
-    // Tiene ticket
+    // ---------------- TIENE TICKET ----------------
     document.getElementById('tiene_ticket').addEventListener('change', function() {
-        if (this.value == '1') {
-            document.getElementById('ticket-fields').style.display = 'block';
-            document.getElementById('tren-fechas-fields').style.display = 'block';
+        const tipoTren = document.getElementById('tipo_tren').value;
+
+        if (this.value == '1') { // Tiene ticket
+            
+
             document.getElementById('comentario-ticket-field').style.display = 'none';
-        } else if (this.value == '0') {
+
+        } else if (this.value == '0') { // No tiene ticket
             document.getElementById('ticket-fields').style.display = 'none';
-            document.getElementById('tren-fechas-fields').style.display = 'block';
+
+            if (nombreNormalizado !== 'machupicchu full day') {
+                document.getElementById('tren-fechas-fields').style.display = 'block';
+            } else {
+                document.getElementById('tren-fechas-fields').style.display = 'none';
+            }
+
+            // Si es Local, igual mostrar horarios + comentario
+            if (tipoTren === 'Local') {
+                document.getElementById('tren-horarios-fields').style.display = 'block';
+            } else {
+                document.getElementById('tren-horarios-fields').style.display = 'block'; // Turístico también
+            }
+
             document.getElementById('comentario-ticket-field').style.display = 'block';
-        } else {
+
+        } else { // Sin selección
             document.getElementById('tren-fechas-fields').style.display = 'none';
+            document.getElementById('tren-horarios-fields').style.display = 'none';
             document.getElementById('ticket-fields').style.display = 'none';
             document.getElementById('comentario-ticket-field').style.display = 'none';
         }
     });
+
+    //limpieza
+    function limpiarCampos() {
+        // Ocultar todos los contenedores que usas
+        const bloques = [
+            'machupicchu-details', 'bycar-fields',
+            'entrada-fields', 'comentario-entrada-field',
+            'ruta1-field', 'ruta2-field', 'ruta3-field',
+            'tren-turistico-fields', 'tren-local-fields', 'tren-fechas-fields', 'tren-horarios-fields',
+            'ticket-fields', 'comentario-ticket-field',
+            'empresa_tour_field', 'observaciones_tour_field'
+        ];
+
+        bloques.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'none';
+                // Limpiar valores de inputs y selects dentro del bloque
+                el.querySelectorAll('input, select, textarea').forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
+                });
+            }
+        });
+    }
 
     let tourIndex = 0;
 
@@ -763,8 +921,6 @@
             if (el) el.value = '';
         });
     }
-
-
 
     function actualizarCantidadTours() {
         cantidadToursInput.value = listaToursAgregados.children.length;

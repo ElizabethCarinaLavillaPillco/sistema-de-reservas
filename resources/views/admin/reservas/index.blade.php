@@ -5,6 +5,14 @@
 
 <a href="{{ route('admin.reservas.create') }}" class="btn btn-primary mb-3">Nueva Reserva</a>
 
+<!-- Formulario de búsqueda -->
+    <form method="GET" action="{{ route('admin.reservas.index') }}" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Buscar por ID de reserva (Ej: R001)" value="{{ request('search') }}">
+            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+        </div>
+    </form>
+
 <table class="table table-bordered table-striped">
     <thead class="table-dark">
         <tr>
@@ -43,9 +51,9 @@
                     @endif
                 </small>
             </td>
-            <td>S/ {{ number_format($reserva->total, 2) }}</td>
-            <td>S/ {{ number_format($reserva->adelanto, 2) }}</td>
-            <td>S/ {{ number_format($reserva->saldo, 2) }}</td>
+            <td>$ {{ number_format($reserva->total, 2) }}</td>
+            <td>$ {{ number_format($reserva->adelanto, 2) }}</td>
+            <td>$ {{ number_format($reserva->saldo, 2) }}</td>
             <td>
                 <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn btn-sm btn-info">Ver</a>
                 <a href="{{ route('admin.reservas.edit', $reserva->id) }}" class="btn btn-sm btn-warning">Editar</a>
