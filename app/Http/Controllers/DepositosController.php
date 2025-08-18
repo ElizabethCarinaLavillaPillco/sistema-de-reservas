@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Deposito;
 use App\Models\Reserva;
+use App\Models\Pasajero;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class DepositosController extends Controller
 {
@@ -19,11 +22,13 @@ class DepositosController extends Controller
      */
     public function create()
     {
-        // Traemos solo los ids de reservas para el datalist. Si quieres puedes traer más datos.
-        $reservas = Reserva::select('id')->orderBy('id')->get();
-        $tipos = Deposito::TIPOS;
+        // Para autocompletar, traemos id + titular
+        $reservas = Reserva::with('titular')->get();
+        $tipos    = Deposito::TIPOS;
+
         return view('admin.depositos.create', compact('reservas', 'tipos'));
     }
+
 
     /**
      * Almacenar nuevo depósito.
@@ -64,14 +69,13 @@ class DepositosController extends Controller
     public function edit($id)
     {
         $depositos = Deposito::findOrFail($id);
-        $reservas = Reserva::select('id')->orderBy('id')->get();
+        $reservas = Reserva::with('titular')->get();
         $tipos = Deposito::TIPOS;
         return view('admin.depositos.edit', compact('depositos', 'reservas', 'tipos'));
+
     }
 
-    /**
-     * Actualizar depósito.
-     */
+    
     public function update(Request $request, $id)
     {
         $depositos = Deposito::findOrFail($id);
@@ -104,9 +108,6 @@ class DepositosController extends Controller
         }
     }
 
-    /**
-     * Mostrar detalle (opcional).
-     */
     public function show($id)
     {
         /**
@@ -115,9 +116,6 @@ class DepositosController extends Controller
         */
     }
 
-    /**
-     * Eliminar depósito.
-     */
     public function destroy($id)
     {
         $depositos = Deposito::findOrFail($id);

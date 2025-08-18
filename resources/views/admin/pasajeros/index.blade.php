@@ -9,7 +9,10 @@
     </div>
 @endif
 
-<a href="{{ route('admin.pasajeros.create') }}" class="btn btn-primary mb-3">Nuevo Pasajero</a>
+<a href="{{ route('admin.pasajeros.create') }}" class="btn btn-primary mb-3">
+    <i class="fa fa-plus"></i> Nuevo Pasajero
+        
+    </a>
 
     <!-- Formulario de búsqueda -->
     <form method="GET" action="{{ route('admin.pasajeros.index') }}" class="mb-3">
@@ -32,7 +35,7 @@
 
 
 <table class="table table-bordered table-striped">
-    <thead class="table-dark">
+    <thead class="table-info">
         <tr>
             <th>ID</th>
             <th>Nombre Completo</th>
@@ -56,7 +59,7 @@
                 <td>
                     @if ($pasajero->reserva)
                         <a href="{{ route('admin.reservas.show', $pasajero->reserva_id) }}">
-                            {{ $pasajero->reserva_id }}                        </a>
+                            {{ $pasajero->reserva_id }}</a>
                     @else
                         <span class="text-muted">No asociada</span>
                     @endif

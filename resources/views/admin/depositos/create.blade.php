@@ -9,10 +9,16 @@
 
         {{-- Buscar Reserva --}}
         <div class="mb-3">
-            <label for="reserva_search" class="form-label">Buscar Reserva</label>
-            <input type="text" id="reserva_search" class="form-control" placeholder="Ej: R001" autocomplete="off">
-            <input type="hidden" name="reserva_id" id="reserva_id">
-            <div id="reserva_list" class="list-group mt-1"></div>
+            <label for="busquedaReserva">Reserva (busque por nombre o código):</label>
+            <input list="listaReservas" id="busquedaReserva" class="form-control" placeholder="Ej. José Ram..." >
+            <datalist id="listaReservas">
+                @foreach($reservas as $r)
+                    <option value="{{ $r->id }} - {{ $r->titular->nombre }} {{ $r->titular->apellido }}">
+                @endforeach
+            </datalist>
+
+            <!-- Este input guarda el id real de la reserva -->
+            <input type="hidden" name="reserva_id" id="reserva_id_hidden">
         </div>
 
         {{-- Nombre del depositante --}}
@@ -54,37 +60,19 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{{ route('admin.depositos.index') }}" class="btn btn-secondary">Cancelar</a>
+
     </form>
 </div>
 
 {{-- Script para búsqueda AJAX --}}
 <script>
-    document.getElementById('reserva_search').addEventListener('keyup', function() {
-        let query = this.value;
-        let list = document.getElementById('reserva_list');
 
-        if(query.length > 1) {
-            fetch(`/reservas/search?q=${query}`)
-                .then(res => res.json())
-                .then(data => {
-                    list.innerHTML = '';
-                    data.forEach(reserva => {
-                        let item = document.createElement('a');
-                        item.classList.add('list-group-item', 'list-group-item-action');
-                        item.textContent = `${reserva.codigo} - ${reserva.nombre_cliente}`;
-                        item.href = '#';
-                        item.onclick = function(e) {
-                            e.preventDefault();
-                            document.getElementById('reserva_search').value = `${reserva.codigo} - ${reserva.nombre_cliente}`;
-                            document.getElementById('reserva_id').value = reserva.id;
-                            list.innerHTML = '';
-                        };
-                        list.appendChild(item);
-                    });
-                });
-        } else {
-            list.innerHTML = '';
-        }
+    document.getElementById('busquedaReserva').addEventListener('input', function(){
+        const val = this.value;
+        const opt = Array.from(document.querySelectorAll('#listaReservas option'))
+                        .find(o => o.value === val);
+        document.getElementById('reserva_id_hidden').value = opt ? opt.value.split(' - ')[0] : '';
     });
 </script>
 @endsection

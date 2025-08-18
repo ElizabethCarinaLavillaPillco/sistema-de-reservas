@@ -55,4 +55,9 @@ class TourReserva extends Model
     {
         return $this->hasOne(DetalleTourMachupicchu::class, 'tours_reserva_id', 'id');
     }
+
+    public function detalleBoletoTuristico()
+    {
+        return $this->hasOne(DetalleTourBoletoturistico::class, 'tours_reserva_id', 'id');
+    }
 }

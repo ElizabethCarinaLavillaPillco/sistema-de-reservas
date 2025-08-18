@@ -334,7 +334,6 @@
                         </div> 
 
                     </div>
-                    
 
                     <!-- Local -->
                     <div id="tren-local-fields" style="display:none;">
@@ -410,6 +409,43 @@
                     </div>
 
                 </div>
+
+                {{-- === Boleto turístico (Valle Sagrado, City Tour, etc.) === --}}
+                <div id="boleto-turistico-details" class="col-12 mt-3"
+                    style="display:none; border-top:1px solid #ccc; padding-top:10px;">
+                    <h5>Detalles Boleto Turístico</h5>
+
+                    {{-- Tipo de boleto --}}
+                    <div class="mb-2">
+                        <label>Tipo de Boleto:</label>
+                        <select class="form-control" id="tipo_boleto">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Integral">Integral</option>
+                            <option value="Parcial">Parcial</option>
+                        </select>
+                    </div>
+
+                    {{-- ¿Se debe comprar? --}}
+                    <div class="mb-2">
+                        <label>¿Se debe comprar?</label>
+                        <select class="form-control" id="requiere_compra">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="0">Ya tiene</option>
+                            <option value="1">Tiene que comprar</option>
+                        </select>
+                    </div>
+
+                    {{-- Tipo de compra (solo si requiere_compra = 1 ) --}}
+                    <div id="tipo-compra-field" class="mb-2" style="display:none;">
+                        <label>Tipo de Compra:</label>
+                        <select class="form-control" id="tipo_compra">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Personal">Compra personal</option>
+                            <option value="Guia">Compra por el guía</option>
+                        </select>
+                    </div>
+                </div>
+
 
                 <!-- Botones para agregar/actualizar tour -->
                 <div class="col-12 text-end">
@@ -517,19 +553,13 @@
         titularSeleccionadoDiv.innerHTML = '';
     });
 
+
+
     /* ---------------- PASAJEROS (MÚLTIPLES) ---------------- */
     const listaPasajerosAgregados = document.getElementById('listaPasajerosAgregados');
     const inputBusqueda = document.getElementById('busquedaPasajero');
     const cantidadPasajerosInput = document.getElementById('cantidad_pasajeros');
     const pasajerosYaAgregados = new Set();
-
-    function setEditMode(on) {
-        const addBtn = document.getElementById('btnAgregarTour');
-        const updBtn = document.getElementById('btnActualizarTour');
-        if (addBtn) addBtn.style.display = on ? 'none' : 'inline-block';
-        if (updBtn) updBtn.style.display = on ? 'inline-block' : 'none';
-    }
-
 
     function agregarPasajero() {
         const nombreCompleto = inputBusqueda.value.trim();
@@ -576,6 +606,8 @@
         cantidadPasajerosInput.value = pasajerosYaAgregados.size;
     }
 
+
+
     /* ---------------- CALCULAR SALDO SOLO FRONTEND ---------------- */
     document.addEventListener('DOMContentLoaded', function() {
         const totalInput = document.getElementById('total');
@@ -594,10 +626,14 @@
         // Calcular inicialmente si hay valores
         calcularSaldo();
     });
+    
 
-    /* ---------------- TOURS (MÚLTIPLES) ---------------- */
-    // Variable global para usar en otros eventos
+    // Variables globales
     let nombreNormalizado = "";
+    let tourSeleccionadoNormalizado = '';
+
+
+
 
 /* ---------------- TOURS (MÚLTIPLES) ---------------- */
     const especiales = [
@@ -606,28 +642,48 @@
         'Machupicchu 2D/1N',
         'Machupicchu By car'
     ];
+    const toursBoleto = [
+        'valle sagrado',
+        'city tour',
+        'valle sur',
+        'maras moray',
+        'valle sagrado vip'
+    ];
 
+    // BOTONES
+    function setEditMode(on) {
+        const addBtn = document.getElementById('btnAgregarTour');
+        const updBtn = document.getElementById('btnActualizarTour');
+        if (addBtn) addBtn.style.display = on ? 'none' : 'inline-block';
+        if (updBtn) updBtn.style.display = on ? 'inline-block' : 'none';
+    }
+
+    // SELECCION DE TOURS
     document.getElementById('select-tour').addEventListener('change', function() {
         limpiarCampos();
         const option = this.options[this.selectedIndex];
         const id = option.value;
         const nombre = (option.dataset.nombre || '').trim();
+        tourSeleccionadoNormalizado = nombre.toLowerCase().trim();
+
 
         document.getElementById('id_tour').value = id;
         document.getElementById('nombreTour').value = nombre;
         document.getElementById('empresa_tour_field').style.display = 'block';
         document.getElementById('observaciones_tour_field').style.display = 'block';
 
-        // Guardar globalmente para el evento del tren
-        nombreNormalizado = nombre.toLowerCase().trim();
 
+        const nombreNormalizado = nombre.toLowerCase().trim();
+        
+
+        // === Machupicchu ===
         const especialesNormalizados = especiales.map(e => e.toLowerCase().trim());
 
         if (especialesNormalizados.includes(nombreNormalizado)) {
             document.getElementById('machupicchu-details').style.display = 'block';
 
             // Si es By Car
-            if (nombreNormalizado === 'machupicchu by car') {
+            if (nombreNormalizado  === 'machupicchu by car') {
                 document.getElementById('bycar-fields').style.display = 'block';
                 document.getElementById('empresa_tour_field').style.display = 'none';
                 document.getElementById('observaciones_tour_field').style.display = 'none';
@@ -639,6 +695,14 @@
         } else {
             document.getElementById('machupicchu-details').style.display = 'none';
             document.getElementById('bycar-fields').style.display = 'none';
+        }
+
+        // === Boleto turístico ===
+        const nombreBoleto = nombreNormalizado;
+        if (toursBoleto.includes(nombreBoleto)) {
+            document.getElementById('boleto-turistico-details').style.display = 'block';
+        } else {
+            document.getElementById('boleto-turistico-details').style.display = 'none';
         }
     });
 
@@ -664,14 +728,14 @@
         document.getElementById('ruta3-field').style.display = (this.value === 'circuito3') ? 'block' : 'none';
     });
 
-    // ---------------- TREN ----------------
+    // Tipo tren
     document.getElementById('tipo_tren').addEventListener('change', function() {
         if (this.value === 'Turístico') {
             document.getElementById('tren-turistico-fields').style.display = 'block';
             document.getElementById('tren-horarios-fields').style.display = 'block';
             document.getElementById('tren-local-fields').style.display = 'none';
 
-            if (nombreNormalizado === 'machupicchu full day') {
+            if (tourSeleccionadoNormalizado  === 'machupicchu full day') {
                 document.getElementById('tren-fechas-fields').style.display = 'none';
             } else {
                 document.getElementById('tren-fechas-fields').style.display = 'block';
@@ -684,7 +748,7 @@
             // En Local siempre hay horarios
             document.getElementById('tren-horarios-fields').style.display = 'block';
 
-            if (nombreNormalizado === 'machupicchu full day') {
+            if (tourSeleccionadoNormalizado  === 'machupicchu full day') {
                 document.getElementById('tren-fechas-fields').style.display = 'none';
             } else {
                 document.getElementById('tren-fechas-fields').style.display = 'block';
@@ -698,19 +762,17 @@
         }
     });
 
-    // ---------------- TIENE TICKET ----------------
+    // Tiene ticket
     document.getElementById('tiene_ticket').addEventListener('change', function() {
         const tipoTren = document.getElementById('tipo_tren').value;
 
         if (this.value == '1') { // Tiene ticket
-            
-
             document.getElementById('comentario-ticket-field').style.display = 'none';
 
         } else if (this.value == '0') { // No tiene ticket
             document.getElementById('ticket-fields').style.display = 'none';
 
-            if (nombreNormalizado !== 'machupicchu full day') {
+            if (tourSeleccionadoNormalizado  !== 'machupicchu full day') {
                 document.getElementById('tren-fechas-fields').style.display = 'block';
             } else {
                 document.getElementById('tren-fechas-fields').style.display = 'none';
@@ -733,11 +795,25 @@
         }
     });
 
+
+
+    // ---------------- BOLETO TURÍSTICO ----------------
+    document.getElementById('requiere_compra').addEventListener('change', function () {
+        if (this.value == '1') {
+            document.getElementById('tipo-compra-field').style.display = 'block';
+        } else {
+            document.getElementById('tipo-compra-field').style.display = 'none';
+        }
+    });
+
+
+
+
     //limpieza
     function limpiarCampos() {
         // Ocultar todos los contenedores que usas
         const bloques = [
-            'machupicchu-details', 'bycar-fields',
+            'machupicchu-details', 'boleto-turistico-details','bycar-fields',
             'entrada-fields', 'comentario-entrada-field',
             'ruta1-field', 'ruta2-field', 'ruta3-field',
             'tren-turistico-fields', 'tren-local-fields', 'tren-fechas-fields', 'tren-horarios-fields',
@@ -761,8 +837,8 @@
         });
     }
 
+    // --- Agregar tours y definir variables ---
     let tourIndex = 0;
-
     const listaToursAgregados = document.getElementById('listaToursAgregados');
     const cantidadToursInput = document.getElementById('cantidad_tours');
 
@@ -770,6 +846,7 @@
         return document.getElementById(id)?.value || '';
     }
 
+    // -------------AGREGAR TOUR----------------
     function agregarTour(editMode = false, customIndex = null) {
         const indexToUse = editMode && customIndex !== null ? customIndex : tourIndex;
 
@@ -780,15 +857,23 @@
         const precio = safeValue('precio_unitario_tour');
         const cantidad = safeValue('cantidad_tour');
         const observaciones = safeValue('observaciones_tour');
+        const nombreBoleto = nombre.toLowerCase().trim();
+
 
         if (!id) {
             alert("Selecciona un tour válido.");
             return;
         }
 
+        // Normalizo para poder comparar con arrays de tours especiales
+        const nombreNormalizado = nombre.toLowerCase().trim();
+
         let extras = '';
         let extrasPreview = '';
-        if (especiales.includes(nombre)) {
+
+        // ---- MACHUPICCHU ----
+        const especialesNormalizados = especiales.map(e => e.toLowerCase().trim());
+        if (especialesNormalizados.includes(nombreNormalizado)) {
             extras += `
                 <input type="hidden" name="tours[${indexToUse}][tipo_entrada]" value="${safeValue('tipo_entrada')}">
                 <input type="hidden" name="tours[${indexToUse}][ruta1]" value="${safeValue('ruta1')}">
@@ -816,13 +901,25 @@
 
             // preview visible
             extrasPreview = `
-                
-                    <strong>Detalles Machupicchu:</strong><br>
-                    Entrada: ${safeValue('tipo_entrada') || '-'}<br>
-                    Horario entrada: ${safeValue('horario_entrada') || '-'}<br>
-                    Tren: ${safeValue('tipo_tren') || '-'} (${safeValue('empresa_tren') || '-'})<br>
+                    <strong>Entrada: </strong>${safeValue('tipo_entrada') || '-'}<br>
+                    <strong>Horario entrada: </strong>${safeValue('horario_entrada') || '-'}<br>
+                    <strong>Tren: </strong>${safeValue('tipo_tren') || '-'} (${safeValue('empresa_tren') || '-'})<br>
             `;
 
+        }
+
+        if (toursBoleto.includes(nombreBoleto)) {
+            extras += `
+                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][tipo_boleto]" value="${safeValue('tipo_boleto')}">
+                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][requiere_compra]" value="${safeValue('requiere_compra')}">
+                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][tipo_compra]" value="${safeValue('tipo_compra')}">
+            `;
+
+            extrasPreview = `
+                    <strong>Boleto turistico: </strong> ${safeValue('tipo_boleto') || '-'}<br>
+                    <strong>Requiere compra? </strong> ${safeValue('requiere_compra') || '-'}<br>
+                    <strong>Tipo de Compra: </strong> ${safeValue('tipo_compra') || '-'}<br>
+            `;
         }
 
         const li = document.createElement('li');
@@ -865,6 +962,7 @@
         limpiarCamposTour();
     }
 
+    // -------------EDITAR TOUR----------------
     function editarTour(index) {
         const li = document.querySelector(`li[data-index="${index}"]`);
         if (!li) return;
@@ -877,7 +975,7 @@
         document.getElementById('cantidad_tour').value = li.querySelector(`input[name="tours[${index}][cantidad]"]`).value;
         document.getElementById('observaciones_tour').value = li.querySelector(`input[name="tours[${index}][observaciones]"]`).value;
 
-        // Campos especiales Machupicchu (si existen)
+        // Campos especiales
         const specialFields = [
             'tipo_entrada', 'ruta1', 'ruta2', 'ruta3', 'horario_entrada',
             'tipo_tren', 'empresa_tren', 'codigo_tren', 'horario_ida', 'horario_retorno',
@@ -885,20 +983,31 @@
             'hay_entrada', 'comentario_entrada', 'tiene_ticket', 'comentario_ticket',
             'fecha_ida', 'fecha_retorno', 'hospedaje'
         ];
+        const boletoFields = ['tipo_boleto', 'requiere_compra', 'tipo_compra'];
+
         specialFields.forEach(field => {
             const el = document.getElementById(field);
             if (el) el.value = li.querySelector(`input[name="tours[${index}][${field}]"]`)?.value || '';
         });
 
+        boletoFields.forEach(field => {
+            const el = document.getElementById(field);
+            if (el) {
+                const hiddenInput = li.querySelector(`input[name="tours[${index}][detalles_boleto][${field}]"]`);
+                el.value = hiddenInput ? hiddenInput.value : '';
+            }
+        });
+
+
         document.getElementById('tour_edit_index').value = index;
-        //document.getElementById('btnAgregarTour').style.display = 'none';
         document.getElementById('btnActualizarTour').style.display = 'inline-block';
 
         document.getElementById('tour_edit_index').value = index;
-        setEditMode(true);   // mostrar "Actualizar", ocultar "Agregar"
+        setEditMode(true); 
 
     }
 
+    // -------------ACTUALIZAR TOUR----------------
     function actualizarTour() {
         const index = document.getElementById('tour_edit_index').value;
         if (index === '') return;
@@ -907,6 +1016,7 @@
         setEditMode(false);  // volver a mostrar "Agregar"
     }
 
+    // -------------LIMPIAR TOUR----------------
     function limpiarCamposTour() {
         const ids = [
             'select-tour', 'id_tour', 'nombreTour', 'fecha_tour', 'empresa_tour',
@@ -914,7 +1024,8 @@
             'tipo_entrada', 'ruta1', 'ruta2', 'ruta3', 'horario_entrada',
             'tipo_tren', 'empresa_tren', 'codigo_tren', 'horario_ida', 'horario_retorno',
             'fecha_tren_ida', 'fecha_tren_retorno', 'hay_entrada', 'comentario_entrada',
-            'tiene_ticket', 'comentario_ticket', 'fecha_ida', 'fecha_retorno', 'hospedaje'
+            'tiene_ticket', 'comentario_ticket', 'fecha_ida', 'fecha_retorno', 'hospedaje',
+            'tipo_boleto', 'requiere_compra', 'tipo_compra'
         ];
         ids.forEach(id => {
             const el = document.getElementById(id);
@@ -922,6 +1033,7 @@
         });
     }
 
+    // -------------ACTUALIZAR CANT TOUR----------------
     function actualizarCantidadTours() {
         cantidadToursInput.value = listaToursAgregados.children.length;
     }

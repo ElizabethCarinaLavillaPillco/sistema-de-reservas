@@ -12,13 +12,13 @@ class Facturacion extends Model
     protected $table = 'facturacion';
 
     protected $fillable = [
+        'tipo_fac',
+        'reserva_id',
         'documento',
         'titular',
-        'reserva_id',
         'pais',
-        'servicio',
-        'fecha_giro',
         'tipo',
+        'fecha_giro',
         'total_facturado',
         'estado',
         'descripcion',

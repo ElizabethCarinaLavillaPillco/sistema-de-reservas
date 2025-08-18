@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Reserva;
 use App\Models\Pasajero;
+use App\Models\DetalleTourBoletoTuristico;
 use App\Models\Proveedor;
 use App\Models\Tour;
 use App\Models\TourReserva;
@@ -14,10 +15,11 @@ use Illuminate\Support\Facades\DB;
 
 class ReservaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $reservas = Reserva::with(['proveedor', 'pasajeros'])->get();
         return view('admin.reservas.index', compact('reservas'));
+
     }
 
     public function create()
@@ -41,18 +43,6 @@ class ReservaController extends Controller
         return 'R' . str_pad($numero, 5, '0', STR_PAD_LEFT);
     }
 
-    private function esMachupicchuEspecial($tourId)
-    {
-        $especiales = [
-            'Machupicchu Full Day',
-            'Machupicchu Conexión',
-            'Machupicchu 2D/1N',
-            'Machupicchu By car'
-        ];
-
-        $tour = Tour::find($tourId);
-        return $tour && in_array($tour->nombreTour, $especiales);
-    }
 
     public function store(Request $request)
     {
@@ -111,6 +101,16 @@ class ReservaController extends Controller
                             ['tours_reserva_id' => $tourReserva->id]
                         ));
                     }
+
+                    // Boleto turístico (Valle Sagrado, City Tour, etc.)
+                    if ($this->esBoletoTuristico($tourData['tour_id'])) {
+                        DetalleTourBoletoturistico::create([
+                            'tours_reserva_id' => $tourReserva->id,
+                            'tipo_boleto'      => $tourData['detalles_boleto']['tipo_boleto']      ?? null,
+                            'requiere_compra'  => $tourData['detalles_boleto']['requiere_compra']  ?? null,
+                            'tipo_compra'      => $tourData['detalles_boleto']['tipo_compra']      ?? null,
+                        ]);
+                    }
                 }
             }
 
@@ -134,12 +134,42 @@ class ReservaController extends Controller
     }
 
 
+    private function esMachupicchuEspecial($tourId)
+    {
+        $especiales = [
+            'Machupicchu Full Day',
+            'Machupicchu Conexión',
+            'Machupicchu 2D/1N',
+            'Machupicchu By car'
+        ];
+
+        $tour = Tour::find($tourId);
+        return $tour && in_array($tour->nombreTour, $especiales);
+    }
+
+    private function esBoletoTuristico($tourId)
+    {
+        $especialesBoleto = [
+            'Valle Sagrado',
+            'City Tour',
+            'Valle Sur',
+            'Maras Moray',
+            'Valle Sagrado VIP',
+        ];
+
+        $tour = Tour::find($tourId);
+        return $tour && in_array($tour->nombreTour, $especialesBoleto);
+    }
+
+
+
     public function show($id)
     {
         $reserva = Reserva::with([
             'proveedor',
             'pasajeros',
             'tourReserva.detalleMachupicchu',
+            'tourReserva.detalleBoletoTuristico',
             'estadias',
             'depositos',
             'facturaciones.detalles'
@@ -150,7 +180,7 @@ class ReservaController extends Controller
 
     public function edit($id)
     {
-        $reserva     = Reserva::with(['tourReserva.detalleMachupicchu', 'estadias'])->findOrFail($id);
+        $reserva     = Reserva::with(['tourReserva.detalleMachupicchu', 'tourReserva.detalleBoletoTuristico','estadias'])->findOrFail($id);
         $proveedores = Proveedor::all();
         $pasajeros   = Pasajero::all();
         $tours       = Tour::all();

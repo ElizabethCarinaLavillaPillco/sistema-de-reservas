@@ -14,13 +14,30 @@
             <input type="text" name="nombre_depositante" class="form-control" value="{{ old('nombre_depositante', $depositos->nombre_depositante) }}" required>
         </div>
 
-        <div class="mb-3">
-            <label for="reserva_id" class="form-label">ID de Reserva</label>
-            <input type="text" id="buscarReserva" class="form-control" placeholder="Buscar ID de reserva (Ej: R001)">
-            <select name="reserva_id" id="reserva_id" class="form-control mt-2" required>
-                <option value="{{ $depositos->reserva_id }}" selected>{{ $depositos->reserva_id }}</option>
-            </select>
-        </div>
+    {{-- Buscar Reserva --}}
+    <div class="mb-3">
+        <label>Reserva (busque por nombre o código):</label>
+
+        <input list="listaReservas"
+            id="busquedaReserva"
+            class="form-control"
+            placeholder="Ej. José Ram..."
+            value="{{ $depositos->reserva ? ($depositos->reserva->id . ' - ' . $depositos->reserva->titular->nombre .' '. $depositos->reserva->titular->apellido) : '' }}"
+        >
+
+        <datalist id="listaReservas">
+            @foreach($reservas as $r)
+                <option value="{{ $r->id }} - {{ $r->titular->nombre }} {{ $r->titular->apellido }}"></option>
+            @endforeach
+        </datalist>
+
+        <input type="hidden"
+            name="reserva_id"
+            id="reserva_id_hidden"
+            value="{{ $depositos->reserva_id }}">
+    </div>
+
+
 
         <div class="mb-3">
             <label for="monto" class="form-label">Monto</label>
@@ -29,14 +46,19 @@
 
         <div class="mb-3">
             <label for="fecha" class="form-label">Fecha</label>
-            <input type="date" name="fecha" class="form-control" value="{{ old('fecha', $depositos->fecha) }}" required>
+            <input type="date"
+                name="fecha"
+                class="form-control"
+                value="{{ old('fecha', optional($depositos->fecha)->format('Y-m-d')) }}"
+                required>
+
         </div>
 
         <div class="mb-3">
             <label for="tipo_deposito" class="form-label">Tipo de Depósito</label>
             <select name="tipo_deposito" class="form-control" required>
                 @foreach(['Deposito WU', 'Transferencia BCP', 'Transferencia Interbank', 'Yape', 'Plin', 'Otro'] as $tipo)
-                    <option value="{{ $tipo }}" {{ old('tipo_deposito', $deposito->tipo_deposito) == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                    <option value="{{ $tipo }}" {{ old('tipo_deposito', $depositos->tipo_deposito) == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
                 @endforeach
             </select>
         </div>
@@ -52,22 +74,11 @@
 </div>
 
 <script>
-document.getElementById('buscarReserva').addEventListener('keyup', function() {
-    let query = this.value;
-    if (query.length >= 1) {
-        fetch(`/buscar-reserva?query=${query}`)
-            .then(response => response.json())
-            .then(data => {
-                let select = document.getElementById('reserva_id');
-                select.innerHTML = '';
-                data.forEach(reserva => {
-                    let option = document.createElement('option');
-                    option.value = reserva.id;
-                    option.text = reserva.codigo_reserva;
-                    select.appendChild(option);
-                });
-            });
-    }
-});
+    document.getElementById('busquedaReserva').addEventListener('input', function(){
+        const val = this.value;
+        const opt = Array.from(document.querySelectorAll('#listaReservas option'))
+                        .find(o => o.value === val);
+        document.getElementById('reserva_id_hidden').value = opt ? opt.value.split(' - ')[0] : '';
+    });
 </script>
 @endsection
