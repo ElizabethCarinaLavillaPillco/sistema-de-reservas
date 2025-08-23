@@ -22,6 +22,11 @@ return new class extends Migration
             $table->enum('ruta3', ['ruta3a', 'ruta3b', 'ruta3c','ruta3d'])->nullable();
             $table->string('horario_entrada')->nullable();
 
+            //bus consetur
+            $table->enum('tipo_servicio', ['Comprar','Caminando','Tiene'])->nullable();
+            $table->enum('tipo_consetur', ['ambos','ida','ret'])->nullable();
+            $table->string('comentario_consetur')->nullable();
+
             // Tren
             $table->enum('tipo_tren', ['Local', 'Turístico'])->nullable();
             $table->enum('empresa_tren', ['Inca Rail', 'Peru Rail'])->nullable();
@@ -43,6 +48,16 @@ return new class extends Migration
             //fechas by car o hidroeelctrica
             $table->date('fecha_ida')->nullable();
             $table->date('fecha_retorno')->nullable();
+            
+
+            //transporte cusco - ollantaytambo - cusco
+            $table->enum('transp_ida', ['busLucy', 'Bimodal','BimodalDoor','Privado','otro','porCuentaPropia'])->nullable();
+            $table->string('comentario_trans_ida')->nullable();
+            $table->string('horario_recojo_ida')->nullable();
+
+            $table->enum('transp_ret', ['busLucy', 'Bimodal','BimodalDoor','Privado','otro','porCuentaPropia'])->nullable();
+            $table->string('comentario_trans_ret')->nullable();
+            $table->string('horario_recojo_ret')->nullable();
 
 
             // Hospedaje

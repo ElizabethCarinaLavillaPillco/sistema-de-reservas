@@ -25,6 +25,12 @@ return new class extends Migration
             // 'Personal' | 'Guia'
             $table->enum('tipo_compra', ['Personal','Guia'])->nullable();
 
+
+            //boletos para lugares privados
+            $table->boolean('incluye_entrada_propiedad_priv')->nullable();
+            $table->enum('quien_compra_propiedad_priv', ['guia','pasajero'])->nullable();
+            $table->string('comentario_entrada_propiedad_priv')->nullable();
+
             $table->timestamps();
         });
     }

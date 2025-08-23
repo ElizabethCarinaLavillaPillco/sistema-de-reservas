@@ -22,6 +22,9 @@ class DetalleTourMachupicchu extends Model
         'empresa_tren',
         'codigo_tren',
         'horario_ida',
+        'tipo_servicio',
+        'tipo_consetur',
+        'comentario_consetur',
         'horario_retorno',
         'fecha_tren_ida',
         'fecha_tren_retorno',
@@ -31,6 +34,12 @@ class DetalleTourMachupicchu extends Model
         'comentario_ticket',    
         'fecha_ida',
         'fecha_retorno',
+        'transp_ida',
+        'comentario_trans_ida',
+        'horario_recojo_ida',
+        'transp_ret',
+        'comentario_trans_ret',
+        'horario_recojo_ret',
         'hospedaje',
     ];
 

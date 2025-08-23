@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DetalleTourBoletoturistico extends Model
+class DetalleTourBoletoTuristico extends Model
 {
     use HasFactory;
 
@@ -16,6 +16,9 @@ class DetalleTourBoletoturistico extends Model
         'tipo_boleto',
         'requiere_compra',
         'tipo_compra',
+        'incluye_entrada_propiedad_priv',
+        'quien_compra_propiedad_priv',
+        'comentario_entrada_propiedad_priv',
     ];
 
     public function tourReserva()

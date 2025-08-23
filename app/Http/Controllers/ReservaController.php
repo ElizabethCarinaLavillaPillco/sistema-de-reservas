@@ -104,11 +104,14 @@ class ReservaController extends Controller
 
                     // Boleto turístico (Valle Sagrado, City Tour, etc.)
                     if ($this->esBoletoTuristico($tourData['tour_id'])) {
-                        DetalleTourBoletoturistico::create([
+                        DetalleTourBoletoTuristico::create([
                             'tours_reserva_id' => $tourReserva->id,
                             'tipo_boleto'      => $tourData['detalles_boleto']['tipo_boleto']      ?? null,
                             'requiere_compra'  => $tourData['detalles_boleto']['requiere_compra']  ?? null,
                             'tipo_compra'      => $tourData['detalles_boleto']['tipo_compra']      ?? null,
+                            'incluye_entrada_propiedad_priv'      => $tourData['detalles_boleto']['incluye_entrada_propiedad_priv']    ?? null,
+                            'quien_compra_propiedad_priv'         => $tourData['detalles_boleto']['quien_compra_propiedad_priv']       ?? null,
+                            'comentario_entrada_propiedad_priv'   => $tourData['detalles_boleto']['comentario_entrada_propiedad_priv'] ?? null,
                         ]);
                     }
                 }
@@ -161,8 +164,6 @@ class ReservaController extends Controller
         return $tour && in_array($tour->nombreTour, $especialesBoleto);
     }
 
-
-
     public function show($id)
     {
         $reserva = Reserva::with([
@@ -214,6 +215,7 @@ class ReservaController extends Controller
             // Limpiar relaciones anteriores
             TourReserva::where('reserva_id', $reserva->id)->delete();
             Estadia::where('reserva_id', $reserva->id)->delete();
+            
 
             // Guardar tours actualizados
             if ($request->has('tours') && is_array($request->tours)) {
@@ -239,6 +241,19 @@ class ReservaController extends Controller
                             $tourData['detalles_machu'],
                             ['tours_reserva_id' => $tourReserva->id]
                         ));
+                    }
+
+                    // Boleto turístico (Valle Sagrado, City Tour, etc.)
+                    if ($this->esBoletoTuristico($tourData['tour_id'])) {
+                        DetalleTourBoletoTuristico::create([
+                            'tours_reserva_id' => $tourReserva->id,
+                            'tipo_boleto'      => $tourData['detalles_boleto']['tipo_boleto']      ?? null,
+                            'requiere_compra'  => $tourData['detalles_boleto']['requiere_compra']  ?? null,
+                            'tipo_compra'      => $tourData['detalles_boleto']['tipo_compra']      ?? null,
+                            'incluye_entrada_propiedad_priv'      => $tourData['detalles_boleto']['incluye_entrada_propiedad_priv']    ?? null,
+                            'quien_compra_propiedad_priv'         => $tourData['detalles_boleto']['quien_compra_propiedad_priv']       ?? null,
+                            'comentario_entrada_propiedad_priv'   => $tourData['detalles_boleto']['comentario_entrada_propiedad_priv'] ?? null,
+                        ]);
                     }
                 }
             }
