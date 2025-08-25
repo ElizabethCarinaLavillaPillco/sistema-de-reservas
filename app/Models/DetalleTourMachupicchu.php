@@ -53,15 +53,15 @@ class DetalleTourMachupicchu extends Model
         'horario_retorno'    => 'datetime:H:i',
     ];
 
-    /*
-     * Relaciones
-     */
+    
 
     // Un detalle pertenece a una TourReserva
     public function tourReserva()
     {
         return $this->belongsTo(TourReserva::class, 'tours_reserva_id', 'id');
     }
+
+    
 
     // Relación indirecta con Reserva (acceso rápido)
     public function reserva()

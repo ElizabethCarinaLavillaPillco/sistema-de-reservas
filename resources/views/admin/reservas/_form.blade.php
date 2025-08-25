@@ -1182,39 +1182,39 @@
         const especialesNormalizados = especiales.map(e => e.toLowerCase().trim());
         if (especialesNormalizados.includes(nombreNormalizado)) {
             extras += `
-                <input type="hidden" name="tours[${tourIndex}][hay_entrada]" value="${safeValue('hay_entrada')}">
-                <input type="hidden" name="tours[${tourIndex}][tipo_entrada]" value="${safeValue('tipo_entrada')}">
-                <input type="hidden" name="tours[${tourIndex}][ruta1]" value="${safeValue('ruta1')}">
-                <input type="hidden" name="tours[${tourIndex}][ruta2]" value="${safeValue('ruta2')}">
-                <input type="hidden" name="tours[${tourIndex}][ruta3]" value="${safeValue('ruta3')}">
-                <input type="hidden" name="tours[${tourIndex}][horario_entrada]" value="${safeValue('horario_entrada')}">
-                <input type="hidden" name="tours[${tourIndex}][comentario_entrada]" value="${safeValue('comentario_entrada')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][hay_entrada]" value="${safeValue('hay_entrada')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][tipo_entrada]" value="${safeValue('tipo_entrada')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][ruta1]" value="${safeValue('ruta1')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][ruta2]" value="${safeValue('ruta2')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][ruta3]" value="${safeValue('ruta3')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][horario_entrada]" value="${safeValue('horario_entrada')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][comentario_entrada]" value="${safeValue('comentario_entrada')}">
 
-                <input type="hidden" name="tours[${tourIndex}][tipo_tren]" value="${safeValue('tipo_tren')}">
-                <input type="hidden" name="tours[${tourIndex}][empresa_tren]" value="${safeValue('empresa_tren')}">
-                <input type="hidden" name="tours[${tourIndex}][codigo_tren]" value="${safeValue('codigo_tren')}">
-                <input type="hidden" name="tours[${tourIndex}][horario_ida]" value="${safeValue('horario_ida')}">
-                <input type="hidden" name="tours[${tourIndex}][horario_retorno]" value="${safeValue('horario_retorno')}">
-                <input type="hidden" name="tours[${tourIndex}][fecha_tren_ida]" value="${safeValue('fecha_tren_ida')}">
-                <input type="hidden" name="tours[${tourIndex}][fecha_tren_retorno]" value="${safeValue('fecha_tren_retorno')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][tipo_tren]" value="${safeValue('tipo_tren')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][empresa_tren]" value="${safeValue('empresa_tren')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][codigo_tren]" value="${safeValue('codigo_tren')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][horario_ida]" value="${safeValue('horario_ida')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][horario_retorno]" value="${safeValue('horario_retorno')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][fecha_tren_ida]" value="${safeValue('fecha_tren_ida')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][fecha_tren_retorno]" value="${safeValue('fecha_tren_retorno')}">
 
-                <input type="hidden" name="tours[${tourIndex}][tiene_ticket]" value="${safeValue('tiene_ticket')}">
-                <input type="hidden" name="tours[${tourIndex}][comentario_ticket]" value="${safeValue('comentario_ticket')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][tiene_ticket]" value="${safeValue('tiene_ticket')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][comentario_ticket]" value="${safeValue('comentario_ticket')}">
 
-                <input type="hidden" name="tours[${tourIndex}][fecha_ida]" value="${safeValue('fecha_ida')}">
-                <input type="hidden" name="tours[${tourIndex}][fecha_retorno]" value="${safeValue('fecha_retorno')}">
-                <input type="hidden" name="tours[${tourIndex}][hospedaje]" value="${safeValue('hospedaje')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][fecha_ida]" value="${safeValue('fecha_ida')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][fecha_retorno]" value="${safeValue('fecha_retorno')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][hospedaje]" value="${safeValue('hospedaje')}">
 
-                <input type="hidden" name="tours[${tourIndex}][tipo_servicio]" value="${safeValue('tipo_servicio')}">
-                <input type="hidden" name="tours[${tourIndex}][tipo_consetur]" value="${safeValue('tipo_consetur')}">
-                <input type="hidden" name="tours[${tourIndex}][comentario_consetur]" value="${safeValue('comentario_consetur')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][tipo_servicio]" value="${safeValue('tipo_servicio')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][tipo_consetur]" value="${safeValue('tipo_consetur')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][comentario_consetur]" value="${safeValue('comentario_consetur')}">
 
-                <input type="hidden" name="tours[${tourIndex}][transp_ida]" value="${safeValue('transp_ida')}">
-                <input type="hidden" name="tours[${tourIndex}][horario_recojo_ida]" value="${safeValue('horario_recojo_ida')}">
-                <input type="hidden" name="tours[${tourIndex}][comentario_trans_ida]" value="${safeValue('comentario_trans_ida')}">
-                <input type="hidden" name="tours[${tourIndex}][transp_ret]" value="${safeValue('transp_ret')}">
-                <input type="hidden" name="tours[${tourIndex}][horario_recojo_ret]" value="${safeValue('horario_recojo_ret')}">
-                <input type="hidden" name="tours[${tourIndex}][comentario_trans_ret]" value="${safeValue('comentario_trans_ret')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][transp_ida]" value="${safeValue('transp_ida')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][horario_recojo_ida]" value="${safeValue('horario_recojo_ida')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][comentario_trans_ida]" value="${safeValue('comentario_trans_ida')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][transp_ret]" value="${safeValue('transp_ret')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][horario_recojo_ret]" value="${safeValue('horario_recojo_ret')}">
+                <input type="hidden" name="tours[${tourIndex}][detalles_machu][comentario_trans_ret]" value="${safeValue('comentario_trans_ret')}">
             `;
             extrasPreview = `
                     <strong>Entrada: </strong>${safeValue('tipo_entrada') || '-'}<br>
@@ -1342,8 +1342,8 @@
         editandoTour = li;
 
         // Cargar valores
-        
         const id = li.querySelector('input[name*="[tour_id]"]').value;
+        const nombre = li.querySelector('input[name*="[nombreTour]"]').value;
         const fecha = li.querySelector('input[name*="[fecha]"]').value;
         const tipo = li.querySelector('input[name*="[tipo_tour]"]').value;
         const lugarRecojo = li.querySelector('input[name*="[lugar_recojo]"]').value;
@@ -1354,15 +1354,17 @@
         const cantidad = li.querySelector('input[name*="[cantidad]"]').value;
         const observaciones = li.querySelector('input[name*="[observaciones]"]').value;
 
+        const nombreBoleto = nombre.toLowerCase().trim();
         const selectTour = document.getElementById('select-tour');
         selectTour.value = id;
         selectTour.dispatchEvent(new Event('change'));
 
         // Mandar a los inputs
+        document.getElementById('nombreTour').value = nombre;
         document.getElementById('fecha').value = fecha;
         document.getElementById('tipo_tour').value = tipo;
         document.getElementById('lugar_recojo').value = lugarRecojo;
-        document.getElementById('hora_recojo').value = horaRecojo.substring(0,5);;
+        document.getElementById('hora_recojo').value = horaRecojo;
         document.getElementById('idioma').value = idioma;
         document.getElementById('empresa').value = empresa;
         document.getElementById('precio_unitario').value = precio;
@@ -1378,7 +1380,7 @@
         if (horaRecojo) {
             // Si viene con fecha completa tipo "2025-08-25 09:00:00"
             let soloHora = horaRecojo.split(' ')[1]; // "09:00:00"
-            document.getElementById('hora_recojo').value = soloHora.substring(0,5); // "09:00"
+            document.getElementById('hora_recojo').value = horaRecojo.substring(0,5); // "09:00"
         } else {
             document.getElementById('hora_recojo').value = '';
         }
@@ -1399,21 +1401,21 @@
         ];
 
         specialFields.forEach(field => {
-            const el = document.getElementById(field);
+        const el = document.getElementById(field);
             if (el) {
-                const hiddenInput = li.querySelector(`input[name*="[${field}]"]`);
+                const hiddenInput = li.querySelector(`input[name*="[detalles_machu][${field}]"]`);
                 el.value = hiddenInput ? hiddenInput.value : '';
             }
         });
-
 
         boletoFields.forEach(field => {
             const el = document.getElementById(field);
             if (el) {
-                const hiddenInput = li.querySelector(`input[name*="[${field}]"]`);
+                const hiddenInput = li.querySelector(`input[name*="[detalles_boleto][${field}]"]`);
                 el.value = hiddenInput ? hiddenInput.value : '';
             }
         });
+
 
     
         const btnAdd = document.getElementById('btn-agregar-tour');

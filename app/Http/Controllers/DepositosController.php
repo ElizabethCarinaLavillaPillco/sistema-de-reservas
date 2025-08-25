@@ -110,10 +110,9 @@ class DepositosController extends Controller
 
     public function show($id)
     {
-        /**
-        *$depositos = Deposito::with('reserva')->findOrFail($id);
-        *return view('admin.depositos.show', compact('depositos'));
-        */
+        $depositos = Deposito::with('reserva')->findOrFail($id);
+        return view('admin.depositos.show', compact('depositos'));
+        
     }
 
     public function destroy($id)

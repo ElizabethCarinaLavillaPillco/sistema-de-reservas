@@ -44,6 +44,13 @@ class FacturacionController extends Controller
         return redirect()->route('admin.facturacion.index')->with('success', 'Comprobante registrado correctamente.');
     }
 
+    public function show($id)
+    {
+        $facturacion = Facturacion::with('reserva')->findOrFail($id);
+        return view('admin.facturacion.show', compact('facturacion'));
+        
+    }
+
     public function destroy($id)
     {
         $facturacion = Facturacion::findOrFail($id);

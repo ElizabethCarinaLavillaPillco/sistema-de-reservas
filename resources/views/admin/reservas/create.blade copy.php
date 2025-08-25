@@ -690,7 +690,7 @@
 
 
 
-/* ---------------- TOURS (MÚLTIPLES) ---------------- */
+    /* ---------------- TOURS (MÚLTIPLES) ---------------- */
     const especiales = [
         'Machupicchu Full Day',
         'Machupicchu Conexión',

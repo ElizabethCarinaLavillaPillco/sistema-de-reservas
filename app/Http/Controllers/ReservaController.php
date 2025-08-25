@@ -8,6 +8,7 @@ use App\Models\DetalleTourBoletoTuristico;
 use App\Models\Proveedor;
 use App\Models\Tour;
 use App\Models\TourReserva;
+use App\Models\Facturacion;
 use App\Models\DetalleTourMachupicchu;
 use App\Models\Estadia;
 use Illuminate\Http\Request;
@@ -101,6 +102,8 @@ class ReservaController extends Controller
 
                     // Guardar detalles Machupicchu si aplica
                     if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
+                        $tourReserva->detalleMachupicchu()->create($tourData['detalles_machu']);
+
                         DetalleTourMachupicchu::create(array_merge(
                             $tourData['detalles_machu'],
                             ['tours_reserva_id' => $tourReserva->id]
@@ -178,7 +181,7 @@ class ReservaController extends Controller
             'tourReserva.detalleBoletoTuristico',
             'estadias',
             'depositos',
-            'facturaciones.detalles'
+            'facturaciones'
         ])->findOrFail($id);
 
         return view('admin.reservas.show', compact('reserva'));
@@ -244,14 +247,17 @@ class ReservaController extends Controller
                         'incluye_tren'     => !empty($tourData['incluye_tren']),
                     ]);
 
+                    // Guardar detalles Machupicchu si aplica
                     if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
+                        $tourReserva->detalleMachupicchu()->create($tourData['detalles_machu']);
+
                         DetalleTourMachupicchu::create(array_merge(
                             $tourData['detalles_machu'],
                             ['tours_reserva_id' => $tourReserva->id]
                         ));
                     }
 
-                    // Boleto turístico (Valle Sagrado, City Tour, etc.)
+                    // Boleto turístico
                     if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
                         DetalleTourBoletoTuristico::create([
                             'tours_reserva_id' => $tourReserva->id,
@@ -263,7 +269,9 @@ class ReservaController extends Controller
                             'comentario_entrada_propiedad_priv'   => $tourData['detalles_boleto']['comentario_entrada_propiedad_priv'] ?? null,
                         ]);
                     }
+
                 }
+                
             }
 
             // Guardar estadías actualizadas
@@ -279,6 +287,9 @@ class ReservaController extends Controller
                     ]);
                 }
             }
+
+                
+
         });
 
         return redirect()->route('admin.reservas.index')
