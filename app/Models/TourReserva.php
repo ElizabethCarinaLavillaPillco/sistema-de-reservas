@@ -58,6 +58,6 @@ class TourReserva extends Model
 
     public function detalleBoletoTuristico()
     {
-        return $this->hasOne(DetalleTourBoletotTuristico::class, 'tours_reserva_id', 'id');
+        return $this->hasOne(DetalleTourBoletoTuristico::class, 'tours_reserva_id', 'id');
     }
 }

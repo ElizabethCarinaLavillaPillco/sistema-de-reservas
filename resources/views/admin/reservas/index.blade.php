@@ -45,6 +45,7 @@
                     @endif
                 </td>
                 <td>
+                    {{ $reserva->cantidad_estadias }}<br>
                     {{ $reserva->estadias->first()->nombre_estadia ?? '-' }}
                 </td>
                 <td>S/ {{ number_format($reserva->total,2) }}</td>

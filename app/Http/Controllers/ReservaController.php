@@ -78,6 +78,11 @@ class ReservaController extends Controller
             // Guardar tours asociados
             if ($request->has('tours') && is_array($request->tours)) {
                 foreach ($request->tours as $tourData) {
+
+                    if (empty($tourData['tour_id'])) {
+                        continue; // saltar si no hay tour_id
+                    }
+
                     $tourReserva = TourReserva::create([
                         'reserva_id'       => $reserva->id,
                         'tour_id'          => $tourData['tour_id'] ?? null,
@@ -103,7 +108,7 @@ class ReservaController extends Controller
                     }
 
                     // Boleto turístico (Valle Sagrado, City Tour, etc.)
-                    if ($this->esBoletoTuristico($tourData['tour_id'])) {
+                    if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
                         DetalleTourBoletoTuristico::create([
                             'tours_reserva_id' => $tourReserva->id,
                             'tipo_boleto'      => $tourData['detalles_boleto']['tipo_boleto']      ?? null,
@@ -220,6 +225,9 @@ class ReservaController extends Controller
             // Guardar tours actualizados
             if ($request->has('tours') && is_array($request->tours)) {
                 foreach ($request->tours as $tourData) {
+                    if (empty($tourData['tour_id'])) {
+                        continue; // saltar si no hay tour_id
+                    }
                     $tourReserva = TourReserva::create([
                         'reserva_id'       => $reserva->id,
                         'tour_id'          => $tourData['tour_id'] ?? null,
@@ -244,7 +252,7 @@ class ReservaController extends Controller
                     }
 
                     // Boleto turístico (Valle Sagrado, City Tour, etc.)
-                    if ($this->esBoletoTuristico($tourData['tour_id'])) {
+                    if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
                         DetalleTourBoletoTuristico::create([
                             'tours_reserva_id' => $tourReserva->id,
                             'tipo_boleto'      => $tourData['detalles_boleto']['tipo_boleto']      ?? null,

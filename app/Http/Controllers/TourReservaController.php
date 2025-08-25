@@ -19,7 +19,7 @@ class TourReservaController extends Controller
             'tipo_tour' => 'required|in:Grupal,Privado',
             'idioma' => 'nullable|string',
             'lugar_recojo' => 'nullable|string',
-            'hora_recojo' => 'nullable|string',
+            'hora_recojo' => 'nullable|date',
             'precio_unitario' => 'required|numeric|min:0',
             'cantidad' => 'required|integer|min:1',
             'observaciones' => 'nullable|string',

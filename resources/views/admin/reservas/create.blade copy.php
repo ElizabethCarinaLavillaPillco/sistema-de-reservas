@@ -151,7 +151,7 @@
                     <!-- FECHA DE VISITA -->
                     <div class="col-md-4">
                         <label>Fecha de visita:</label>
-                        <input type="date" id="fecha_tour" class="form-control">
+                        <input type="date" id="fecha_tour" class="form-control" name="fecha_tour">
                     </div>
 
                     <!-- TIPO DE SERIVICIO -->
@@ -171,13 +171,13 @@
                     <!-- LUGAR DE RECOJO -->
                     <div class="col md">
                         <label>Lugar Recojo:</label>
-                        <input type="text" id="lugar_recojo" class="form-control">
+                        <input type="text" id="lugar_recojo" class="form-control" name="lugar_recojo">
                     </div>
 
                     <!-- HORA DE RECOJO -->
                     <div class="col md">
                         <label>Hora de Recojo:</label>
-                        <input type="text" id="hora_recojo" class="form-control">
+                        <input type="text" id="hora_recojo" class="form-control" name="hora_recojo">
                     </div>
                 </div>
 
@@ -186,19 +186,19 @@
                     <!-- IDIOMA DEL TOUR -->
                     <div class="col-md-4">
                         <label>Idioma:</label>
-                        <input type="text" id="idioma" class="form-control">
+                        <input type="text" id="idioma" class="form-control" name="idioma">
                     </div>
 
                     <!-- PRECIO POR PERSONA -->
                     <div class="col-md-4">
                         <label>Precio Unitario:</label>
-                        <input type="number" id="precio_unitario_tour" step="0.01" class="form-control">
+                        <input type="number" id="precio_unitario_tour" step="0.01" class="form-control" name="precio_unitario_tour">
                     </div>
 
                     <!-- CANTIDAD DE PERSONAS QUE IRAN AL TOUR -->
                     <div class="col-md-4">
                         <label>Cantidad:</label>
-                        <input type="number" id="cantidad_tour" min="1" value="1" class="form-control">
+                        <input type="number" id="cantidad_tour" min="1" value="1" class="form-control" name="cantidad_tour">
                     </div>
                 </div>
 
@@ -208,7 +208,7 @@
                     <div class="col md">
                         <div class="form-group" id="empresa_tour_field" style="display:none;">
                             <label>Empresa:</label>
-                            <input type="text" id="empresa_tour" class="form-control">
+                            <input type="text" id="empresa_tour" class="form-control" name="empresa_tour">
                         </div>
                     </div>
 
@@ -216,7 +216,7 @@
                     <div class="col md">
                         <div class="form-group" id="observaciones_tour_field" style="display:none;">
                             <label>Observaciones:</label>
-                            <input type="text" id="observaciones_tour" class="form-control">
+                            <input type="text" id="observaciones_tour" class="form-control" name="observaciones_tour">
                         </div>
                     </div>
                 </div>
@@ -251,7 +251,7 @@
                         <!-- Rutas según circuito -->
                         <div class="form-group" id="ruta1-field" style="display:none;">
                             <label>Seleccione ruta de recorrido:</label>
-                            <select id="ruta1" class="form-control">
+                            <select id="ruta1" class="form-control" name="ruta1">
                                 <option value="">-- Seleccione --</option>
                                 <option value="ruta1a">Ruta 1-A: Ruta Montaña Machupicchu</option>
                                 <option value="ruta1b">Ruta 1-B: Ruta terraza superior</option>
@@ -262,7 +262,7 @@
 
                         <div class="form-group" id="ruta2-field" style="display:none;">
                             <label>Seleccione ruta de recorrido:</label>
-                            <select id="ruta2" class="form-control">
+                            <select id="ruta2" class="form-control" name="ruta2">
                                 <option value="">-- Seleccione --</option>
                                 <option value="ruta2a">Ruta 2-A: Ruta clásico diseñada</option>
                                 <option value="ruta2b">Ruta 2-B: Ruta terraza inferior</option>
@@ -271,7 +271,7 @@
 
                         <div class="form-group" id="ruta3-field" style="display:none;">
                             <label>Seleccione ruta de recorrido:</label>
-                            <select id="ruta3" class="form-control">
+                            <select id="ruta3" class="form-control" name="ruta3">
                                 <option value="">-- Seleccione --</option>
                                 <option value="ruta3a">Ruta 3-A: Ruta Montaña Waynapicchu</option>
                                 <option value="ruta3b">Ruta 3-B: Ruta realeza diseñada</option>
@@ -283,7 +283,7 @@
                         <!-- horario -->
                         <div class="col-md-4 mb-2">
                             <label>Horario Entrada:</label>
-                            <input type="time" id="horario_entrada" class="form-control">
+                            <input type="time" id="horario_entrada" class="form-control" name="horario_entrada">
                         </div>
 
                     </div>
@@ -310,7 +310,7 @@
                     <div id="tren-turistico-fields" style="display:none;">
                         <div class="form-group">
                             <label>Empresa de Tren</label>
-                            <select name="empresa_tren" class="form-control">
+                            <select name="empresa_tren" class="form-control" id="empresa_tren">
                                 <option value="">-- Seleccione --</option>
                                 <option value="Inca Rail">Inca Rail</option>
                                 <option value="Peru Rail">Peru Rail</option>
@@ -318,7 +318,7 @@
                         </div>
                         <div class="form-group">
                             <label>Código de Tren</label>
-                            <input type="text" name="codigo_tren" class="form-control">
+                            <input type="text" name="codigo_tren" class="form-control" id="codigo_tren" placeholder="Ej: 1234AB"> 
                         </div>
                     </div>
 
@@ -326,11 +326,11 @@
                     <div id="tren-horarios-fields" style="display:none;">
                         <div class="form-group">
                             <label>Horario Ida</label>
-                            <input type="time" name="horario_ida" class="form-control">
+                            <input type="time" name="horario_ida" class="form-control" id="horario_ida">
                         </div>
                         <div class="form-group">
                             <label>Horario Retorno</label>
-                            <input type="time" name="horario_retorno" class="form-control">
+                            <input type="time" name="horario_retorno" class="form-control" id="horario_retorno">
                         </div> 
 
                     </div>
@@ -352,13 +352,13 @@
                                 <div class="col mb">
                                     <div class="form-group">
                                         <label>Horario Ida</label>
-                                        <input type="time" name="horario_ida" class="form-control">
+                                        <input type="time" name="horario_ida" class="form-control" id="horario_ida">
                                     </div>
                                 </div>
                                 <div class="col mb">
                                     <div class="form-group">
                                         <label>Horario Retorno</label>
-                                        <input type="time" name="horario_retorno" class="form-control">
+                                        <input type="time" name="horario_retorno" class="form-control" id="horario_retorno">
                                     </div>
                                 </div>
                             </div>
@@ -366,7 +366,7 @@
 
                         <div id="comentario-ticket-field" style="display:none;">
                             <label>Comentario Ticket</label>
-                            <input type="text" name="comentario_ticket" class="form-control" placeholder="Ej: Hacer cola">
+                            <input type="text" name="comentario_ticket" class="form-control" placeholder="Ej: Hacer cola" id="comentario_ticket">
                         </div>
                     </div>
 
@@ -374,11 +374,11 @@
                     <div id="tren-fechas-fields" style="display:none;">
                         <div class="form-group">
                             <label>Fecha Tren Ida</label>
-                            <input type="date" name="fecha_tren_ida" class="form-control">
+                            <input type="date" name="fecha_tren_ida" class="form-control" id="fecha_tren_ida">
                         </div>
                         <div class="form-group">
                             <label>Fecha Tren Retorno</label>
-                            <input type="date" name="fecha_tren_retorno" class="form-control">
+                            <input type="date" name="fecha_tren_retorno" class="form-control" id="fecha_tren_retorno">
                         </div>
                     </div>
 
@@ -387,75 +387,73 @@
                     <!-- Hospedaje -->
                     <div class="hospedaje-fields" style="display:none;">
                         <label>Hospedaje</label>
-                        <input type="text" name="hospedaje" class="form-control">
+                        <input type="text" name="hospedaje" class="form-control" id="hospedaje" placeholder="Ej: Hotel Inka">
                     </div>
 
                     <!-- Transporte -->
-                    <div id="consetur-fields" style="display:none;">
-                        <div class="form-group">
-                            <label>¿Consetur o ira a pie?</label>
-                            <select name="tipo_servicio" id="tipo_servicio" class="form-control">
-                                <option value="">-- Seleccione --</option>
-                                <option value="Comprar">Comprar</option>
-                                <option value="Caminando">Caminando</option>
-                                <option value="Tiene">Tiene</option>
-                            </select>
-                        </div>
+                    <div id="form-group">
+                        <label>¿Consetur o ira  a pie?</label>
+                        <select name="tipo_servicio" id="tipo_servicio" class="form-control">
+                            <option value="">-- Seleccione --</option>
+                            <option value="Comprar">Comprar</option>
+                            <option value="Caminando">Caminando</option>
+                            <option value="Tiene">Tiene</option>
+                        </select>
+                    </div>
                     
-                        <div class="form-group" id="tipo_consetur-field" style="display:none;">
-                            <label>Tipo de Consetur</label>
-                            <select name="tipo_consetur" class="form-control">
-                                <option value="">-- Seleccione --</option>
-                                <option value="ambos">Ida y Retorno</option>
-                                <option value="ida">Ida</option>
-                                <option value="ret">Retorno</option>
-                            </select>
-                        </div>
+                    <div id="tipo_consetur-field" style="display:none;">
+                        <label>Tipo de Consetur</label>
+                        <select name="tipo_consetur" class="form-control" id="tipo_consetur">
+                            <option value="">-- Seleccione --</option>
+                            <option value="ambos">Ida y Retorno</option>
+                            <option value="ida">Ida</option>
+                            <option value="ret">Retorno</option>
+                        </select>
+                    </div>    
 
-                        <div class="form-group" id="comentario_consetur-field" style="display:none;">
-                            <label>Observacion acerca del consetur</label>
-                            <input type="text" name="comentario_consetur" class="form-control" placeholder="Ej: Tramitar en pueblo">
-                        </div>
+                    <div id="comentario_consetur-field" style="display:none;">
+                        <label>Observacion acerca del consetur</label>
+                        <input type="text" name="comentario_consetur" class="form-control" placeholder="Ej: Tramitar en pueblo" id="comentario_consetur">
                     </div>
 
                     <!-- By Car fechas -->
                     <div id="bycar-fields" style="display:none;">
                         <div class="form-group">
                             <label>Fecha Ida</label>
-                            <input type="date" name="fecha_ida" class="form-control">
+                            <input type="date" name="fecha_ida" class="form-control" id="fecha_ida">
                         </div>
                         <div class="form-group">
                             <label>Fecha Retorno</label>
-                            <input type="date" name="fecha_retorno" class="form-control">
+                            <input type="date" name="fecha_retorno" class="form-control" id="fecha_retorno">
                         </div>
                         <!-- Hospedaje -->
                         <div class="form-group">
                             <label>Hospedaje</label>
-                            <input type="text" name="hospedaje" class="form-control">
+                            <input type="text" name="hospedaje" class="form-control" id="hospedaje_bycar" placeholder="Ej: Hotel Inka">
                         </div>
                     </div>
 
                 </div>
 
-                {{-- === Boleto turístico (Valle Sagrado, City Tour, etc.) === --}}
+                <!-- CAMPOS BOLETO TURISTICO -->
                 <div id="boleto-turistico-details" class="col-12 mt-3"
                     style="display:none; border-top:1px solid #ccc; padding-top:10px;">
                     <h5>Detalles Boleto Turístico</h5>
 
                     {{-- Tipo de boleto --}}
-                    <div class="mb-2">
+                    <div class="form-group">
                         <label>Tipo de Boleto:</label>
-                        <select class="form-control" id="tipo_boleto">
+                        <select class="form-control" id="tipo_boleto" name="tipo_boleto">
                             <option value="">-- Seleccionar --</option>
-                            <option value="Integral">Integral</option>
-                            <option value="Parcial">Parcial</option>
+                            <option value="Integral">Boleto Integral</option>
+                            <option value="Parcial">Boleto Parcial</option>
                         </select>
                     </div>
 
                     {{-- ¿Se debe comprar? --}}
-                    <div class="mb-2">
+                    <div id="requiere_compra-field" style="display:none;">
                         <label>¿Se debe comprar?</label>
-                        <select class="form-control" name="requiere_compra">
+                        <select class="form-control" id="requiere_compra" name="requiere_compra">
                             <option value="">-- Seleccionar --</option>
                             <option value="0">Ya tiene</option>
                             <option value="1">Tiene que comprar</option>
@@ -463,46 +461,46 @@
                     </div>
 
                     {{-- Tipo de compra (solo si requiere_compra = 1 ) --}}
-                    <div id="tipo-compra-field" class="mb-2" style="display:none;">
+                    <div id="tipo-compra-field" style="display:none;">
                         <label>Tipo de Compra:</label>
-                        <select class="form-control" name="tipo_compra">
+                        <select class="form-control" id="tipo-compra" name="tipo_compra">
                             <option value="">-- Seleccionar --</option>
                             <option value="Personal">Compra personal</option>
                             <option value="Guia">Compra por el guía</option>
                         </select>
                     </div>
 
-                    {{-- Boletos para lugares privados --}}
-                    <div id="boletos-privados-field" class="mb-2" style="display:none;">
-                        <label>¿Incluye entrada a propiedad privada?</label>
-                        <select class="form-control" name="incluye_entrada_propiedad_priv">
-                            <option value="">-- Seleccionar --</option>
-                            <option value="1">Sí</option>
-                            <option value="0">No</option>
-                        </select>
+                    {{-- Bloque genérico para entrada privada --}}
+                    <div id="lugares-priv-fields" style="display:none;">
+                        <div class="form-group">
+                            <label>¿Incluye entrada a <strong id="nombrePropiedadPrivada"></strong>?</label>
+                            <select class="form-control" id="incluye_entrada_propiedad_priv" name="incluye_entrada_propiedad_priv">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="1">Sí</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
 
-                        
-
-                        <div id="quien-compra-field" class="mt-2" style="display:none;">
+                        <div id="quien-compra-field" style="display:none;">
                             <label>¿Quién compra la entrada?</label>
-                            <select class="form-control" name="quien_compra_propiedad_priv">
+                            <select class="form-control" name="quien_compra_propiedad_priv" id="quien_compra_propiedad_priv">
                                 <option value="">-- Seleccionar --</option>
                                 <option value="guia">Guía</option>
                                 <option value="pasajero">Pasajero</option>
                             </select>
                         </div>
 
-                        <div id="comentario-entrada-priv-field" class="mt-2" style="display:none;">
-                            <label>Comentario sobre la entrada a propiedad privada:</label>
-                            <input type="text" name="comentario_entrada_propiedad_priv" class="form-control"
-                                placeholder="Ej: El dinero lo tiene el guia">
+                        <div id="comentario-entrada-priv-field" style="display:none;">
+                            <label>Comentario:</label>
+                            <input type="text" name="comentario_entrada_propiedad_priv" class="form-control" id="comentario_entrada_propiedad_priv" placeholder="Ej: Tramitar en pueblo">
                         </div>
                     </div>
 
-
+                </div>
+                    
                 <!-- Botones para agregar/actualizar tour -->
                 <div class="col-12 text-end">
-                    <button type="button" class="btn btn-success" onclick="agregarTour()">Agregar Tour</button>
+                    <button type="button" id="btnAgregarTour" class="btn btn-success" onclick="agregarTour()">Agregar Tour</button>
                     <input type="hidden" id="tour_edit_index" value="">
                     <button type="button" class="btn btn-sm btn-warning"  id="btnActualizarTour" onclick="actualizarTour()" style="display:none;">Actualizar tour</button>
 
@@ -524,27 +522,31 @@
             <div class="row">
                 <div class="col-md-4 mb-2">
                     <label>Tipo Estadia</label>
-                    <select id="tipo_estadia_input" class="form-control">
+                    <select id="tipo_estadia_input" class="form-control" name="tipo_estadia_input"> 
                         <option value="Hostal">Hotel</option>
                         <option value="Hospedaje">Hospedaje</option>
                         <option value="Airbnb">Airbnb</option>
                     </select>
                 </div>
+
                 <div class="col-md-4 mb-2">
                     <label>Nombre Estadia</label>
-                    <input type="text" id="nombre_estadia_input" class="form-control">
+                    <input type="text" id="nombre_estadia_input" class="form-control" name="nombre_estadia_input">
                 </div>
+
                 <div class="col-md-4 mb-2">
                     <label>Ubicación</label>
-                    <input type="text" id="ubicacion_estadia_input" class="form-control">
+                    <input type="text" id="ubicacion_estadia_input" class="form-control" name="ubicacion_estadia_input">
                 </div>
+
                 <div class="col-md-4 mb-2">
                     <label>Fecha</label>
-                    <input type="date" id="fecha_estadia_input" class="form-control">
+                    <input type="date" id="fecha_estadia_input" class="form-control" name="fecha_estadia_input">
                 </div>
+
                 <div class="col-md-4 mb-2">
                     <label>Habitación</label>
-                    <input type="text" id="habitacion_estadia_input" class="form-control">
+                    <input type="text" id="habitacion_estadia_input" class="form-control" name="habitacion_estadia_input">
                 </div>
 
                 <div class="col-12 text-end">
@@ -702,6 +704,14 @@
         'maras moray',
         'valle sagrado vip'
     ];
+    const lugaresPrivados = {
+        'city tour'        : 'qoricancha',
+        'valle sagrado'    : 'salineras',
+        'valle sagrado vip': 'salineras',
+        'maras moray'      : 'salineras',
+        'valle sur'        : 'andahuaylillas'
+    };
+
 
     // BOTONES
     function setEditMode(on) {
@@ -731,20 +741,16 @@
 
         // === Machupicchu ===
         const especialesNormalizados = especiales.map(e => e.toLowerCase().trim());
-
         if (especialesNormalizados.includes(nombreNormalizado)) {
             document.getElementById('machupicchu-details').style.display = 'block';
-            document.getElementById('consetur-fields').style.display = 'block';
 
             // Si es By Car
             if (nombreNormalizado  === 'machupicchu by car') {
                 document.getElementById('bycar-fields').style.display = 'block';
-                document.getElementById('consetur-fields').style.display = 'block';
                 document.getElementById('empresa_tour_field').style.display = 'none';
                 document.getElementById('observaciones_tour_field').style.display = 'none';
             } else {
                 document.getElementById('bycar-fields').style.display = 'none';
-                document.getElementById('consetur-fields').style.display = 'none';
                 document.getElementById('empresa_tour_field').style.display = 'none';
                 document.getElementById('observaciones_tour_field').style.display = 'none';
             }
@@ -753,18 +759,39 @@
             document.getElementById('bycar-fields').style.display = 'none';
         }
 
-        // === Boleto turístico ===
+
+
         const nombreBoleto = nombreNormalizado;
-        if (toursBoleto.includes(nombreBoleto)) {
-            document.getElementById('boleto-turistico-details').style.display = 'block';
-            document.getElementById('boletos-privados-field').style.display = 'block';
+        const esBoletoTuristico = toursBoleto.includes(nombreBoleto);
+        const boletoDetails = document.getElementById('boleto-turistico-details');
+        const bloquePrivado = document.getElementById('lugares-priv-fields');
+
+        // Mostrar / ocultar bloque principal
+        boletoDetails.style.display = esBoletoTuristico ? 'block' : 'none';
+
+        if (esBoletoTuristico) {
+            // Verificar si el tour tiene lugar privado
+            const lugarPrivado = lugaresPrivados[nombreBoleto] || null;
+
+            if (lugarPrivado) {
+                bloquePrivado.style.display = 'block';
+                document.getElementById('nombrePropiedadPrivada').innerText = lugarPrivado;
+            } else {
+                bloquePrivado.style.display = 'none';
+                document.getElementById('incluye_entrada_propiedad_priv').value = '';
+                document.getElementById('quien-compra-field').style.display = 'none';
+                document.getElementById('comentario-entrada-priv-field').style.display = 'none';
+            }
         } else {
-            document.getElementById('boleto-turistico-details').style.display = 'none';
-            document.getElementById('boletos-privados-field').style.display = 'none';
+            bloquePrivado.style.display = 'none';
         }
+
+
+        
+
     });
 
-     // Entrada
+    // Entrada
     document.getElementById('hay_entrada').addEventListener('change', function() {
         if (this.value == '1') {
             document.getElementById('entrada-fields').style.display = 'block';
@@ -856,36 +883,30 @@
     //consetur
     document.getElementById('tipo_servicio').addEventListener('change', function () {
         if (this.value === 'Comprar' || this.value === 'Tiene') {
-            document.getElementById('consetur-fields').style.display = 'block';
             document.getElementById('tipo_consetur-field').style.display = 'block';
             document.getElementById('comentario_consetur-field').style.display = 'block';
-        } else if (this.value === 'Caminando' || this.value === 'Tiene') {
-            document.getElementById('consetur-fields').style.display = 'none';
+        } else if (this.value === 'Caminando') {
             document.getElementById('tipo_consetur-field').style.display = 'none';
             document.getElementById('comentario_consetur-field').style.display = 'none';
-        } else {
-            document.getElementById('consetur-fields').style.display = 'none';
         }
     });
+
 
     // ---------------- BOLETO TURÍSTICO ----------------
-    document.getElementById('requiere_compra').addEventListener('change', function () {
-        if (this.value == '1') {
-            document.getElementById('tipo-compra-field').style.display = 'block';
-            document.getElementById('boletos-privados-field').style.display = 'block';
-        } else {
-            document.getElementById('tipo-compra-field').style.display = 'none';
-        }
+  // Requiere compra boleto
+    document.getElementById('tipo_boleto').addEventListener('change', () => {
+        document.getElementById('requiere_compra-field').style.display = 'block';
     });
 
-    document.getElementById('boletos-privados-field').addEventListener('change', function () {
-        if (this.value == '1') {
-            document.getElementById('quien-compra-field').style.display = 'block';
-            document.getElementById('comentario-entrada-priv-field').style.display = 'block';
-        } else if (this.value == '0') {
-            document.getElementById('quien-compra-field').style.display = 'none';
-            document.getElementById('comentario-entrada-priv-field').style.display = 'block';
-        }
+    document.getElementById('requiere_compra-field').addEventListener('change', e => {
+        document.getElementById('tipo-compra-field').style.display = (e.target.value == '1') ? 'block' : 'none';
+    });
+
+    // Entrada privada
+    document.getElementById('incluye_entrada_propiedad_priv').addEventListener('change', e => {
+        const showCompra = (e.target.value == '1');
+        document.getElementById('quien-compra-field').style.display = showCompra ? 'block' : 'none';
+        document.getElementById('comentario-entrada-priv-field').style.display = 'block';
     });
 
 
@@ -899,9 +920,9 @@
             'tren-turistico-fields', 'tren-local-fields', 'tren-fechas-fields', 'tren-horarios-fields',
             'ticket-fields', 'comentario-ticket-field',
             'empresa_tour_field', 'observaciones_tour_field',
-            'consetur-fields', 'tipo_consetur-field', 'comentario_consetur-field',
-            'boletos-privados-field', 'tipo-compra-field', 'quien-compra-field', 'comentario-entrada-priv-field',
-            'hospedaje-fields',
+            'tipo_consetur-field', 'comentario_consetur-field',
+            'tipo-compra-field', 'requiere_compra-field',
+            'quien-compra-field', 'comentario-entrada-priv-field'
         ];
 
         bloques.forEach(id => {
@@ -1000,10 +1021,13 @@
             extras += `
                 <input type="hidden" name="tours[${indexToUse}][detalles_boleto][tipo_boleto]" value="${safeValue('tipo_boleto')}">
                 <input type="hidden" name="tours[${indexToUse}][detalles_boleto][requiere_compra]" value="${safeValue('requiere_compra')}">
-                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][incluye_entrada_propiedad_priv]" value="${safeValue('incluye_entrada_propiedad_priv')}">
-                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][quien_compra_propiedad_priv]" value="${safeValue('quien_compra_propiedad_priv')}">
-                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][comentario_entrada_propiedad_priv]" value="${safeValue('comentario_entrada_propiedad_priv')}">
-            `;
+                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][incluye_entrada_propiedad_priv]"
+                    value="${safeValue('incluye_entrada_propiedad_priv')}">
+                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][quien_compra_propiedad_priv]"
+                    value="${safeValue('quien_compra_propiedad_priv')}">
+                <input type="hidden" name="tours[${indexToUse}][detalles_boleto][comentario_entrada_propiedad_priv]"
+                    value="${safeValue('comentario_entrada_propiedad_priv')}">
+                `;
 
             extrasPreview = `
                     <strong>Boleto turistico: </strong> ${safeValue('tipo_boleto') || '-'}<br>
