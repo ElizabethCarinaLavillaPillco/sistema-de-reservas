@@ -1,5 +1,3 @@
-// public/js/app.js
-
 // Funciones comunes para todas las páginas
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -64,6 +62,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 userDropdown.classList.remove('show');
             }
         });
+        // 🔥 Botón logout
+        const logoutLinks = document.querySelectorAll("a.dropdown-item[href='#']");
+        logoutLinks.forEach(link => {
+            link.addEventListener("click", function(e) {
+                e.preventDefault();
+                const form = document.getElementById("logout-form");
+                if (form) form.submit();
+            });
+        });
     }
     
     // Responsive: cerrar sidebar al hacer clic en un enlace en móviles
@@ -87,6 +94,36 @@ document.addEventListener('DOMContentLoaded', function() {
     animatedElements.forEach((el, index) => {
         el.style.animationDelay = `${index * 0.1}s`;
     });
+
+    // Efecto de filtrado con JavaScript (si es necesario)
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#reservasTable tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.indexOf(filter) > -1 ? '' : 'none';
+            });
+        });
+    }
+
+
+    // Animación de entrada para las filas
+    const tableRows = document.querySelectorAll('.reserva-item');
+    tableRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            row.style.transition = 'opacity 0.5s ease, transform 0.5s ease, background-color 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, 100 + (index * 50));
+    });
+
+
 });
 
 // Función para calcular saldo

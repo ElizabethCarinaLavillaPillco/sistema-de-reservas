@@ -50,7 +50,9 @@
                     </li>
                     <li class="dropdown-divider"></li>
                     <li>
-                        <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <a href="#" 
+                        class="dropdown-item"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Salir</span>
                         </a>
@@ -58,11 +60,18 @@
                             @csrf
                         </form>
                     </li>
+
                 </ul>
             </div>
         </div>
     </div>
 </header>
+
+@php($notificaciones = $notificaciones ?? collect())
+<button class="notification-btn">
+    <i class="fas fa-bell"></i>
+    <span class="notification-badge">{{ $notificaciones->count() }}</span>
+</button>
 
 <div class="notification-dropdown" id="notificationDropdown">
     <div class="dropdown-header">
@@ -76,16 +85,14 @@
                         {{ $reserva->titular->nombre ?? 'N/A' }} {{ $reserva->titular->apellido ?? '' }}
                     </div>
                     <div class="notif-meta">
-                        <i class="fas fa-plane"></i> 
+                        <i class="fas fa-plane"></i>
                         {{ \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d M Y') }}
-                        - Vuelo {{ $reserva->nro_vuelo_llegada ?? 'N/A' }}
+                        — Vuelo {{ $reserva->nro_vuelo_llegada ?? 'N/A' }}
                     </div>
                 </a>
             </li>
         @empty
-            <li class="empty">
-                <span>No hay llegadas en la próxima semana</span>
-            </li>
+            <li class="empty"><span>No hay llegadas en la próxima semana</span></li>
         @endforelse
     </ul>
 </div>

@@ -16,13 +16,6 @@ class DashboardController extends Controller
     public function index()
     {
         $hoy = Carbon::today();
-        $semana = Carbon::today()->addDays(7);
-
-        // 0. Notificaciones por semana
-        $notificaciones = Reserva::whereBetween('fecha_llegada', [$hoy, $semana])
-            ->orderBy('fecha_llegada', 'asc')
-            ->take(5)
-            ->get();
 
         // 1. Próximas llegadas (las más cercanas, ordenadas por fecha_llegada)
         $proximasLlegadas = Reserva::whereDate('fecha_llegada', '>=', $hoy)
@@ -110,8 +103,7 @@ class DashboardController extends Controller
             'depositosMensuales',
             'facturadoEmitido',
             'facturasRecibidas',
-            'demandaReservas',
-            'notificaciones'
+            'demandaReservas'
         ));
     }
 }

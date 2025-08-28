@@ -12,18 +12,19 @@ class PasajeroController extends Controller
     // Mostrar lista de pasajeros
     public function index(Request $request)
     {
-        $pasajeros = Pasajero::with('reserva.titular')->get();
-        $query = Pasajero::with('reserva.titular');
+        // Query base con relación a la reserva y su titular
+        $pasajeros = Pasajero::with('reserva.titular');
 
+        // 🔎 Filtro por búsqueda (nombre + apellido)
         if ($request->filled('search')) {
             $busqueda = $request->search;
-            $query->where(function ($q) use ($busqueda) {
-                $q->where(DB::raw("CONCAT(nombre,' ',apellido)"), 'LIKE', "%{$busqueda}%");
-            });
+            $pasajeros->where(DB::raw("CONCAT(nombre,' ',apellido)"), 'LIKE', "%{$busqueda}%");
         }
 
-        $pasajeros = $query->get();
+        // 📑 Ordenar por nombre y aplicar paginación
+        $pasajeros = $pasajeros->orderBy('nombre', 'asc')->paginate(10);
 
+        // Pasar también la búsqueda a la vista (para mantenerla en el input)
         return view('admin.pasajeros.index', compact('pasajeros'));
     }
 
