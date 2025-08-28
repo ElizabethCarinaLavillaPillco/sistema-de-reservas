@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class DetalleTourMachupicchu extends Model
 {
     use HasFactory;
-
     protected $table = 'detalles_tour_machupicchu';
-
     protected $fillable = [
         'tours_reserva_id',
         'tipo_entrada',
@@ -44,7 +42,6 @@ class DetalleTourMachupicchu extends Model
     ];
 
     public $timestamps = false;
-
     protected $casts = [
         'fecha_tren_ida'     => 'date',
         'fecha_tren_retorno' => 'date',
@@ -53,17 +50,11 @@ class DetalleTourMachupicchu extends Model
         'horario_retorno'    => 'datetime:H:i',
     ];
 
-    
-
-    // Un detalle pertenece a una TourReserva
     public function tourReserva()
     {
         return $this->belongsTo(TourReserva::class, 'tours_reserva_id', 'id');
     }
-
     
-
-    // Relación indirecta con Reserva (acceso rápido)
     public function reserva()
     {
         return $this->hasOneThrough(

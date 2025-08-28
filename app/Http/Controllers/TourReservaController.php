@@ -27,82 +27,61 @@ class TourReservaController extends Controller
             'incluye_tren' => 'boolean',
         ]);
 
-        $tourReserva = TourReserva::create($request->all());
+        $tourReserva = TourReserva::create($request->only([
+            'reserva_id', 'tour_id', 'fecha', 'empresa', 'tipo_tour',
+            'idioma', 'lugar_recojo', 'hora_recojo', 'precio_unitario',
+            'cantidad', 'observaciones', 'incluye_entrada', 'incluye_tren'
+        ]));
 
-        // Detectar si es un tour Machupicchu especial
-        if ($this->esMachupicchuEspecial($request->tour_id)) {
-            $detalleData = [
-                'tours_reserva_id' => $tourReserva->id,
-                'hay_entrada' => $request->input('hay_entrada'),
-                'comentario_entrada' => $request->input('comentario_entrada'),
-                'tiene_ticket' => $request->input('tiene_ticket'),
-                'comentario_ticket' => $request->input('comentario_ticket'),
-                // demás campos existentes
-                'tipo_entrada' => $request->input('tipo_entrada'),
-                'ruta1' => $request->input('ruta1'),
-                'ruta2' => $request->input('ruta2'),
-                'ruta3' => $request->input('ruta3'),
-                'horario_entrada' => $request->input('horario_entrada'),
-                'tipo_tren' => $request->input('tipo_tren'),
-                'empresa_tren' => $request->input('empresa_tren'),
-                'codigo_tren' => $request->input('codigo_tren'),
-                'horario_ida' => $request->input('horario_ida'),
-                'horario_retorno' => $request->input('horario_retorno'),
-                'fecha_tren_ida' => $request->input('fecha_tren_ida'),
-                'fecha_tren_retorno' => $request->input('fecha_tren_retorno'),
-                'fecha_ida' => $request->input('fecha_ida'),
-                'fecha_retorno' => $request->input('fecha_retorno'),
-                'hospedaje' => $request->input('hospedaje')
-            ];
+        $tour = $tourReserva->tour;
 
-            DetalleTourMachupicchu::create($detalleData);
+        if ($tour && $tour->esMachupicchuEspecial() && $request->has('detalles_machu')) {
+            $tourReserva->detalleMachupicchu()->create($request->detalles_machu);
         }
+
+        if ($tour && $tour->esBoletoTuristico() && $request->has('detalles_boleto')) {
+            $tourReserva->detalleBoletoTuristico()->create($request->detalles_boleto);
+        }
+
 
 
         return back()->with('success', 'Tour agregado a la reserva.');
     }
 
 
-    
-    private function esMachupicchuEspecial($tourId)
-    {
-        $nombresEspeciales = [
-            'Machupicchu Full Day',
-            'Machupicchu Conexión',
-            'Machupicchu 2D/1N',
-            'Machupicchu By car'
-        ];
-
-        $tour = \App\Models\Tour::find($tourId);
-        return $tour && in_array($tour->nombre_tour, $nombresEspeciales);
-    }
-
-
     public function update(Request $request, $id)
     {
-        $tourReserva = TourReserva::findOrFail($id);
+        $tourReserva->update($request->only([
+            'tour_id', 'fecha', 'empresa', 'tipo_tour',
+            'idioma', 'lugar_recojo', 'hora_recojo',
+            'precio_unitario', 'cantidad', 'observaciones',
+            'incluye_entrada', 'incluye_tren'
+        ]));
 
-        $request->validate([
-            'tour_id' => 'nullable|exists:tours,id',
-            'fecha' => 'nullable|date',
-            'empresa' => 'nullable|string',
-            'tipo_tour' => 'required|in:Grupal,Privado',
-            'idioma' => 'nullable|string',
-            'lugar_recojo' => 'nullable|string',
-            'hora_recojo' => 'nullable|string',
-            'precio_unitario' => 'required|numeric|min:0',
-            'cantidad' => 'required|integer|min:1',
-            'observaciones' => 'nullable|string',
-            'incluye_entrada' => 'boolean',
-            'incluye_tren' => 'boolean',
-        ]);
+        $tour = $tourReserva->tour;
 
-        $tourReserva->update($request->all());
-        $detalle->update($detalleData);
+        if ($tour && $tour->esMachupicchuEspecial() && $request->has('detalles_machu')) {
+            if ($tourReserva->detalleMachupicchu) {
+                $tourReserva->detalleMachupicchu->update($request->detalles_machu);
+            } else {
+                $tourReserva->detalleMachupicchu()->create($request->detalles_machu);
+            }
+        }
 
+        if ($tour && $tour->esBoletoTuristico() && $request->has('detalles_boleto')) {
+            if ($tourReserva->detalleBoletoTuristico) {
+                $tourReserva->detalleBoletoTuristico->update($request->detalles_boleto);
+            } else {
+                $tourReserva->detalleBoletoTuristico()->create($request->detalles_boleto);
+            }
+        }
+
+
+        
 
         return back()->with('success', 'Tour actualizado correctamente.');
     }
+
 
     public function destroy($id)
     {

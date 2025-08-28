@@ -13,15 +13,60 @@ use App\Models\DetalleTourMachupicchu;
 use App\Models\Estadia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 class ReservaController extends Controller
 {
     public function index(Request $request)
     {
-        $reservas = Reserva::with(['proveedor', 'pasajeros'])->get();
-        return view('admin.reservas.index', compact('reservas'));
+        $hoy = Carbon::today();
 
+        // Proximas reservas (solo para estadística rápida arriba)
+        $proximasReservas = Reserva::whereDate('fecha_llegada', '>=', $hoy)
+            ->orderBy('fecha_llegada', 'asc')
+            ->get();
+
+        // Query principal para tabla de reservas
+        $reservas = Reserva::with(['proveedor', 'pasajeros', 'tourReserva']);
+
+        // 🔎 Filtro por búsqueda de nombre/apellido del titular
+        if ($request->filled('search')) {
+            $busqueda = $request->search;
+            $reservas->whereHas('titular', function ($q) use ($busqueda) {
+                $q->where(DB::raw("CONCAT(nombre,' ',apellido)"), 'LIKE', "%{$busqueda}%");
+            });
+        }
+
+        // 🔎 Filtro por estado de pago
+        if ($request->filled('estado_pago')) {
+            $reservas->where('estado_pago', $request->estado_pago);
+        }
+
+        // 🔎 Filtro por rango de fechas (llegada, salida o tours)
+        if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
+            $inicio = Carbon::parse($request->fecha_inicio)->startOfDay();
+            $fin = Carbon::parse($request->fecha_fin)->endOfDay();
+
+            $reservas->where(function ($q) use ($inicio, $fin) {
+                $q->whereBetween('fecha_llegada', [$inicio, $fin])
+                ->orWhereBetween('fecha_salida', [$inicio, $fin])
+                ->orWhereHas('tourReserva', function ($q2) use ($inicio, $fin) {
+                    $q2->whereBetween('fecha', [$inicio, $fin]);
+                });
+            });
+        }
+
+        // Si viene query "entrantes", mostrar solo desde hoy en adelante
+        if ($request->get('entrantes') == 1) {
+            $reservas->whereDate('fecha_llegada', '>=', $hoy);
+        }
+
+        // Paginación final
+        $reservas = $reservas->orderBy('fecha_llegada', 'asc')->paginate(10);
+
+        return view('admin.reservas.index', compact('reservas', 'proximasReservas'));
     }
+
+
 
     public function create()
     {
@@ -76,55 +121,11 @@ class ReservaController extends Controller
                     ->update(['reserva_id' => $reserva->id]);
             }
 
-            // Guardar tours asociados
-            if ($request->has('tours') && is_array($request->tours)) {
-                foreach ($request->tours as $tourData) {
-
-                    if (empty($tourData['tour_id'])) {
-                        continue; // saltar si no hay tour_id
-                    }
-
-                    $tourReserva = TourReserva::create([
-                        'reserva_id'       => $reserva->id,
-                        'tour_id'          => $tourData['tour_id'] ?? null,
-                        'fecha'            => $tourData['fecha'] ?? null,
-                        'empresa'          => $tourData['empresa'] ?? null,
-                        'tipo_tour'        => $tourData['tipo_tour'] ?? 'Grupal',
-                        'idioma'           => $tourData['idioma'] ?? null,
-                        'lugar_recojo'     => $tourData['lugar_recojo'] ?? null,
-                        'hora_recojo'      => $tourData['hora_recojo'] ?? null,
-                        'precio_unitario'  => $tourData['precio_unitario'] ?? 0,
-                        'cantidad'         => $tourData['cantidad'] ?? 1,
-                        'observaciones'    => $tourData['observaciones'] ?? null,
-                        'incluye_entrada'  => !empty($tourData['incluye_entrada']),
-                        'incluye_tren'     => !empty($tourData['incluye_tren']),
-                    ]);
-
-                    // Guardar detalles Machupicchu si aplica
-                    if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
-                        $tourReserva->detalleMachupicchu()->create($tourData['detalles_machu']);
-
-                        DetalleTourMachupicchu::create(array_merge(
-                            $tourData['detalles_machu'],
-                            ['tours_reserva_id' => $tourReserva->id]
-                        ));
-                    }
-
-                    // Boleto turístico (Valle Sagrado, City Tour, etc.)
-                    if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
-                        DetalleTourBoletoTuristico::create([
-                            'tours_reserva_id' => $tourReserva->id,
-                            'tipo_boleto'      => $tourData['detalles_boleto']['tipo_boleto']      ?? null,
-                            'requiere_compra'  => $tourData['detalles_boleto']['requiere_compra']  ?? null,
-                            'tipo_compra'      => $tourData['detalles_boleto']['tipo_compra']      ?? null,
-                            'incluye_entrada_propiedad_priv'      => $tourData['detalles_boleto']['incluye_entrada_propiedad_priv']    ?? null,
-                            'quien_compra_propiedad_priv'         => $tourData['detalles_boleto']['quien_compra_propiedad_priv']       ?? null,
-                            'comentario_entrada_propiedad_priv'   => $tourData['detalles_boleto']['comentario_entrada_propiedad_priv'] ?? null,
-                        ]);
-                    }
-                }
+            // Tours
+            if ($request->has('tours')) {
+                $this->syncTours($reserva, $request->tours);
             }
-
+            
             // Guardar estadías asociadas
             if ($request->has('estadias') && is_array($request->estadias)) {
                 foreach ($request->estadias as $estadiaData) {
@@ -224,54 +225,15 @@ class ReservaController extends Controller
             TourReserva::where('reserva_id', $reserva->id)->delete();
             Estadia::where('reserva_id', $reserva->id)->delete();
             
+            //pasajeros
+            if ($request->filled('pasajeros')) {
+                Pasajero::whereIn('id', $request->pasajeros)
+                    ->update(['reserva_id' => $reserva->id]);
+            }
 
-            // Guardar tours actualizados
-            if ($request->has('tours') && is_array($request->tours)) {
-                foreach ($request->tours as $tourData) {
-                    if (empty($tourData['tour_id'])) {
-                        continue; // saltar si no hay tour_id
-                    }
-                    $tourReserva = TourReserva::create([
-                        'reserva_id'       => $reserva->id,
-                        'tour_id'          => $tourData['tour_id'] ?? null,
-                        'fecha'            => $tourData['fecha'] ?? null,
-                        'empresa'          => $tourData['empresa'] ?? null,
-                        'tipo_tour'        => $tourData['tipo_tour'] ?? 'Grupal',
-                        'idioma'           => $tourData['idioma'] ?? null,
-                        'lugar_recojo'     => $tourData['lugar_recojo'] ?? null,
-                        'hora_recojo'      => $tourData['hora_recojo'] ?? null,
-                        'precio_unitario'  => $tourData['precio_unitario'] ?? 0,
-                        'cantidad'         => $tourData['cantidad'] ?? 1,
-                        'observaciones'    => $tourData['observaciones'] ?? null,
-                        'incluye_entrada'  => !empty($tourData['incluye_entrada']),
-                        'incluye_tren'     => !empty($tourData['incluye_tren']),
-                    ]);
-
-                    // Guardar detalles Machupicchu si aplica
-                    if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
-                        $tourReserva->detalleMachupicchu()->create($tourData['detalles_machu']);
-
-                        DetalleTourMachupicchu::create(array_merge(
-                            $tourData['detalles_machu'],
-                            ['tours_reserva_id' => $tourReserva->id]
-                        ));
-                    }
-
-                    // Boleto turístico
-                    if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
-                        DetalleTourBoletoTuristico::create([
-                            'tours_reserva_id' => $tourReserva->id,
-                            'tipo_boleto'      => $tourData['detalles_boleto']['tipo_boleto']      ?? null,
-                            'requiere_compra'  => $tourData['detalles_boleto']['requiere_compra']  ?? null,
-                            'tipo_compra'      => $tourData['detalles_boleto']['tipo_compra']      ?? null,
-                            'incluye_entrada_propiedad_priv'      => $tourData['detalles_boleto']['incluye_entrada_propiedad_priv']    ?? null,
-                            'quien_compra_propiedad_priv'         => $tourData['detalles_boleto']['quien_compra_propiedad_priv']       ?? null,
-                            'comentario_entrada_propiedad_priv'   => $tourData['detalles_boleto']['comentario_entrada_propiedad_priv'] ?? null,
-                        ]);
-                    }
-
-                }
-                
+            // Tours
+            if ($request->has('tours')) {
+                $this->syncTours($reserva, $request->tours);
             }
 
             // Guardar estadías actualizadas
@@ -288,7 +250,6 @@ class ReservaController extends Controller
                 }
             }
 
-                
 
         });
 
@@ -304,4 +265,44 @@ class ReservaController extends Controller
         return redirect()->route('admin.reservas.index')
             ->with('success', 'Reserva eliminada correctamente.');
     }
+
+    private function syncTours(Reserva $reserva, array $toursData)
+    {
+        foreach ($toursData as $tourData) {
+            if (empty($tourData['tour_id'])) continue;
+
+            // Crear o actualizar TourReserva
+            $tourReserva = TourReserva::updateOrCreate(
+                ['id' => $tourData['id'] ?? null],
+                [
+                    'reserva_id'      => $reserva->id,
+                    'tour_id'         => $tourData['tour_id'] ?? null,
+                    'fecha'           => $tourData['fecha'] ?? null,
+                    'empresa'         => $tourData['empresa'] ?? null,
+                    'tipo_tour'       => $tourData['tipo_tour'] ?? 'Grupal',
+                    'idioma'          => $tourData['idioma'] ?? null,
+                    'lugar_recojo'    => $tourData['lugar_recojo'] ?? null,
+                    'hora_recojo'     => $tourData['hora_recojo'] ?? null,
+                    'precio_unitario' => $tourData['precio_unitario'] ?? 0,
+                    'cantidad'        => $tourData['cantidad'] ?? 1,
+                    'observaciones'   => $tourData['observaciones'] ?? null,
+                    'incluye_entrada' => !empty($tourData['incluye_entrada']),
+                    'incluye_tren'    => !empty($tourData['incluye_tren']),
+                ]
+            );
+
+            // Machupicchu
+            if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
+                $tourReserva->detalleMachupicchu()
+                    ->updateOrCreate([], $tourData['detalles_machu']);
+            }
+
+            // Boleto turístico
+            if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
+                $tourReserva->detalleBoletoTuristico()
+                    ->updateOrCreate([], $tourData['detalles_boleto']);
+            }
+        }
+    }
+
 }

@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class DetalleTourBoletoTuristico extends Model
 {
     use HasFactory;
-
     protected $table = 'detalles_tour_boletoturistico';
-
     protected $fillable = [
         'tours_reserva_id',
         'tipo_boleto',
@@ -24,5 +22,17 @@ class DetalleTourBoletoTuristico extends Model
     public function tourReserva()
     {
         return $this->belongsTo(TourReserva::class,'tours_reserva_id');
+    }
+
+    public function reserva()
+    {
+        return $this->hasOneThrough(
+            Reserva::class,         // Modelo final
+            TourReserva::class,     // Modelo intermedio
+            'id',                   // Clave primaria en TourReserva
+            'id',                   // Clave primaria en Reserva
+            'tours_reserva_id',     // FK en DetalleTourMachupicchu → TourReserva
+            'reserva_id'            // FK en TourReserva → Reserva
+        );
     }
 }

@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class TourReserva extends Model
 {
     use HasFactory;
-
     protected $table = 'tours_reserva';
-
     protected $fillable = [
         'reserva_id',
         'tour_id',
@@ -34,11 +32,6 @@ class TourReserva extends Model
         'hora_recojo'     => 'datetime:H:i',
     ];
 
-    /*
-     * Relaciones
-     */
-
-    // Una TourReserva pertenece a una Reserva
     public function reserva()
     {
         return $this->belongsTo(Reserva::class, 'reserva_id', 'id');
@@ -50,14 +43,14 @@ class TourReserva extends Model
         return $this->belongsTo(Tour::class, 'tour_id', 'id');
     }
 
-    // Una TourReserva puede tener un detalle de Machupicchu (solo si es tour especial)
     public function detalleMachupicchu()
     {
-        return $this->hasOne(DetalleTourMachupicchu::class, 'tours_reserva_id', 'id');
+        return $this->hasOne(DetalleTourMachupicchu::class, 'tours_reserva_id');
     }
 
     public function detalleBoletoTuristico()
     {
-        return $this->hasOne(DetalleTourBoletoTuristico::class, 'tours_reserva_id', 'id');
+        return $this->hasOne(DetalleTourBoletoTuristico::class, 'tours_reserva_id');
     }
+
 }

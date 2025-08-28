@@ -90,18 +90,6 @@ class Reserva extends Model
         );
     }
 
-    // Detalles Machupicchu (a través de tours reservados)
-    public function detallesMachupicchu()
-    {
-        return $this->hasManyThrough(
-            DetalleTourMachupicchu::class,
-            TourReserva::class,
-            'reserva_id',       // Foreign key en tour_reservas
-            'tours_reserva_id', // Foreign key en detalles
-            'id',               // Local key en reservas
-            'id'                // Local key en tour_reservas
-        );
-    }
 
     // Estadías asociadas
     public function estadias()

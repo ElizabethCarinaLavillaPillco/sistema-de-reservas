@@ -17,7 +17,7 @@ return new class extends Migration
 
             // Entrada
             $table->enum('tipo_entrada', ['circuito1', 'circuito2', 'circuito3'])->nullable();
-            $table->enum('ruta1', ['ruta1a', 'ruta1b', 'ruta1c,ruta1d'])->nullable();
+            $table->enum('ruta1', ['ruta1a', 'ruta1b', 'ruta1c','ruta1d'])->nullable();
             $table->enum('ruta2', ['ruta2a', 'ruta2b'])->nullable();
             $table->enum('ruta3', ['ruta3a', 'ruta3b', 'ruta3c','ruta3d'])->nullable();
             $table->string('horario_entrada')->nullable();

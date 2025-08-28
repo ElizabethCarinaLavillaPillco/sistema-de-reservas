@@ -1,23 +1,332 @@
-@extends('layouts.template')
+    @extends('layouts.template')
 
-@section('content')
-<div class="container py-4">
+    @section('content')
+    <style>
+        :root {
+            --primary: #14a5b5;
+            --primary-light: #5ec8d4;
+            --primary-dark: #0e7e8a;
+            --primary-transparent: rgba(20, 165, 181, 0.1);
+            --secondary: #f8f9fa;
+            --accent: #ff6b6b;
+            --success: #28a745;
+            --warning: #ffc107;
+            --dark: #2d3e50;
+            --light: #f8f9fa;
+            --border-radius: 12px;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7f9;
+            color: #495057;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .info-badge {
+            background-color: var(--primary-light);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header {
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: white;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .progress-bar-container {
+            background-color: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-light), var(--primary));
+            border-radius: 10px;
+        }
+
+        .detail-item {
+            margin-bottom: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            min-width: 180px;
+            color: var(--primary-dark);
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+
+        .badge-status {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .badge-success {
+            background-color: rgba(40, 167, 69, 0.15);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-transparent);
+            color: var(--primary);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.7rem 1.5rem;
+            font-weight: 500;
+            color: white;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.7rem 1.5rem;
+            font-weight: 500;
+            color: white;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            border-radius: var(--border-radius);
+            padding: 0.7rem 1.5rem;
+            font-weight: 500;
+            color: var(--primary);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sticky-actions {
+            position: sticky;
+            bottom: 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-hover);
+            z-index: 100;
+            animation: slideUp 0.5s ease;
+        }
+
+        .accordion-button {
+            font-weight: 500;
+            padding: 1rem 1.25rem;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--primary-transparent);
+            color: var(--primary-dark);
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(20, 165, 181, 0.25);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #dee2e6;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .detail-item {
+                flex-direction: column;
+            }
+            
+            .detail-label {
+                min-width: auto;
+                margin-bottom: 0.25rem;
+            }
+            
+            .sticky-actions {
+                position: relative;
+                bottom: 0;
+            }
+            
+            .sticky-actions .d-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .sticky-actions .d-flex > div {
+                width: 100%;
+            }
+            
+            .sticky-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(20, 165, 181, 0.05);
+        }
+
+        .section-icon {
+            font-size: 1.2rem;
+        }
+    </style>
+
+    <div class="container py-4">
         <!-- Encabezado -->
-        <div class="page-header animate-slide-in">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0"><i class="fas fa-calendar-check me-2"></i>Detalle de Reserva</h1>
-                    <p class="mb-0 opacity-75">Información completa de la reserva #{{ $reserva->id }}</p>
-                </div>
-                <div class="d-flex">
-                    <span class="info-badge me-2"><i class="fas fa-user me-1"></i> {{ $reserva->titular->nombre }} {{ $reserva->titular->apellido }}</span>
-                    <span class="info-badge"><i class="fas fa-building me-1"></i> {{ $reserva->proveedor->nombreAgencia ?? '-' }}</span>
-                </div>
+        <div class="page-header">
+            <div>
+                <h1 class="page-title"><i class="fas fa-calendar-check me-2"></i>Detalle de Reserva</h1>
+                <p class="mb-0 opacity-75">Información completa de la reserva #{{ $reserva->id }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="info-badge"><i class="fas fa-user me-1"></i> {{ $reserva->titular->nombre }} {{ $reserva->titular->apellido }}</span>
+                <span class="info-badge"><i class="fas fa-building me-1"></i> {{ $reserva->proveedor->nombreAgencia ?? '-' }}</span>
             </div>
         </div>
 
         <!-- Barra de progreso de pago -->
-        <div class="card mb-4 animate-fade-in">
+        <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="text-muted">Progreso de pago</span>
@@ -37,7 +346,7 @@
             <!-- Columna izquierda - Información General -->
             <div class="col-lg-8">
                 <!-- Información General -->
-                <div class="card animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="card">
                     <div class="card-header">
                         <i class="fas fa-info-circle section-icon"></i> Información General
                     </div>
@@ -84,7 +393,7 @@
                 </div>
 
                 <!-- Pasajeros -->
-                <div class="card animate-fade-in" style="animation-delay: 0.4s;">
+                <div class="card">
                     <div class="card-header">
                         <i class="fas fa-users section-icon"></i> Pasajeros
                     </div>
@@ -95,9 +404,9 @@
                                     <thead>
                                         <tr>
                                             <th>Nombre</th>
-                                            <th>Docoumento</th>
-                                            <th>Fecha de nacimiento</th>
-                                            <th>Pais de Residencia</th>
+                                            <th>Documento</th>
+                                            <th>Fecha Nacimiento</th>
+                                            <th>País Residencia</th>
                                             <th>Tarifa</th>
                                         </tr>
                                     </thead>
@@ -105,17 +414,17 @@
                                     @foreach($reserva->pasajeros as $pasajero)
                                         <tr>
                                             <td>{{ $pasajero->nombre }} {{ $pasajero->apellido }}</td>
-                                            <td>({{ $pasajero->documento }})</td>
-                                            <td>({{ $pasajero->fecha_nacimiento }})</td>
-                                            <td>({{ $pasajero->pais_residencia }})</td>
-                                            <td>({{ $pasajero->tarifa }})</td>
+                                            <td>{{ $pasajero->documento }}</td>
+                                            <td>{{ $pasajero->fecha_nacimiento }}</td>
+                                            <td>{{ $pasajero->pais_residencia }}</td>
+                                            <td>{{ $pasajero->tarifa }}</td>
                                         </tr>
                                     @endforeach
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="text-center mt-2">
-                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#pasajerosDetails">
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#pasajerosDetails">
                                     <i class="fas fa-chevron-down me-1"></i> Ver detalles completos
                                 </button>
                             </div>
@@ -125,22 +434,22 @@
                                         <div class="mb-3 pb-2 border-bottom">
                                             <h6 class="text-primary">{{ $pasajero->nombre }} {{ $pasajero->apellido }}</h6>
                                             <div class="row">
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Documento: {{ $pasajero->documento }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Nacimiento: {{ $pasajero->fecha_nacimiento }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">País Residencia: {{ $pasajero->pais_residencia }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Ciudad: {{ $pasajero->ciudad }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Tarifa: {{ $pasajero->tarifa }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Teléfono: {{ $pasajero->telefono }}</small>
                                                 </div>
                                             </div>
@@ -149,8 +458,8 @@
                                 </div>
                             </div>
                         @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <div class="empty-state">
+                                <i class="fas fa-users fa-3x"></i>
                                 <p class="text-muted">No hay pasajeros registrados.</p>
                             </div>
                         @endif
@@ -158,7 +467,7 @@
                 </div>
 
                 <!-- Tours -->
-                <div class="card animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="card">
                     <div class="card-header">
                         <i class="fas fa-route section-icon"></i> Tours
                     </div>
@@ -285,8 +594,8 @@
                                 @endforeach
                             </div>
                         @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-route fa-3x text-muted mb-3"></i>
+                            <div class="empty-state">
+                                <i class="fas fa-route fa-3x"></i>
                                 <p class="text-muted">No hay tours asociados.</p>
                             </div>
                         @endif
@@ -294,7 +603,7 @@
                 </div>
 
                 <!-- Estadías -->
-                <div class="card animate-fade-in" style="animation-delay: 0.3s;">
+                <div class="card">
                     <div class="card-header">
                         <i class="fas fa-hotel section-icon"></i> Estadías
                     </div>
@@ -325,8 +634,8 @@
                                 </table>
                             </div>
                         @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-hotel fa-3x text-muted mb-3"></i>
+                            <div class="empty-state">
+                                <i class="fas fa-hotel fa-3x"></i>
                                 <p class="text-muted">No hay estadías registradas.</p>
                             </div>
                         @endif
@@ -336,9 +645,8 @@
 
             <!-- Columna derecha -->
             <div class="col-lg-4">
-
                 <!-- Depositos realizados -->
-                <div class="card animate-fade-in" style="animation-delay: 0.5s;">
+                <div class="card">
                     <div class="card-header">
                         <i class="fas fa-money-bill-wave section-icon"></i> Depósitos
                     </div>
@@ -364,8 +672,8 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="text-center mt-2">
-                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#depositosDetails">
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#depositosDetails">
                                     <i class="fas fa-chevron-down me-1"></i> Ver detalles completos
                                 </button>
                             </div>
@@ -375,13 +683,13 @@
                                         <div class="mb-3 pb-2 border-bottom">
                                             <h6 class="text-primary">{{ $deposito->nombre_depositante }}</h6>
                                             <div class="row">
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Monto: S/. {{ number_format($deposito->monto, 2) }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Tipo: {{ $deposito->tipo_deposito ?? '-' }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Fecha: {{ $deposito->fecha ?? '-' }}</small>
                                                 </div>
                                                 <div class="col-12 mt-2">
@@ -393,44 +701,18 @@
                                 </div>
                             </div>
                         @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
+                            <div class="empty-state">
+                                <i class="fas fa-money-bill-wave fa-3x"></i>
                                 <p class="text-muted">No se realizaron depósitos.</p>
                             </div>
                         @endif
                     </div>
                 </div>
 
-                <!-- Resumen financiero -->
-                <div class="card animate-fade-in" style="animation-delay: 0.6s;">
+                <!-- Facturación -->
+                <div class="card">
                     <div class="card-header">
-                        <i class="fas fa-chart-pie section-icon"></i> Resumen Financiero
-                    </div>
-                    <div class="card-body">
-                        <div class="detail-item">
-                            <span class="detail-label">Total Reserva:</span>
-                            <span class="detail-value fw-bold">S/. {{ number_format($reserva->total, 2) }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Adelanto:</span>
-                            <span class="detail-value">S/. {{ number_format($reserva->adelanto, 2) }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Saldo Pendiente:</span>
-                            <span class="detail-value fw-bold text-danger">S/. {{ number_format($reserva->total - $reserva->adelanto, 2) }}</span>
-                        </div>
-                        <hr>
-                        <div class="detail-item">
-                            <span class="detail-label">Total Depósitos:</span>
-                            <span class="detail-value">S/. {{ number_format($reserva->depositos->sum('monto'), 2) }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fcturacion  -->
-                <div class="card animate-fade-in" style="animation-delay: 0.5s;">
-                    <div class="card-header">
-                        <i class="fas fa-money-bill-wave section-icon"></i> Facturación
+                        <i class="fas fa-file-invoice-dollar section-icon"></i> Facturación
                     </div>
                     <div class="card-body">
                         @if($reserva->facturaciones->count())
@@ -462,8 +744,8 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="text-center mt-2">
-                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#facturacionDetails">
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#facturacionDetails">
                                     <i class="fas fa-chevron-down me-1"></i> Ver detalles completos
                                 </button>
                             </div>
@@ -474,22 +756,22 @@
                                             <h6 class="text-primary">{{ $facturacion->titular }}</h6>
                                             
                                             <div class="row">
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Doc: {{ $facturacion->documento ?? '-' }}</small>
                                                 </div>
-                                                <div class="col-6">
-                                                    <small class="text-muted">Pais: {{ $facturacion->pais ?? '-' }}</small>
+                                                <div class="col-md-6">
+                                                    <small class="text-muted">País: {{ $facturacion->pais ?? '-' }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Monto: S/. {{ number_format($facturacion->total_facturado, 2) }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Tipo: {{ $facturacion->tipo ?? '-' }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Tipo de giro: {{ $facturacion->tipo_fac ?? '-' }}</small>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-md-6">
                                                     <small class="text-muted">Fecha: {{ $facturacion->fecha_giro ?? '-' }}</small>
                                                 </div>
                                                 <div class="col-12 mt-2">
@@ -504,39 +786,63 @@
                                 </div>
                             </div>
                         @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">No se realizaron depósitos.</p>
+                            <div class="empty-state">
+                                <i class="fas fa-file-invoice-dollar fa-3x"></i>
+                                <p class="text-muted">No se realizaron facturaciones.</p>
                             </div>
                         @endif
+                    </div>
+                </div>
+
+                <!-- Resumen financiero -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie section-icon"></i> Resumen Financiero
+                    </div>
+                    <div class="card-body">
+                        <div class="detail-item">
+                            <span class="detail-label">Total Reserva:</span>
+                            <span class="detail-value fw-bold">S/. {{ number_format($reserva->total, 2) }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Adelanto:</span>
+                            <span class="detail-value">S/. {{ number_format($reserva->adelanto, 2) }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Saldo Pendiente:</span>
+                            <span class="detail-value fw-bold text-danger">S/. {{ number_format($reserva->total - $reserva->adelanto, 2) }}</span>
+                        </div>
+                        <hr>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Depósitos:</span>
+                            <span class="detail-value">S/. {{ number_format($reserva->depositos->sum('monto'), 2) }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Acciones -->
-        <div class="sticky-actions mt-4 animate-fade-in">
+        <div class="sticky-actions mt-4">
             <div class="d-flex justify-content-between">
-                <div>
+                <div class="d-flex gap-2">
                     <a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-2"></i>Volver
                     </a>
-                    <a href="{{ route('admin.reservas.edit', $reserva->id) }}" class="btn btn-primary ms-2">
+                    <a href="{{ route('admin.reservas.edit', $reserva->id) }}" class="btn btn-primary">
                         <i class="fas fa-edit me-2"></i>Editar
                     </a>
                 </div>
-                <div>
+                <div class="d-flex gap-2">
                     {{-- Depósitos --}}
                     @if($reserva->depositos->count())
-                        {{-- Llevar al último depósito registrado --}}
                         <a href="{{ route('admin.depositos.edit', $reserva->depositos->last()->id) }}" 
-                        class="btn btn-outline-primary me-2">
+                        class="btn btn-outline-primary">
                             <i class="fas fa-money-bill me-2"></i> Depósitos
                         </a>
                     @else
-                        {{-- Crear nuevo depósito asociado a la reserva --}}
                         <a href="{{ route('admin.depositos.create', ['reserva_id' => $reserva->id]) }}" 
-                        class="btn btn-outline-primary me-2">
+                        class="btn btn-outline-primary">
                             <i class="fas fa-money-bill me-2"></i> Depósitos
                         </a>
                     @endif
@@ -553,269 +859,42 @@
                             <i class="fas fa-file-invoice me-2"></i> Facturación
                         </a>
                     @endif
-
-
                 </div>
             </div>
         </div>
     </div>
 
-    <style>
-        :root {
-            --primary: #14a5b5;
-            --primary-light: #5ec8d4;
-            --primary-dark: #0e7e8a;
-            --secondary: #f8f9fa;
-            --accent: #ff6b6b;
-            --success: #28a745;
-            --warning: #ffc107;
-            --info: #17a2b8;
-            --dark: #343a40;
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f7f9;
-            color: #495057;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        }
-        
-        .card-header {
-            background: linear-gradient(to right, var(--primary), var(--primary-light));
-            color: white;
-            font-weight: 600;
-            padding: 1rem 1.5rem;
-            border-bottom: none;
-        }
-        
-        .card-body {
-            padding: 1.5rem;
-        }
-        
-        .info-badge {
-            background-color: var(--primary-light);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-        
-        .badge-success {
-            background-color: var(--success);
-        }
-        
-        .badge-warning {
-            background-color: var(--warning);
-            color: #212529;
-        }
-        
-        .section-icon {
-            font-size: 1.5rem;
-            margin-right: 0.5rem;
-            color: var(--primary);
-        }
-        
-        .table {
-            border-collapse: separate;
-            border-spacing: 0;
-            width: 100%;
-        }
-        
-        .table th {
-            background-color: #f8f9fa;
-            color: var(--primary);
-            font-weight: 600;
-            padding: 0.75rem;
-            border-top: 1px solid #dee2e6;
-        }
-        
-        .table td {
-            padding: 0.75rem;
-            vertical-align: middle;
-            border-top: 1px solid #dee2e6;
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: rgba(20, 165, 181, 0.05);
-        }
-        
-        .accordion-button {
-            font-weight: 500;
-            padding: 1rem 1.25rem;
-        }
-        
-        .accordion-button:not(.collapsed) {
-            background-color: rgba(20, 165, 181, 0.1);
-            color: var(--primary-dark);
-        }
-        
-        .accordion-button:focus {
-            box-shadow: none;
-            border-color: rgba(20, 165, 181, 0.25);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(to right, var(--primary), var(--primary-light));
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(to right, var(--primary-dark), var(--primary));
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .btn-outline-primary {
-            color: var(--primary);
-            border-color: var(--primary);
-            border-radius: 6px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-outline-primary:hover {
-            background-color: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-        
-        .status-active {
-            background-color: var(--success);
-        }
-        
-        .status-pending {
-            background-color: var(--warning);
-        }
-        
-        .detail-item {
-            margin-bottom: 0.75rem;
-            display: flex;
-        }
-        
-        .detail-label {
-            font-weight: 600;
-            min-width: 180px;
-            color: var(--primary-dark);
-        }
-        
-        .detail-value {
-            flex: 1;
-        }
-        
-        .progress-bar-container {
-            background-color: #e9ecef;
-            border-radius: 10px;
-            height: 8px;
-            margin-top: 0.5rem;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(to right, var(--primary-light), var(--primary));
-            border-radius: 10px;
-        }
-        
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-in-out;
-        }
-        
-        .animate-slide-in {
-            animation: slideIn 0.5s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .sticky-actions {
-            position: sticky;
-            bottom: 20px;
-            background: white;
-            border-radius: 10px;
-            padding: 1rem;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-        }
-        
-        @media (max-width: 768px) {
-            .detail-item {
-                flex-direction: column;
-            }
-            
-            .detail-label {
-                min-width: auto;
-                margin-bottom: 0.25rem;
-            }
-        }
-    </style>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Animación para los elementos al hacer scroll
-            const animatedElements = document.querySelectorAll('.animate-fade-in, .animate-slide-in');
+            // Animación de entrada para las tarjetas
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 + (index * 100));
+            });
             
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.visibility = 'visible';
-                    }
+            // Efectos de hover para botones
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
                 });
-            }, { threshold: 0.1 });
-            
-            animatedElements.forEach(el => {
-                el.style.visibility = 'hidden';
-                observer.observe(el);
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
             });
             
-            // Tooltips
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
+            // Tooltips para elementos interactivos
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
         });
     </script>
-@endsection
+    @endsection

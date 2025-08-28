@@ -1,564 +1,1122 @@
 @extends('layouts.template')
 
+@section('title', 'Dashboard - Expediciones Allinkay')
+
+@section('styles')
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header {
+            background: white;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-highlight {
+            border-top: 4px solid var(--primary);
+        }
+
+        .card-secondary {
+            border-top: 4px solid var(--primary-light);
+        }
+
+        .card-alert {
+            border-top: 4px solid var(--accent);
+        }
+
+        .card-success {
+            border-top: 4px solid var(--success);
+        }
+
+        .badge-status {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .badge-success {
+            background-color: rgba(40, 167, 69, 0.15);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-transparent);
+            color: var(--primary);
+        }
+
+        .arrival-item, .departure-item {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .arrival-item {
+            background: var(--primary-transparent);
+            border-left: 4px solid var(--primary);
+        }
+
+        .arrival-item:hover {
+            background: rgba(20, 165, 181, 0.2);
+        }
+
+        .departure-item {
+            background: #f8f9fa;
+            border-left: 4px solid #dee2e6;
+        }
+
+        .departure-item:hover {
+            background: #e9ecef;
+        }
+
+        .machu-card, .arrival-card {
+            background: linear-gradient(to right, rgba(20, 165, 181, 0.1) 0%, rgba(20, 165, 181, 0.05) 100%);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .factura-item {
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+            background: #fff;
+            border-left: 4px solid var(--accent);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .factura-pendiente {
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        .transaction-card {
+            padding: 1.25rem;
+            border-radius: var(--border-radius);
+            background: white;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+        }
+
+        .transaction-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .transaction-deposit {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .transaction-invoice {
+            background: rgba(20, 165, 181, 0.1);
+            color: var(--primary);
+        }
+
+        .pago-status {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .pago-pendiente {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+
+        .pago-al-dia {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+
+        .pago-pendiente .btn-agregar {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.15) 0%, rgba(220, 53, 69, 0.3) 100%);
+        }
+        .pago-pendiente .btn-agregar:hover {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.3) 0%, rgba(220, 53, 69, 0.5) 100%);
+        }
+
+        .pago-al-dia .btn-agregar {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.15) 0%, rgba(40, 167, 69, 0.3) 100%);
+        }
+        .pago-al-dia .btn-agregar:hover {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.3) 0%, rgba(40, 167, 69, 0.5) 100%);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                text-align: center;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .card-header .badge {
+                margin-top: 0.5rem;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #dee2e6;
+        }
+
+        /* Estilos para los botones Ver Reserva */
+        .btn-reserva {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-reservaz {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;          /* más pequeño */
+            color: white;
+            font-weight: 500;
+            font-size: 0.8rem;               /* aún más pequeño */
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-actualizar {
+            background: linear-gradient(135deg, var(--warning) 0%, #ff9f43 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            color: white;
+            font-weight: 500;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-agregar {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 20px;
+            text-decoration: none;
+            color: inherit;              /* hereda el color del padre (.pago-pendiente o .pago-al-dia) */
+            background: rgba(0,0,0,0.05);
+            margin-top: 0.5rem;
+        }
+
+        .btn-agregar:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-reserva:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            color: white;
+        }
+        .btn-reservaz:hover {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            color: white;
+        }
+        .btn-actualizar:hover{
+            background: linear-gradient(135deg, #ff9f43 0%, var(--warning) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            color: white;
+        }
+
+        .btn-reserva-sm , .btn-reservaz-sm, .btn-actualizar-sm, .btn-agregar.sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-reservaz + .btn-actualizar {
+            margin-left: 0.5rem;   /* ó 0.75rem / 1rem según necesites */
+        }
+
+
+        /* Animación para los botones */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(20, 165, 181, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 6px rgba(20, 165, 181, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(20, 165, 181, 0);
+            }
+        }
+
+        .btn-reserva.pulse, .btn-reservaz.pulse, .btn-actualizar.pulse  {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive para botones */
+        @media (max-width: 768px) {
+            .btn-reserva, .btn-reservaz, .btn-actualizar, .btn-agregar  {
+                width: 100%;
+                justify-content: center;
+                margin-top: 0.5rem;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+            }
+        }
+        /* Estilos para el layout de escritorio de Machupicchu */
+        .machu-card-desktop, .arrival-card-desktop, .factura-card-desktop, .transaction-card-desktop  {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+        }
+
+        .machu-content {
+            flex: 1;
+        }
+
+        .machu-button-desktop, .arrival-button-desktop, .factura-button-desktop, .transaction-button-desktop  {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            padding: 1rem;
+        }
+
+        .machu-button-mobile, .arrival-button-mobile, .factura-button-mobile, .transaction-button-mobile  {
+            display: none;
+        }
+
+        /* Estilos responsive */
+        @media (max-width: 992px) {
+            .machu-card-desktop, .arrival-card-desktop, .factura-card-desktop, .transaction-card-desktop  {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .machu-button-desktop, .arrival-button-desktop, .factura-button-desktop, .transaction-button-desktop {
+                display: none;
+            }
+            
+            .machu-button-mobile, .arrival-button-mobile, .factura-button-mobile, .transaction-button-mobile {
+                display: flex;
+                justify-content: center;
+                margin-top: 1.5rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid rgba(0,0,0,0.1);
+            }
+        }
+
+        /* Ajustes para pantallas muy grandes */
+        @media (min-width: 1400px) {
+            .machu-button-desktop, .arrival-button-desktop, .factura-button-desktop, .transaction-button-desktop {
+                min-width: 160px;
+            }
+            
+            .btn-reserva, .btn-reservaz, .btn-actualizar {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Mejora visual para la tarjeta de Machupicchu */
+        .machu-card, .arrival-card, .factura-card, .transaction-card {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .machu-card:hover, .arrival-card:hover, .card-alert:hover, .transaction-card:hover  {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+@endsection
+
 @section('content')
-<main>
-                    <div class="container-fluid px-4">
-                        <h1 class="mt-4">Bienvenido,</h1>
-                        <ol class="breadcrumb mb-4">
-                            <li class="breadcrumb-item active">Situación diaria</li>
-                        </ol>
-                        <div class="row">
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card bg-primary text-white mb-4">
-                                    <div class="card-body">Llegadas de hoy</div>
-                                    <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <a class="small text-white stretched-link" href="#">View Details</a>
-                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card bg-warning text-white mb-4">
-                                    <div class="card-body">Salidas de hoy</div>
-                                    <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <a class="small text-white stretched-link" href="#">View Details</a>
-                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card bg-success text-white mb-4">
-                                    <div class="card-body">Llegan Mañana</div>
-                                    <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <a class="small text-white stretched-link" href="#">View Details</a>
-                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                    </div>
-                                </div>
-                            </div>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title"><i class="fas fa-compass me-2"></i> Dashboard</h1>
+            <p class="dashboard-subtitle">Resumen general de operaciones y actividades recientes</p>
+        </div>
 
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card bg-danger text-white mb-4">
-                                    <div class="card-body">Total de Reservas</div>
-                                    <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <a class="small text-white stretched-link" href="#">View Details</a>
-                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                    </div>s
-                                </div>
-                            </div>
-
+        <div class="row">
+            <!-- Columna izquierda -->
+            <div class="col-lg-8">
+                <!-- Próximas Llegadas -->
+                <div class="card card-highlight">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-plane-arrival"></i> Próximas Llegadas
                         </div>
-                        <div class="row">
-                            
-                            <div class="col-xl-6">
-                                <div class="card mb-4">
-                                    <div class="card-header">
-                                        <i class="fas fa-chart-area me-1"></i>
-                                        Area Chart Example
-                                        
+                        <span class="badge badge-primary">{{ $proximasLlegadas->count() }} reservas</span>
+                    </div>
+                    <div class="card-body">
+                        @foreach($proximasLlegadas as $reserva)
+                            <div class="arrival-card mb-3">
+                                <!-- Contenedor principal para escritorio -->
+                                <div class="arrival-card-desktop">
+                                    <!-- Contenido a la izquierda -->
+                                    <div class="arrival-content">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h4 class="mb-1">{{ $reserva->titular->nombre ?? 'N/A' }} {{ $reserva->titular->apellido ?? '' }}</h4>
+                                                <p class="mb-1"><i class="fas fa-users me-1"></i> {{ $reserva->cantidad_pasajeros }} pasajeros</p>
+                                                <p class="mb-1"><i class="fas fa-plane me-1"></i> Vuelo: {{ $reserva->nro_vuelo_llegada ?? 'N/A' }}</p>
+                                                <p class="mb-0"><i class="far fa-clock me-1"></i> {{ $reserva->hora_llegada ?? 'N/A' }}</p>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge badge-primary">Próxima llegada</span>
+                                                <div class="fw-bold mt-1">{{ \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d M Y') }}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
+
+                                    <!-- Botón a la derecha (solo visible en escritorio) -->
+                                    <div class="arrival-button-desktop">
+                                        <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn-reserva pulse">
+                                            <i class="fas fa-eye"></i> Ver Reserva
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Botón para móvil (oculto en escritorio) -->
+                                <div class="arrival-button-mobile">
+                                    <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn-reserva pulse">
+                                        <i class="fas fa-eye"></i> Ver Reserva
+                                    </a>
                                 </div>
                             </div>
+                        @endforeach
+                    </div>
 
 
-                            <div class="col-xl-6">
-                                <div class="card mb-4">
-                                    <div class="card-header">
-                                        <i class="fas fa-chart-bar me-1"></i>
-                                        Ganancias mensuales
-                                    </div>
-                                    <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-table me-1"></i>
-                                Tabla de reservas
-                            </div>
-                            <div class="card-body">
-                                <table id="datatablesSimple">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Position</th>
-                                            <th>Office</th>
-                                            <th>Age</th>
-                                            <th>Start date</th>
-                                            <th>Salary</th>
-                                        </tr>
-                                    </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Position</th>
-                                            <th>Office</th>
-                                            <th>Age</th>
-                                            <th>Start date</th>
-                                            <th>Salary</th>
-                                        </tr>
-                                    </tfoot>
-                                    <tbody>
-                                        <tr>
-                                            <td>Tiger Nixon</td>
-                                            <td>System Architect</td>
-                                            <td>Edinburgh</td>
-                                            <td>61</td>
-                                            <td>2011/04/25</td>
-                                            <td>$320,800</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Garrett Winters</td>
-                                            <td>Accountant</td>
-                                            <td>Tokyo</td>
-                                            <td>63</td>
-                                            <td>2011/07/25</td>
-                                            <td>$170,750</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Ashton Cox</td>
-                                            <td>Junior Technical Author</td>
-                                            <td>San Francisco</td>
-                                            <td>66</td>
-                                            <td>2009/01/12</td>
-                                            <td>$86,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Cedric Kelly</td>
-                                            <td>Senior Javascript Developer</td>
-                                            <td>Edinburgh</td>
-                                            <td>22</td>
-                                            <td>2012/03/29</td>
-                                            <td>$433,060</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Airi Satou</td>
-                                            <td>Accountant</td>
-                                            <td>Tokyo</td>
-                                            <td>33</td>
-                                            <td>2008/11/28</td>
-                                            <td>$162,700</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Brielle Williamson</td>
-                                            <td>Integration Specialist</td>
-                                            <td>New York</td>
-                                            <td>61</td>
-                                            <td>2012/12/02</td>
-                                            <td>$372,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Herrod Chandler</td>
-                                            <td>Sales Assistant</td>
-                                            <td>San Francisco</td>
-                                            <td>59</td>
-                                            <td>2012/08/06</td>
-                                            <td>$137,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Rhona Davidson</td>
-                                            <td>Integration Specialist</td>
-                                            <td>Tokyo</td>
-                                            <td>55</td>
-                                            <td>2010/10/14</td>
-                                            <td>$327,900</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Colleen Hurst</td>
-                                            <td>Javascript Developer</td>
-                                            <td>San Francisco</td>
-                                            <td>39</td>
-                                            <td>2009/09/15</td>
-                                            <td>$205,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Sonya Frost</td>
-                                            <td>Software Engineer</td>
-                                            <td>Edinburgh</td>
-                                            <td>23</td>
-                                            <td>2008/12/13</td>
-                                            <td>$103,600</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jena Gaines</td>
-                                            <td>Office Manager</td>
-                                            <td>London</td>
-                                            <td>30</td>
-                                            <td>2008/12/19</td>
-                                            <td>$90,560</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Quinn Flynn</td>
-                                            <td>Support Lead</td>
-                                            <td>Edinburgh</td>
-                                            <td>22</td>
-                                            <td>2013/03/03</td>
-                                            <td>$342,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Charde Marshall</td>
-                                            <td>Regional Director</td>
-                                            <td>San Francisco</td>
-                                            <td>36</td>
-                                            <td>2008/10/16</td>
-                                            <td>$470,600</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Haley Kennedy</td>
-                                            <td>Senior Marketing Designer</td>
-                                            <td>London</td>
-                                            <td>43</td>
-                                            <td>2012/12/18</td>
-                                            <td>$313,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Tatyana Fitzpatrick</td>
-                                            <td>Regional Director</td>
-                                            <td>London</td>
-                                            <td>19</td>
-                                            <td>2010/03/17</td>
-                                            <td>$385,750</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Michael Silva</td>
-                                            <td>Marketing Designer</td>
-                                            <td>London</td>
-                                            <td>66</td>
-                                            <td>2012/11/27</td>
-                                            <td>$198,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Paul Byrd</td>
-                                            <td>Chief Financial Officer (CFO)</td>
-                                            <td>New York</td>
-                                            <td>64</td>
-                                            <td>2010/06/09</td>
-                                            <td>$725,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Gloria Little</td>
-                                            <td>Systems Administrator</td>
-                                            <td>New York</td>
-                                            <td>59</td>
-                                            <td>2009/04/10</td>
-                                            <td>$237,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Bradley Greer</td>
-                                            <td>Software Engineer</td>
-                                            <td>London</td>
-                                            <td>41</td>
-                                            <td>2012/10/13</td>
-                                            <td>$132,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Dai Rios</td>
-                                            <td>Personnel Lead</td>
-                                            <td>Edinburgh</td>
-                                            <td>35</td>
-                                            <td>2012/09/26</td>
-                                            <td>$217,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jenette Caldwell</td>
-                                            <td>Development Lead</td>
-                                            <td>New York</td>
-                                            <td>30</td>
-                                            <td>2011/09/03</td>
-                                            <td>$345,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Yuri Berry</td>
-                                            <td>Chief Marketing Officer (CMO)</td>
-                                            <td>New York</td>
-                                            <td>40</td>
-                                            <td>2009/06/25</td>
-                                            <td>$675,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Caesar Vance</td>
-                                            <td>Pre-Sales Support</td>
-                                            <td>New York</td>
-                                            <td>21</td>
-                                            <td>2011/12/12</td>
-                                            <td>$106,450</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Doris Wilder</td>
-                                            <td>Sales Assistant</td>
-                                            <td>Sidney</td>
-                                            <td>23</td>
-                                            <td>2010/09/20</td>
-                                            <td>$85,600</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Angelica Ramos</td>
-                                            <td>Chief Executive Officer (CEO)</td>
-                                            <td>London</td>
-                                            <td>47</td>
-                                            <td>2009/10/09</td>
-                                            <td>$1,200,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Gavin Joyce</td>
-                                            <td>Developer</td>
-                                            <td>Edinburgh</td>
-                                            <td>42</td>
-                                            <td>2010/12/22</td>
-                                            <td>$92,575</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jennifer Chang</td>
-                                            <td>Regional Director</td>
-                                            <td>Singapore</td>
-                                            <td>28</td>
-                                            <td>2010/11/14</td>
-                                            <td>$357,650</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Brenden Wagner</td>
-                                            <td>Software Engineer</td>
-                                            <td>San Francisco</td>
-                                            <td>28</td>
-                                            <td>2011/06/07</td>
-                                            <td>$206,850</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Fiona Green</td>
-                                            <td>Chief Operating Officer (COO)</td>
-                                            <td>San Francisco</td>
-                                            <td>48</td>
-                                            <td>2010/03/11</td>
-                                            <td>$850,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Shou Itou</td>
-                                            <td>Regional Marketing</td>
-                                            <td>Tokyo</td>
-                                            <td>20</td>
-                                            <td>2011/08/14</td>
-                                            <td>$163,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Michelle House</td>
-                                            <td>Integration Specialist</td>
-                                            <td>Sidney</td>
-                                            <td>37</td>
-                                            <td>2011/06/02</td>
-                                            <td>$95,400</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Suki Burks</td>
-                                            <td>Developer</td>
-                                            <td>London</td>
-                                            <td>53</td>
-                                            <td>2009/10/22</td>
-                                            <td>$114,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Prescott Bartlett</td>
-                                            <td>Technical Author</td>
-                                            <td>London</td>
-                                            <td>27</td>
-                                            <td>2011/05/07</td>
-                                            <td>$145,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Gavin Cortez</td>
-                                            <td>Team Leader</td>
-                                            <td>San Francisco</td>
-                                            <td>22</td>
-                                            <td>2008/10/26</td>
-                                            <td>$235,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Martena Mccray</td>
-                                            <td>Post-Sales support</td>
-                                            <td>Edinburgh</td>
-                                            <td>46</td>
-                                            <td>2011/03/09</td>
-                                            <td>$324,050</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Unity Butler</td>
-                                            <td>Marketing Designer</td>
-                                            <td>San Francisco</td>
-                                            <td>47</td>
-                                            <td>2009/12/09</td>
-                                            <td>$85,675</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Howard Hatfield</td>
-                                            <td>Office Manager</td>
-                                            <td>San Francisco</td>
-                                            <td>51</td>
-                                            <td>2008/12/16</td>
-                                            <td>$164,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Hope Fuentes</td>
-                                            <td>Secretary</td>
-                                            <td>San Francisco</td>
-                                            <td>41</td>
-                                            <td>2010/02/12</td>
-                                            <td>$109,850</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Vivian Harrell</td>
-                                            <td>Financial Controller</td>
-                                            <td>San Francisco</td>
-                                            <td>62</td>
-                                            <td>2009/02/14</td>
-                                            <td>$452,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Timothy Mooney</td>
-                                            <td>Office Manager</td>
-                                            <td>London</td>
-                                            <td>37</td>
-                                            <td>2008/12/11</td>
-                                            <td>$136,200</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jackson Bradshaw</td>
-                                            <td>Director</td>
-                                            <td>New York</td>
-                                            <td>65</td>
-                                            <td>2008/09/26</td>
-                                            <td>$645,750</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Olivia Liang</td>
-                                            <td>Support Engineer</td>
-                                            <td>Singapore</td>
-                                            <td>64</td>
-                                            <td>2011/02/03</td>
-                                            <td>$234,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Bruno Nash</td>
-                                            <td>Software Engineer</td>
-                                            <td>London</td>
-                                            <td>38</td>
-                                            <td>2011/05/03</td>
-                                            <td>$163,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Sakura Yamamoto</td>
-                                            <td>Support Engineer</td>
-                                            <td>Tokyo</td>
-                                            <td>37</td>
-                                            <td>2009/08/19</td>
-                                            <td>$139,575</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Thor Walton</td>
-                                            <td>Developer</td>
-                                            <td>New York</td>
-                                            <td>61</td>
-                                            <td>2013/08/11</td>
-                                            <td>$98,540</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Finn Camacho</td>
-                                            <td>Support Engineer</td>
-                                            <td>San Francisco</td>
-                                            <td>47</td>
-                                            <td>2009/07/07</td>
-                                            <td>$87,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Serge Baldwin</td>
-                                            <td>Data Coordinator</td>
-                                            <td>Singapore</td>
-                                            <td>64</td>
-                                            <td>2012/04/09</td>
-                                            <td>$138,575</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Zenaida Frank</td>
-                                            <td>Software Engineer</td>
-                                            <td>New York</td>
-                                            <td>63</td>
-                                            <td>2010/01/04</td>
-                                            <td>$125,250</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Zorita Serrano</td>
-                                            <td>Software Engineer</td>
-                                            <td>San Francisco</td>
-                                            <td>56</td>
-                                            <td>2012/06/01</td>
-                                            <td>$115,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jennifer Acosta</td>
-                                            <td>Junior Javascript Developer</td>
-                                            <td>Edinburgh</td>
-                                            <td>43</td>
-                                            <td>2013/02/01</td>
-                                            <td>$75,650</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Cara Stevens</td>
-                                            <td>Sales Assistant</td>
-                                            <td>New York</td>
-                                            <td>46</td>
-                                            <td>2011/12/06</td>
-                                            <td>$145,600</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Hermione Butler</td>
-                                            <td>Regional Director</td>
-                                            <td>London</td>
-                                            <td>47</td>
-                                            <td>2011/03/21</td>
-                                            <td>$356,250</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Lael Greer</td>
-                                            <td>Systems Administrator</td>
-                                            <td>London</td>
-                                            <td>21</td>
-                                            <td>2009/02/27</td>
-                                            <td>$103,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jonas Alexander</td>
-                                            <td>Developer</td>
-                                            <td>San Francisco</td>
-                                            <td>30</td>
-                                            <td>2010/07/14</td>
-                                            <td>$86,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Shad Decker</td>
-                                            <td>Regional Director</td>
-                                            <td>Edinburgh</td>
-                                            <td>51</td>
-                                            <td>2008/11/13</td>
-                                            <td>$183,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Michael Bruce</td>
-                                            <td>Javascript Developer</td>
-                                            <td>Singapore</td>
-                                            <td>29</td>
-                                            <td>2011/06/27</td>
-                                            <td>$183,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Donna Snider</td>
-                                            <td>Customer Support</td>
-                                            <td>New York</td>
-                                            <td>27</td>
-                                            <td>2011/01/25</td>
-                                            <td>$112,000</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                </div>
+
+                <!-- Próximas Salidas -->
+                <div class="card card-secondary">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-plane-departure"></i> Próximas Salidas
                         </div>
                     </div>
-                </main>
+                    <div class="card-body">
+                        @if($proximasSalidas->count() > 0)
+                            @foreach($proximasSalidas as $reserva)
+                                <div class="departure-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ $reserva->titular->nombre ?? 'N/A' }} {{ $reserva->titular->apellido ?? '' }}</h6>
+                                            <div class="d-flex flex-wrap">
+                                                <span class="me-3"><i class="fas fa-users me-1"></i> {{ $reserva->cantidad_pasajeros }} pasajeros</span>
+                                                <span class="me-3"><i class="fas fa-plane me-1"></i> Vuelo: {{ $reserva->nro_vuelo_retorno ?? 'N/A' }}</span>
+                                                <span><i class="far fa-clock me-1"></i> {{ $reserva->hora_salida ?? 'N/A' }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold">{{ \Carbon\Carbon::parse($reserva->fecha_salida)->format('d M Y') }}</div>
+                                            <small class="text-muted">Fecha de salida</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="empty-state">
+                                <i class="fas fa-plane-slash"></i>
+                                <p>No hay salidas programadas</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Próximo Tour a Machupicchu -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-mountain"></i> Próximo Tour a Machupicchu
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        @foreach($proximoMachu as $tourMachu)
+                            <div class="machu-card mb-3">
+                                <!-- Contenedor principal para escritorio -->
+                                <div class="machu-card-desktop">
+                                    <!-- Contenido a la izquierda -->
+                                    <div class="machu-content">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h4 class="mb-1">{{ $tourMachu->reserva->titular->nombre ?? 'N/A' }} {{ $tourMachu->reserva->titular->apellido ?? '' }}</h4>
+                                                <p class="mb-1"><i class="fas fa-users me-1"></i> {{ $tourMachu->reserva->cantidad_pasajeros }} pasajeros</p>
+                                                <p class="mb-1"><i class="fas fa-route me-1"></i> {{ $tourMachu->tour->nombreTour ?? 'N/A' }}</p>
+                                                <p class="mb-0"><i class="far fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($tourMachu->fecha)->format('d M Y') }}</p>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge badge-primary">Próximo</span>
+                                            </div>
+                                        </div>
+
+                                        @if($tourMachu->detalleMachupicchu)
+                                            @php $detalle = $tourMachu->detalleMachupicchu; @endphp
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>Entrada:</strong> {{ $detalle->tipo_entrada ?? 'No especificado' }}</p>
+                                                    <p class="mb-0"><strong>Circuito:</strong> {{ $detalle->ruta1 ?? 'No tiene' }}</p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>Tren:</strong> 
+                                                        @if(isset($detalle->tipo_tren))
+                                                            {{ $detalle->tipo_tren == 'turístico' ? 'Turístico' : 'Local' }}
+                                                        @else
+                                                            No especificado
+                                                        @endif
+                                                    </p>
+                                                    <p class="mb-0"><strong>Horario:</strong> {{ $detalle->horario_entrada ?? 'No especificado' }}</p>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <p class="mb-0 mt-2 text-muted">No hay detalles específicos de Machupicchu para este tour.</p>
+                                        @endif
+                                    </div>
+                                    
+                                    <!-- Botón a la derecha (solo visible en escritorio) -->
+                                    <div class="machu-button-desktop">
+                                        <a href="{{ route('admin.reservas.show', $tourMachu->reserva->id) }}" class="btn-reserva pulse">
+                                            <i class="fas fa-eye"></i> Ver Reserva
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botón para móvil (oculto en escritorio) -->
+                                <div class="machu-button-mobile">
+                                    <a href="{{ route('admin.reservas.show', $tourMachu->reserva->id) }}" class="btn-reserva pulse">
+                                        <i class="fas fa-eye"></i> Ver Reserva
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha -->
+            <div class="col-lg-4">
+                <!-- Estado de Facturaciones -->
+                <div class="card card-alert">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-file-invoice-dollar"></i> Facturaciones Pendientes
+                        </div>
+                        <span class="badge badge-danger">{{ $factPendientes->count() }} pendientes</span>
+                    </div>
+                    <div class="card-body">
+                        @if($factPendientes->count() > 0)
+                            @foreach($factPendientes as $factura)
+                                <div class="factura-card mb-3">
+                                    <!-- Contenedor principal para escritorio -->
+                                    <div class="factura-card-desktop">
+                                        <!-- Contenido a la izquierda -->
+                                        <div class="factura-content">
+                                            <h4 class="mb-0">{{ $factura->titular ?? 'N/A' }}</h4>
+                                            <p class="mb-0">Tipo: {{ $factura->tipo }}</p>                                            
+                                            <small class="text-muted">{{ \Carbon\Carbon::parse($factura->fecha_giro)->format('d M Y') }}</small>
+                                        </div>
+
+                                        <!-- Botones a la derecha (escritorio) -->
+                                        <div class="factura-button-desktop">
+                                            @if(isset($factura->reserva_id))
+                                                <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn-reservaz btn-reservaz-sm">
+                                                    <i class="fas fa-eye"></i> Ver Reserva
+                                                </a>
+                                            @endif
+                                            <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn-actualizar btn-actualizar-sm">
+                                                <i class="fas fa-edit"></i> Actualizar
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botones para móvil (oculto en escritorio) -->
+                                    <div class="factura-button-mobile mt-2">
+                                        @if(isset($factura->reserva_id))
+                                            <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn-reservaz btn-reservaz-sm w-100 mb-2">
+                                                <i class="fas fa-eye"></i> Ver Reserva
+                                            </a>
+                                        @endif
+                                        <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn-actualizar btn-actualizar-sm w-100">
+                                            <i class="fas fa-edit"></i> Actualizar
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="empty-state">
+                                <i class="fas fa-check-circle"></i>
+                                <p>No hay facturaciones pendientes</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Último Depósito Recibido -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-money-bill-wave"></i> Último Depósito Recibido
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if($ultimoDeposito)
+                            <div class="transaction-card mb-3">
+                                <!-- Contenedor principal para escritorio -->
+                                <div class="transaction-card-desktop">
+                                    <!-- Contenido a la izquierda -->
+                                    <div class="transaction-content">
+                                        <div class="d-flex align-items-center">
+                                            <div class="transaction-icon transaction-deposit">
+                                                <i class="fas fa-money-bill-wave"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="mb-1">{{ $ultimoDeposito->nombre_depositante ?? 'N/A' }}</h4>
+                                                <p class="mb-0">$ {{ number_format($ultimoDeposito->monto, 2) }}</p>
+                                                <small class="text-muted">{{ $ultimoDeposito->tipo_deposito }}</small><br>
+                                                <small class="text-muted">{{ \Carbon\Carbon::parse($ultimoDeposito->fecha)->format('d M Y') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botones a la derecha (escritorio) -->
+                                    <div class="transaction-button-desktop">
+                                        @if(isset($ultimoDeposito->reserva_id))
+                                            <a href="{{ route('admin.reservas.show', $ultimoDeposito->reserva_id) }}" class="btn-reservaz btn-reservaz-sm">
+                                                <i class="fas fa-eye"></i> Ver Reserva
+                                            </a>
+                                        @endif
+                                        <a href="{{ route('admin.depositos.edit', $ultimoDeposito->id) }}" class="btn-actualizar btn-actualizar-sm">
+                                            <i class="fas fa-edit"></i> Actualizar
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Botones para móvil (oculto en escritorio) -->
+                                <div class="transaction-button-mobile mt-2">
+                                    @if(isset($ultimoDeposito->reserva_id))
+                                        <a href="{{ route('admin.reservas.show', $ultimoDeposito->reserva_id) }}" class="btn-reservaz btn-reservaz-sm w-100 mb-2">
+                                            <i class="fas fa-eye"></i> Ver Reserva
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('admin.depositos.edit', $ultimoDeposito->id) }}" class="btn-actualizar btn-actualizar-sm w-100">
+                                        <i class="fas fa-edit"></i> Actualizar
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            <div class="empty-state">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <p>No hay depósitos registrados</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Última Factura Recibida -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-file-invoice"></i> Última Factura Recibida
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if($ultimaFactura)
+                            <div class="transaction-card">
+                                <div class="d-flex align-items-center">
+                                    <div class="transaction-icon transaction-invoice">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ $ultimaFactura->titular ?? 'N/A' }}</h6>
+                                        <p class="mb-0">S/ {{ number_format($ultimaFactura->monto, 2) }}</p>
+                                        <small class="text-muted">{{ \Carbon\Carbon::parse($ultimaFactura->fecha)->format('d M Y') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="empty-state">
+                                <i class="fas fa-file-invoice"></i>
+                                <p>No hay facturas recibidas</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Estado de Pagos Contables -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-calculator"></i> Estado de Pagos Contables
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if($estadoPagos)
+                            @if($estadoPagos['estado'] == 'Pendiente')
+                                <div class="pago-status pago-pendiente text-center">
+                                    <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                                    <h5 class="mb-1">Pago Pendiente</h5>
+                                    <p class="mb-1">Mes: {{ $estadoPagos['mes'] }}</p>
+                                    <small>Último pago: {{ \Carbon\Carbon::parse($estadoPagos['ultimo_cubierto']->fecha_pago)->format('M Y') }}</small>
+
+                                    <!-- Botón debajo -->
+                                    <div class="mt-3">
+                                        <a href="{{ route('admin.contabilidad.edit', $estadoPagos['ultimo_cubierto']->id) }}" 
+                                        class="btn-agregar btn-agregar-sm">
+                                            <i class="fas fa-plus"></i> Agregar
+                                        </a>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="pago-status pago-al-dia text-center">
+                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                    <h5 class="mb-1">Sin Deudas</h5>
+                                    <p class="mb-1">Al día hasta: {{ \Carbon\Carbon::parse($estadoPagos['ultimo_cubierto']->fecha_pago)->format('M Y') }}</p>
+                                    <small>Monto: S/ {{ number_format($estadoPagos['ultimo_cubierto']->monto, 2) }}</small>
+
+                                    <!-- Botón debajo -->
+                                    <div class="mt-3">
+                                        <a href="{{ route('admin.contabilidad.edit', $estadoPagos['ultimo_cubierto']->id) }}" 
+                                        class="btn-agregar btn-agregar-sm">
+                                            <i class="fas fa-plus"></i> Agregar
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+                        @else
+                            <div class="empty-state">
+                                <i class="fas fa-calculator"></i>
+                                <p>No hay información de pagos</p>
+                            </div>
+                        @endif
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h3 class="section-title"><i class="fas fa-chart-line me-2"></i>Métricas y Estadísticas</h3>
+            </div>
+            
+            <!-- Gráfico 1: Depósitos mensuales -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-money-bill-wave me-2"></i>Depósitos Mensuales
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="depositosChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico 2: Total facturado emitido -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-export me-2"></i>Facturación Emitida
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="facturacionEmitidaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico 3: Total facturado recibido -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-import me-2"></i>Facturación Recibida
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="facturacionRecibidaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico 4: Demanda de reservas mensuales -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar me-2"></i>Demanda de Reservas
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="demandaReservasChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div> 
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Datos de ejemplo para los gráficos (deben ser reemplazados con datos reales del controlador)
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            
+            // Gráfico de Depósitos Mensuales
+            const depositosCtx = document.getElementById('depositosChart').getContext('2d');
+            new Chart(depositosCtx, {
+                type: 'bar',
+                data: {
+                    labels: meses,
+                    datasets: [{
+                        label: 'Depósitos (S/)',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 26000, 31000, 35000, 40000, 42000],
+                        backgroundColor: 'rgba(20, 165, 181, 0.7)',
+                        borderColor: 'rgba(20, 165, 181, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'S/ ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Facturación Emitida
+            const facturacionEmitidaCtx = document.getElementById('facturacionEmitidaChart').getContext('2d');
+            new Chart(facturacionEmitidaCtx, {
+                type: 'line',
+                data: {
+                    labels: meses,
+                    datasets: [{
+                        label: 'Facturación Emitida (S/)',
+                        data: [15000, 23000, 18000, 27000, 25000, 32000, 30000, 29000, 35000, 38000, 42000, 45000],
+                        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'S/ ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Facturación Recibida
+            const facturacionRecibidaCtx = document.getElementById('facturacionRecibidaChart').getContext('2d');
+            new Chart(facturacionRecibidaCtx, {
+                type: 'line',
+                data: {
+                    labels: meses,
+                    datasets: [{
+                        label: 'Facturación Recibida (S/)',
+                        data: [10000, 17000, 14000, 22000, 20000, 27000, 25000, 24000, 29000, 32000, 37000, 40000],
+                        backgroundColor: 'rgba(108, 117, 125, 0.2)',
+                        borderColor: 'rgba(108, 117, 125, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'S/ ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Demanda de Reservas
+            const demandaReservasCtx = document.getElementById('demandaReservasChart').getContext('2d');
+            new Chart(demandaReservasCtx, {
+                type: 'bar',
+                data: {
+                    labels: meses,
+                    datasets: [
+                        {
+                            label: 'Pasajeros',
+                            data: [45, 52, 48, 65, 70, 85, 90, 78, 92, 88, 95, 110],
+                            backgroundColor: 'rgba(20, 165, 181, 0.7)',
+                            borderColor: 'rgba(20, 165, 181, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Tours',
+                            data: [25, 30, 28, 35, 40, 45, 50, 42, 48, 45, 52, 60],
+                            backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                            borderColor: 'rgba(255, 193, 7, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 🔧 Selecciona todos los botones relevantes
+            const buttons = document.querySelectorAll('.btn-reserva, .btn-reservaz, .btn-actualizar');
+            const pulseButtons = document.querySelectorAll('.btn-reserva.pulse, .btn-reservaz.pulse, .btn-actualizar.pulse');
+
+            // ✨ Efecto de aparición escalonada
+            buttons.forEach((btn, i) => {
+                btn.style.opacity = '0';
+                btn.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    btn.style.transition = 'opacity .5s ease, transform .5s ease';
+                    btn.style.opacity = '1';
+                    btn.style.transform = 'translateY(0)';
+                }, 200 + i * 100);
+            });
+
+            // 📱 Tooltips en móvil
+            if (window.innerWidth < 768) {
+                buttons.forEach(btn => {
+                    btn.setAttribute('title', btn.classList.contains('btn-actualizar') ? 'Editar' : 'Ver Reserva');
+                });
+                if (typeof bootstrap !== 'undefined') {
+                    [...document.querySelectorAll('[title]')].forEach(el => new bootstrap.Tooltip(el));
+                }
+            }
+
+            // ✅ Efecto de confirmación al hacer clic
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const originalBg = getComputedStyle(this).background;
+                    this.style.background = 'var(--success)';
+                    setTimeout(() => this.style.background = originalBg, 300);
+                });
+            });
+
+            const machuCards = document.querySelectorAll('.machu-card');
+            const arrivalCards = document.querySelectorAll('.arrival-card');
+            const facturaCards = document.querySelectorAll('.factura-card');
+            const transactionCards = document.querySelectorAll('.transaction-card');
+    
+        
+
+            // Combina ambos NodeList en un array y aplica el evento
+            [...machuCards, ...arrivalCards, ...facturaCards, ...transactionCards].forEach(card => {
+                card.addEventListener('mouseenter', function () {
+                    this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+                    this.style.transform = 'translateY(-5px)';
+                });
+
+                card.addEventListener('mouseleave', function () {
+                    this.style.boxShadow = '';
+                    this.style.transform = '';
+                });
+            });
+            
+            // Ajustar altura del botón para que coincida con el contenido
+            function adjustButtonHeights() {
+                if (window.innerWidth >= 992) {
+                    const machuContents = document.querySelectorAll('.machu-content');
+                    const machuButtons = document.querySelectorAll('.machu-button-desktop');
+
+                    const arrivalContents = document.querySelectorAll('.arrival-content');
+                    const arrivalButtons = document.querySelectorAll('.arrival-button-desktop');
+
+                    const facturaContents = document.querySelectorAll('.factura-content');
+                    const facturaButtons = document.querySelectorAll('.factura-button-desktop');
+
+                    const transactionContents = document.querySelectorAll('.transaction-content');
+                    const transactionButtons = document.querySelectorAll('.transaction-button-desktop');
+                    
+                    machuContents.forEach((content, index) => {
+                        if (machuButtons[index]) {
+                            const contentHeight = content.offsetHeight;
+                            machuButtons[index].style.minHeight = `${contentHeight}px`;
+                        }
+                    });
+
+                    arrivalContents.forEach((content, index) => {
+                        if (arrivalButtons[index]) {
+                            const contentHeight = content.offsetHeight;
+                            arrivalButtons[index].style.minHeight = `${contentHeight}px`;
+                        }
+                    });
+
+                    facturaContents.forEach((content, index) => {
+                        if (facturaButtons[index]) {
+                            const contentHeight = content.offsetHeight;
+                            facturaButtons[index].style.minHeight = `${contentHeight}px`;
+                        }
+                    });
+
+                    transactionContents.forEach((content, index) => {
+                        if (transactionButtons[index]) {
+                            const contentHeight = content.offsetHeight;
+                            transactionButtons[index].style.minHeight = `${contentHeight}px`;
+                        }
+                    });
+                }
+            }
+            
+            // Ejecutar al cargar y al redimensionar
+            adjustButtonHeights();
+            window.addEventListener('resize', adjustButtonHeights);
+                });
+    </script>
 @endsection
