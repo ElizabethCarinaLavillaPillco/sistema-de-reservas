@@ -1,3 +1,4 @@
+
 {{-- FORMULARIO RESERVA (create & edit) --}}
 @if($mode === 'create')
     <form action="{{ route('admin.reservas.store') }}" method="POST">

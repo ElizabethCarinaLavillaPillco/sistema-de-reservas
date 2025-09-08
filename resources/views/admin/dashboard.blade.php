@@ -1,5 +1,4 @@
 @extends('layouts.template')
-
 @section('title', 'Dashboard - Expediciones Allinkay')
 
 @section('styles')

@@ -1,25 +1,5 @@
     <style>
-        :root {
-            --primary: #14a5b5;
-            --primary-light: #5ec8d4;
-            --primary-dark: #0e7e8a;
-            --primary-transparent: rgba(20, 165, 181, 0.1);
-            --secondary: #f8f9fa;
-            --accent: #ff6b6b;
-            --success: #28a745;
-            --warning: #ffc107;
-            --dark: #2d3e50;
-            --light: #f8f9fa;
-            --border-radius: 12px;
-            --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.12);
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f7f9;
-            color: #495057;
-        }
+        
 
         .form-container {
             background: white;
@@ -1026,6 +1006,7 @@
 
 
                             </div>
+                            
 
                         </div>
 
@@ -1049,7 +1030,7 @@
                                             <div><strong>Observaciones:</strong> {{ $tour->observaciones ?? '-' }}</div>
 
                                             {{-- Inputs ocultos para mantener datos --}}
-                                            <input type="hidden" name="tours[{{ $i }}][id]" value="{{ $tour->id }}">
+                                            <input type="hidden" name="tours[{{ $i }}][data][id]" value="{{ $tour->id }}">
                                             <input type="hidden" name="tours[{{ $i }}][tour_id]" value="{{ $tour->tour_id }}">
                                             <input type="hidden" name="tours[{{ $i }}][nombreTour]" value="{{ $tour->tour->nombreTour }}">
                                             <input type="hidden" name="tours[{{ $i }}][fecha]" value="{{ $tour->fecha }}">
@@ -1114,7 +1095,13 @@
                                 @endif
                         </ul> 
                     </div>
+
+
             </div>
+
+            <input type="hidden" name="cantidad_tours" id="cantidad_tours" value="{{ $mode === 'edit' ? $reserva->tourReserva->count() : 0 }}">
+
+
 
             <!-- SECCIÓN: ESTADÍAS -->
             <div class="form-section animate-slide-in" style="animation-delay: 0.5s;">
@@ -1194,6 +1181,9 @@
                     </ul>
                 </div>
             </div>
+
+            <input type="hidden" name="cantidad_estadias" id="cantidad_estadias" value="{{ $mode === 'edit' ? $reserva->estadias->count() : 0 }}">
+
 
             <!-- BOTONES DE ACCIÓN -->
             <div class="d-flex gap-3 mt-4">

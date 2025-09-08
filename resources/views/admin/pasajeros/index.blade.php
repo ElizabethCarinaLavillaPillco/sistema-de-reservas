@@ -73,9 +73,9 @@
                                                 <th>ID</th>
                                                 <th>Nombre Completo</th>
                                                 <th>Documento</th>
-                                                <th>País Nacimiento</th>
-                                                <th>País Residencia</th>
-                                                <th>Tarifa</th>
+                                                <th>Nacionalidad</th>
+                                                <th>Fecha Nac</th>
+                                                <th>Edad</th>
                                                 <th>Reserva</th>
                                                 <th>Acciones</th>
                                             </tr>
@@ -84,11 +84,13 @@
                                             @forelse($pasajeros as $pasajero)
                                                 <tr class="reserva-item">
                                                     <td>{{ $pasajero->id }}</td>
-                                                    <td>{{ $pasajero->nombre }} {{ $pasajero->apellido }}</td>
+                                                    <td>
+                                                        <div class="fw-bold">{{ $pasajero->nombre }} {{ $pasajero->apellido }}</div>
+                                                    </td>
                                                     <td>{{ $pasajero->documento }}</td>
-                                                    <td>{{ $pasajero->pais_nacimiento }}</td>
                                                     <td>{{ $pasajero->pais_residencia }}</td>
-                                                    <td>{{ $pasajero->tarifa }}</td>
+                                                    <td>{{ $pasajero->fecha_nacimiento  ? \Carbon\Carbon::parse($pasajero->fecha_nacimiento)->format('d/m/Y') : 'N/A' }}</td>
+                                                    <td>{{ $pasajero->edad }}</td>
                                                     <td>
                                                         @if ($pasajero->reserva)
                                                             <a href="{{ route('admin.reservas.show', $pasajero->reserva_id) }}">

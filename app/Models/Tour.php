@@ -40,4 +40,10 @@ class Tour extends Model
         return in_array($this->nombreTour, $especialesBoleto);
     }
 
+    public function tarifas()
+    {
+        return $this->hasMany(Tarifa::class);
+    }
+
+
 }

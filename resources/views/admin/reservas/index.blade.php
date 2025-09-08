@@ -80,19 +80,34 @@
 
 
             .badge-warning {
-                background-color: rgba(255, 193, 7, 0.15);
-                color: var(--warning);
+                background-color: #ffc107 !important;
+                color: #000 !important;
             }
 
             .badge-danger {
-                background-color: rgba(220, 53, 69, 0.15);
-                color: #dc3545;
+                background-color: #dc3545 !important;
+                color: #fff !important;
+            }
+
+            .badge-success {
+                background-color: #28a745 !important;
+                color: #fff !important;
+            }
+
+            .bg-secondary{
+                background-color: var(--primary) !important;
+                color: #fff !important;
+            }
+
+            .badge-cant{
+                background-color: var(--primary-dark) !important;
+                color: #fff !important;
             }
 
             .empty-state {
                 text-align: center;
                 padding: 3rem;
-                color: #6c757d;
+                color: #097ee3ff;
             }
 
             .empty-state i {
@@ -395,10 +410,10 @@
                                                         <small class="badge {{ $badgeClass }}">{{ $estado }}</small>
                                                     </td>
                                                     <td>
-                                                        <span class="badge bg-secondary">{{ $reserva->cantidad_pasajeros }}</span>
+                                                        <span class="badge badge-primary">{{ $reserva->cantidad_pasajeros }}</span>
                                                     </td>
                                                     <td>
-                                                        <div class="fw-medium">{{ $reserva->fecha_llegada }}</div>
+                                                        <div class="fw-medium">{{ $reserva->fecha_llegada ? \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d/m/Y') : 'N/A' }}</div>
                                                         @if($reserva->hora_llegada)
                                                             <small class="text-muted">{{ $reserva->hora_llegada }}</small>
                                                         @endif
@@ -407,7 +422,7 @@
                                                     <td>
                                                         @if($reserva->tourReserva->count() > 0)
                                                             <div class="d-flex align-items-center">
-                                                                <span class="badge bg-primary me-1">{{ $reserva->cantidad_tours }}</span>
+                                                                <span class="badge badge-cant">{{ $reserva->cantidad_tours }}</span>
                                                                 <div>
                                                                     @foreach($reserva->tourReserva->take(1) as $t)
                                                                         <div class="small">{{ $t->tour->nombreTour }}</div>

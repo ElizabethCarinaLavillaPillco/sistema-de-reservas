@@ -1,6 +1,7 @@
 @extends('layouts.template')
 
 @section('title', 'Reservas - Expediciones Allinkay')
+
 @section('content')
 <div class="container-fluid py-4">
     <div class="page-header">
@@ -21,5 +22,3 @@
 
 @endsection
 
-@section('scripts')
-@endsection

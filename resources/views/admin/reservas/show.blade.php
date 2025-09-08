@@ -377,7 +377,7 @@
                                             </div>
                                             <div class="detail-item">
                                                 <span class="detail-label">Fecha Llegada:</span>
-                                                <span class="detail-value">{{ $reserva->fecha_llegada ?? '-' }} {{ $reserva->hora_llegada ? ' - '.$reserva->hora_llegada : '' }}</span>
+                                                <span class="detail-value">{{ $reserva->fecha_llegada ? \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d/m/Y') : 'N/A'  }} {{ $reserva->hora_llegada ? ' - '.$reserva->hora_llegada : '' }}</span>
                                             </div>
                                             <div class="detail-item">
                                                 <span class="detail-label">Nro Vuelo Llegada:</span>
@@ -387,7 +387,7 @@
                                         <div class="col-md-6">
                                             <div class="detail-item">
                                                 <span class="detail-label">Fecha Salida:</span>
-                                                <span class="detail-value">{{ $reserva->fecha_salida ?? '-' }} {{ $reserva->hora_salida ? ' - '.$reserva->hora_salida : '' }}</span>
+                                                <span class="detail-value">{{ $reserva->fecha_salida ? \Carbon\Carbon::parse($reserva->fecha_salida)->format('d/m/Y') : 'N/A' }} {{ $reserva->hora_salida ? ' - '.$reserva->hora_salida : '' }}</span>
                                             </div>
                                             <div class="detail-item">
                                                 <span class="detail-label">Nro Vuelo Retorno:</span>
@@ -429,7 +429,7 @@
                                                     <tr>
                                                         <td>{{ $pasajero->nombre }} {{ $pasajero->apellido }}</td>
                                                         <td>{{ $pasajero->documento }}</td>
-                                                        <td>{{ $pasajero->fecha_nacimiento }}</td>
+                                                        <td>{{ $pasajero->fecha_nacimiento ? \Carbon\Carbon::parse($pasajero->fecha_nacimiento)->format('d/m/Y') : 'N/A'  }}</td>
                                                         <td>{{ $pasajero->pais_residencia }}</td>
                                                         <td>{{ $pasajero->tarifa }}</td>
                                                     </tr>
@@ -452,7 +452,7 @@
                                                                 <small class="text-muted">Documento: {{ $pasajero->documento }}</small>
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <small class="text-muted">Nacimiento: {{ $pasajero->fecha_nacimiento }}</small>
+                                                                <small class="text-muted">Nacimiento: {{ $pasajero->fecha_nacimiento  ? \Carbon\Carbon::parse($pasajero->fecha_nacimiento)->format('d/m/Y') : 'N/A' }}</small>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <small class="text-muted">País Residencia: {{ $pasajero->pais_residencia }}</small>
@@ -508,7 +508,7 @@
                                                                 <div class="col-md-6">
                                                                     <div class="detail-item">
                                                                         <span class="detail-label">Fecha:</span>
-                                                                        <span class="detail-value">{{ $tour->fecha ?? '-' }}</span>
+                                                                        <span class="detail-value">{{ $tour->fecha  ? \Carbon\Carbon::parse($tour->fecha)->format('d/m/Y') : 'N/A' }}</span>
                                                                     </div>
                                                                     <div class="detail-item">
                                                                         <span class="detail-label">Empresa:</span>
@@ -640,7 +640,7 @@
                                                             <td><i class="fas fa-bed text-primary me-2"></i> {{ $estadia->tipo_estadia }}</td>
                                                             <td>{{ $estadia->nombre_estadia }}</td>
                                                             <td>{{ $estadia->ubicacion ?? '-' }}</td>
-                                                            <td>{{ $estadia->fecha ?? '-' }}</td>
+                                                            <td>{{ $estadia->fecha  ? \Carbon\Carbon::parse($estadia->fecha)->format('d/m/Y') : 'N/A'  }}</td>
                                                             <td>{{ $estadia->habitacion ?? '-' }}</td>
                                                         </tr>
                                                     @endforeach
@@ -680,7 +680,7 @@
                                                         <tr>
                                                             <td>{{ $deposito->nombre_depositante }}</td>
                                                             <td>S/. {{ number_format($deposito->monto, 2) }}</td>
-                                                            <td>{{ $deposito->fecha ?? '-' }}</td>
+                                                            <td>{{ $deposito->fecha  ? \Carbon\Carbon::parse($deposito->fecha)->format('d/m/Y') : '-'  }}</td>
                                                         </tr>
                                                     @endforeach
                                                 </tbody>
@@ -704,7 +704,7 @@
                                                                 <small class="text-muted">Tipo: {{ $deposito->tipo_deposito ?? '-' }}</small>
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <small class="text-muted">Fecha: {{ $deposito->fecha ?? '-' }}</small>
+                                                                <small class="text-muted">Fecha: {{ $deposito->fecha  ? \Carbon\Carbon::parse($deposito->fecha)->format('d/m/Y') : '-'  }}</small>
                                                             </div>
                                                             <div class="col-12 mt-2">
                                                                 <small class="text-muted">Observaciones: {{ $deposito->observaciones ?? 'Sin observaciones' }}</small>
@@ -786,7 +786,7 @@
                                                                 <small class="text-muted">Tipo de giro: {{ $facturacion->tipo_fac ?? '-' }}</small>
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <small class="text-muted">Fecha: {{ $facturacion->fecha_giro ?? '-' }}</small>
+                                                                <small class="text-muted">Fecha: {{ $facturacion->fecha_giro  ? \Carbon\Carbon::parse($facturacion->fecha_giro)->format('d/m/Y') : '-'  }}</small>
                                                             </div>
                                                             <div class="col-12 mt-2">
                                                                 <small class="text-muted">Observaciones: {{ $facturacion->descripcion ?? 'Sin observaciones' }}</small>
