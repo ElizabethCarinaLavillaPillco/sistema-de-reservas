@@ -9,7 +9,7 @@ class ContabilidadController extends Controller
 {
     public function index()
     {
-        $contabilidades = Contabilidad::orderBy('fecha_pago', 'desc')->get();
+        $contabilidades = Contabilidad::orderBy('fecha_pago', 'desc')->paginate(10);
         return view('admin.contabilidad.index', compact('contabilidades'));
     }
 

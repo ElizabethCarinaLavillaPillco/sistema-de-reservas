@@ -422,7 +422,8 @@
                                                     <td>
                                                         @if($reserva->tourReserva->count() > 0)
                                                             <div class="d-flex align-items-center">
-                                                                <span class="badge badge-cant">{{ $reserva->cantidad_tours }}</span>
+                                                                <span class="badge badge-cant"> {{ $reserva->cantidad_tours }} </span>
+                                                                <br>
                                                                 <div>
                                                                     @foreach($reserva->tourReserva->take(1) as $t)
                                                                         <div class="small">{{ $t->tour->nombreTour }}</div>
@@ -445,11 +446,11 @@
                                                             <span class="text-muted small">Sin estadía</span>
                                                         @endif
                                                     </td>
-                                                    <td class="fw-bold">S/ {{ number_format($reserva->total, 2) }}</td>
-                                                    <td>S/ {{ number_format($reserva->adelanto, 2) }}</td>
+                                                    <td class="fw-bold">S/.{{ number_format($reserva->total, 2) }}</td>
+                                                    <td>S/.{{ number_format($reserva->adelanto, 2) }}</td>
                                                     <td>
                                                         <strong class="{{ $saldo <= 0 ? 'text-success' : 'text-danger' }}">
-                                                            S/ {{ number_format($saldo, 2) }}
+                                                            S/.{{ number_format($saldo, 2) }}
                                                         </strong>
                                                         @if($saldo > 0)
                                                             <div class="progress mt-1" style="height: 5px; width: 60px;">
