@@ -3,6 +3,9 @@
 @section('title', 'Pasajeros - Expediciones Allinkay')
     @section('styles')
         <style>
+            a{
+                text-decoration: none;
+            }
             .btn-outline-secondary {
                 border-radius: var(--border-radius);
                 padding: 0.7rem 1rem;
@@ -14,6 +17,7 @@
                 border-color: var(--primary);
                 color: white;
             }
+
         </style>
     @endsection    
 
@@ -93,11 +97,17 @@
                                                     <td>{{ $pasajero->edad }}</td>
                                                     <td>
                                                         @if ($pasajero->reserva)
-                                                            <a href="{{ route('admin.reservas.show', $pasajero->reserva_id) }}">
-                                                                {{ $pasajero->reserva_id }}</a>
+                                                                <a href="{{ route('admin.reservas.show', $pasajero->reserva_id) }}" 
+                                                                class="btn-action-ver-reserva btn-ver-reserva"
+                                                                    data-bs-toggle="tooltip" title="Ver Reserva">
+                                                                    {{ $pasajero->reserva_id }}
+                                                                </a>
+                                                        
                                                         @else
-                                                            <span class="text-muted">No asociada</span>
+                                                            <span class="badge bg-secondary">No asociada</span>
                                                         @endif
+
+                                                    
                                                     </td>
                                                     <td>
                                                         <div class="d-flex gap-2">

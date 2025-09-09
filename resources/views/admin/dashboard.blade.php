@@ -23,29 +23,9 @@
             font-weight: 300;
         }
 
-        .card {
-            border: none;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            transition: all 0.3s;
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-        }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .card-header {
-            background: white;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            padding: 1rem 1.5rem;
-            font-weight: 600;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .arrival-content{
+            flex: 1;
         }
 
         .card-header i {
@@ -64,6 +44,7 @@
         .card-secondary {
             border-top: 4px solid var(--primary-light);
         }
+        
 
         .card-alert {
             border-top: 4px solid var(--accent);
@@ -88,6 +69,10 @@
         .badge-warning {
             background-color: rgba(255, 193, 7, 0.15);
             color: var(--warning);
+        }
+        .badge-salida{
+            background-color: rgba(54, 61, 62, 0.15);
+            color: var(--dark);
         }
 
         .badge-danger {
@@ -147,7 +132,7 @@
             background: rgba(220, 53, 69, 0.05);
         }
 
-        .transaction-card {
+        .transaction-card, .factura-card {
             padding: 1.25rem;
             border-radius: var(--border-radius);
             background: white;
@@ -165,10 +150,15 @@
             margin-right: 1rem;
             font-size: 1.25rem;
         }
+        
 
         .transaction-deposit {
             background: rgba(40, 167, 69, 0.1);
             color: var(--success);
+        }
+        .transaction-factura {
+            background: rgba(167, 40, 40, 0.1);
+            color: #dc3545;
         }
 
         .transaction-invoice {
@@ -437,7 +427,7 @@
             transition: all 0.3s ease;
         }
 
-        .machu-card:hover, .arrival-card:hover, .card-alert:hover, .transaction-card:hover  {
+        .machu-card:hover, .arrival-card:hover, .card-alert:hover, .transaction-card:hover, .factura-card:hover  {
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
@@ -453,8 +443,100 @@
         </div>
 
         <div class="row">
-            <!-- Columna izquierda -->
-            <div class="col-lg-8">
+                <!-- Estadísticas Rápidas -->
+                <div class="card card-highlight">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-calendar-day"></i> Próximos Tours
+                        </div>
+                        <div>
+                            @foreach($toursHoy as $tour)
+                                @if($tour->fecha == \Carbon\Carbon::today()->toDateString() || $tour->fecha == \Carbon\Carbon::tomorrow()->toDateString())
+                                    <span class="badge badge-status badge-success me-2">{{ $tour->nombre }}</span>
+                                @endif
+                            @endforeach
+                            
+                        </div>
+                    </div>
+                    <div class="card-header">
+                        <div>
+                            <span class="badge badge-primary me-2">Hoy: {{ $toursHoy->count() }}</span>
+                            <span class="badge badge-info">Mañana: {{ $toursManana->count() }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                    
+                        <div class="row no-gutters">
+                            <!-- Sección de Tours de Hoy -->
+                            <div class="col-md-6 border-right">
+                                <div class="p-3 bg-warning-light">
+                                    <h5 class="mb-3"><i class="fas fa-sun me-2"></i> Tours de Hoy</h5>
+                                    
+                                    @if($toursHoy->count() > 0)
+                                        @foreach($toursHoy as $tourHoy)
+                                            <div class="arrival-card mb-3 p-2 bg-white rounded">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <h5 class="mb-1">{{ $tourHoy->reserva->titular->nombre ?? 'N/A' }} {{ $tourHoy->reserva->titular->apellido ?? '' }}</h5>
+                                                        <p class="mb-1"><i class="fas fa-users me-1"></i> {{ $tourHoy->reserva->cantidad_pasajeros }} pasajeros</p>
+                                                        <p class="mb-1"><i class="fas fa-route me-1"></i> {{ $tourHoy->tour->nombreTour ?? 'N/A' }}</p>
+
+                                                    </div>
+                                                </div>
+                                                <!-- Botón a la derecha (solo visible en escritorio) -->
+                                                <div class="machu-button-desktop">
+                                                    <a href="{{ route('admin.reservas.show', $tourHoy->reserva->id) }}" class="btn-reserva pulse">
+                                                        <i class="fas fa-eye"></i> Ver Reserva
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <div class="text-center py-3">
+                                            <i class="fas fa-calendar-times fa-2x mb-2 text-muted"></i>
+                                            <p class="text-muted">No hay tours para hoy</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <!-- Sección de Tours de Mañana -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-info-light">
+                                    <h5 class="mb-3"><i class="fas fa-cloud-sun me-2"></i> Tours de Mañana</h5>
+                                    
+                                    @if($toursManana->count() > 0)
+                                        @foreach($toursManana as $tourM)
+                                            <div class="arrival-card mb-3 p-2 bg-white rounded">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <h5 class="mb-1">{{ $tourM->reserva->titular->nombre ?? 'N/A' }} {{ $tourHoy->reserva->titular->apellido ?? '' }}</h5>
+                                                        <p class="mb-1"><i class="fas fa-users me-1"></i> {{ $tourM->reserva->cantidad_pasajeros }} pasajeros</p>
+                                                        <p class="mb-1"><i class="fas fa-route me-1"></i> {{ $tourM->tour->nombreTour ?? 'N/A' }}</p>
+
+                                                    </div>
+                                                </div>
+                                                <!-- Botón a la derecha (solo visible en escritorio) -->
+                                                <div class="machu-button-desktop">
+                                                    <a href="{{ route('admin.reservas.show', $tourM->reserva->id) }}" class="btn-reserva pulse">
+                                                        <i class="fas fa-eye"></i> Ver Reserva
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <div class="text-center py-3">
+                                            <i class="fas fa-calendar-times fa-2x mb-2 text-muted"></i>
+                                            <p class="text-muted">No hay tours para mañana</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Próximas Llegadas -->
                 <div class="card card-highlight">
                     <div class="card-header">
@@ -470,9 +552,9 @@
                                 <div class="arrival-card-desktop">
                                     <!-- Contenido a la izquierda -->
                                     <div class="arrival-content">
-                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex justify-content-between align-items-start">
                                             <div>
-                                                <h4 class="mb-1">{{ $reserva->titular->nombre ?? 'N/A' }} {{ $reserva->titular->apellido ?? '' }}</h4>
+                                                <h5 class="mb-1">{{ $reserva->titular->nombre ?? 'N/A' }} {{ $reserva->titular->apellido ?? '' }}</h5>
                                                 <p class="mb-1"><i class="fas fa-users me-1"></i> {{ $reserva->cantidad_pasajeros }} pasajeros</p>
                                                 <p class="mb-1"><i class="fas fa-plane me-1"></i> Vuelo: {{ $reserva->nro_vuelo_llegada ?? 'N/A' }}</p>
                                                 <p class="mb-0"><i class="far fa-clock me-1"></i> {{ $reserva->hora_llegada ?? 'N/A' }}</p>
@@ -485,11 +567,14 @@
                                     </div>
 
                                     <!-- Botón a la derecha (solo visible en escritorio) -->
-                                    <div class="arrival-button-desktop">
-                                        <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn-reserva pulse">
-                                            <i class="fas fa-eye"></i> Ver Reserva
-                                        </a>
-                                    </div>
+                                        
+                                        <div class="arrival-button-desktop">
+                                            <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn-reserva pulse">
+                                                <i class="fas fa-eye"></i> Ver Reserva
+                                            </a>
+                                        </div>
+                                    
+                                    
                                 </div>
 
                                 <!-- Botón para móvil (oculto en escritorio) -->
@@ -526,8 +611,8 @@
                                             </div>
                                         </div>
                                         <div class="text-end">
-                                            <div class="fw-bold">{{ \Carbon\Carbon::parse($reserva->fecha_salida)->format('d M Y') }}</div>
-                                            <small class="text-muted">Fecha de salida</small>
+                                            <span class="badge badge-salida">Próxima Salida</span>
+                                            <div class="fw-bold mt-1">{{ \Carbon\Carbon::parse($reserva->fecha_salida)->format('d M Y') }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -558,13 +643,15 @@
                                     <div class="machu-content">
                                         <div class="d-flex justify-content-between align-items-start mb-3">
                                             <div>
-                                                <h4 class="mb-1">{{ $tourMachu->reserva->titular->nombre ?? 'N/A' }} {{ $tourMachu->reserva->titular->apellido ?? '' }}</h4>
+                                                <h5 class="mb-1">{{ $tourMachu->reserva->titular->nombre ?? 'N/A' }} {{ $tourMachu->reserva->titular->apellido ?? '' }}</h5>
                                                 <p class="mb-1"><i class="fas fa-users me-1"></i> {{ $tourMachu->reserva->cantidad_pasajeros }} pasajeros</p>
                                                 <p class="mb-1"><i class="fas fa-route me-1"></i> {{ $tourMachu->tour->nombreTour ?? 'N/A' }}</p>
-                                                <p class="mb-0"><i class="far fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($tourMachu->fecha)->format('d M Y') }}</p>
+
                                             </div>
                                             <div class="text-end">
-                                                <span class="badge badge-primary">Próximo</span>
+                                                <span class="badge badge-primary"><i class="far fa-calendar me-1"></i> Fecha del tour</span>
+                                                <div class="fw-bold mt-1">{{ \Carbon\Carbon::parse($tourMachu->fecha)->format('d M Y')  }}</div>
+
                                             </div>
                                         </div>
 
@@ -572,18 +659,20 @@
                                             @php $detalle = $tourMachu->detalleMachupicchu; @endphp
                                             <div class="row mt-3">
                                                 <div class="col-md-6">
-                                                    <p class="mb-1"><strong>Entrada:</strong> {{ $detalle->tipo_entrada ?? 'No especificado' }}</p>
-                                                    <p class="mb-0"><strong>Circuito:</strong> {{ $detalle->ruta1 ?? 'No tiene' }}</p>
+                                                    <p class="mb-0"><strong>Entrada:</strong> {{ $detalle->tipo_entrada ?? 'No especificado' }}</p>
+                                                    <p class="mb-0"><strong>Circuito:</strong> {{ $detalle->ruta1 ?? $detalle->ruta2 ?? $detalle->ruta3 ?? '-' }}</p>
+                                                    <p class="mb-0"><strong>Horario:</strong> {{ \Carbon\Carbon::parse($detalle->horario_entrada)->format('H:i')  ?? '-'}}</p>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <p class="mb-1"><strong>Tren:</strong> 
+                                                    <p class="mb-0"><strong>Tren:</strong> 
                                                         @if(isset($detalle->tipo_tren))
                                                             {{ $detalle->tipo_tren == 'turístico' ? 'Turístico' : 'Local' }}
                                                         @else
                                                             No especificado
                                                         @endif
                                                     </p>
-                                                    <p class="mb-0"><strong>Horario:</strong> {{ $detalle->horario_entrada ?? 'No especificado' }}</p>
+                                                    <p class="mb-0"><strong>Fecha tren ida:</strong> {{ $detalle->fecha_tren_ida ?? 'No especificado' }}</p>
+                                                    <p class="mb-0"><strong>Horario tren ida:</strong> {{ $detalle->horario_ida ?? 'No especificado' }}</p>
                                                 </div>
                                             </div>
                                         @else
@@ -609,65 +698,9 @@
                         @endforeach
                     </div>
                 </div>
-            </div>
 
-            <!-- Columna derecha -->
-            <div class="col-lg-4">
-                <!-- Estado de Facturaciones -->
-                <div class="card card-alert">
-                    <div class="card-header">
-                        <div>
-                            <i class="fas fa-file-invoice-dollar"></i> Facturaciones Pendientes
-                        </div>
-                        <span class="badge badge-danger">{{ $factPendientes->count() }} pendientes</span>
-                    </div>
-                    <div class="card-body">
-                        @if($factPendientes->count() > 0)
-                            @foreach($factPendientes as $factura)
-                                <div class="factura-card mb-3">
-                                    <!-- Contenedor principal para escritorio -->
-                                    <div class="factura-card-desktop">
-                                        <!-- Contenido a la izquierda -->
-                                        <div class="factura-content">
-                                            <h4 class="mb-0">{{ $factura->titular ?? 'N/A' }}</h4>
-                                            <p class="mb-0">Tipo: {{ $factura->tipo }}</p>                                            
-                                            <small class="text-muted">{{ \Carbon\Carbon::parse($factura->fecha_giro)->format('d M Y') }}</small>
-                                        </div>
 
-                                        <!-- Botones a la derecha (escritorio) -->
-                                        <div class="factura-button-desktop">
-                                            @if(isset($factura->reserva_id))
-                                                <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn-reservaz btn-reservaz-sm">
-                                                    <i class="fas fa-eye"></i> Ver Reserva
-                                                </a>
-                                            @endif
-                                            <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn-actualizar btn-actualizar-sm">
-                                                <i class="fas fa-edit"></i> Actualizar
-                                            </a>
-                                        </div>
-                                    </div>
 
-                                    <!-- Botones para móvil (oculto en escritorio) -->
-                                    <div class="factura-button-mobile mt-2">
-                                        @if(isset($factura->reserva_id))
-                                            <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn-reservaz btn-reservaz-sm w-100 mb-2">
-                                                <i class="fas fa-eye"></i> Ver Reserva
-                                            </a>
-                                        @endif
-                                        <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn-actualizar btn-actualizar-sm w-100">
-                                            <i class="fas fa-edit"></i> Actualizar
-                                        </a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <div class="empty-state">
-                                <i class="fas fa-check-circle"></i>
-                                <p>No hay facturaciones pendientes</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
 
                 <!-- Último Depósito Recibido -->
                 <div class="card">
@@ -688,7 +721,7 @@
                                                 <i class="fas fa-money-bill-wave"></i>
                                             </div>
                                             <div>
-                                                <h4 class="mb-1">{{ $ultimoDeposito->nombre_depositante ?? 'N/A' }}</h4>
+                                                <h5 class="mb-1">{{ $ultimoDeposito->nombre_depositante ?? 'N/A' }}</h5>
                                                 <p class="mb-0">$ {{ number_format($ultimoDeposito->monto, 2) }}</p>
                                                 <small class="text-muted">{{ $ultimoDeposito->tipo_deposito }}</small><br>
                                                 <small class="text-muted">{{ \Carbon\Carbon::parse($ultimoDeposito->fecha)->format('d M Y') }}</small>
@@ -725,6 +758,68 @@
                             <div class="empty-state">
                                 <i class="fas fa-money-bill-wave"></i>
                                 <p>No hay depósitos registrados</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Estado de Facturaciones -->
+                <div class="card card-alert">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-file-invoice-dollar"></i> Facturaciones Pendientes
+                        </div>
+                        <span class="badge badge-danger">{{ $factPendientes->count() }} pendientes</span>
+                    </div>
+                    <div class="card-body">
+                        @if($factPendientes->count() > 0)
+                            @foreach($factPendientes as $factura)
+                                <div class="factura-card mb-3">
+                                    <!-- Contenedor principal para escritorio -->
+                                    <div class="factura-card-desktop">
+                                        <div class="d-flex align-items-center">
+                                            <!-- Contenido a la izquierda -->
+                                            <div class="transaction-icon transaction-factura">
+                                                <i class="fa-solid fa-circle-exclamation"></i>
+                                            </div>
+
+                                            <div>
+                                                <h5 class="mb-0">{{ $factura->titular ?? 'N/A' }}</h5>
+                                                <p class="mb-0">Tipo: {{ $factura->tipo }}</p>                                            
+                                                <small class="text-muted">{{ \Carbon\Carbon::parse($factura->fecha_giro)->format('d M Y') }}</small>
+                                            </div>
+                                        </div>
+
+                                        <!-- Botones a la derecha (escritorio) -->
+                                        <div class="factura-button-desktop">
+                                            @if(isset($factura->reserva_id))
+                                                <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn-reservaz btn-reservaz-sm">
+                                                    <i class="fas fa-eye"></i> Ver Reserva
+                                                </a>
+                                            @endif
+                                            <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn-actualizar btn-actualizar-sm">
+                                                <i class="fas fa-edit"></i> Actualizar
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botones para móvil (oculto en escritorio) -->
+                                    <div class="factura-button-mobile mt-2">
+                                        @if(isset($factura->reserva_id))
+                                            <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn-reservaz btn-reservaz-sm w-100 mb-2">
+                                                <i class="fas fa-eye"></i> Ver Reserva
+                                            </a>
+                                        @endif
+                                        <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn-actualizar btn-actualizar-sm w-100">
+                                            <i class="fas fa-edit"></i> Actualizar
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="empty-state">
+                                <i class="fas fa-check-circle"></i>
+                                <p>No hay facturaciones pendientes</p>
                             </div>
                         @endif
                     </div>
@@ -809,7 +904,7 @@
                     </div>
 
                 </div>
-            </div>
+            
         </div>
 
         <!-- Gráficos -->

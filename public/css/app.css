@@ -9,6 +9,7 @@
     --warning: #ffc107;
     --dark: #2d3e50;
     --light: #f8f9fa;
+
     --sidebar-width: 280px;
     --sidebar-collapsed: 80px;
     --header-height: 70px;
@@ -336,6 +337,13 @@ body {
             color: white;
         }
 
+        .badge-primary a{
+            text-decoration: none;
+            color: white;
+        }
+
+        
+
         /* Contenido principal */
         .main-content {
             flex: 1;
@@ -588,12 +596,16 @@ body {
 }
 
 .card-header {
-    background: linear-gradient(to right, var(--primary), var(--primary-light));
-    color: white;
-    font-weight: 600;
+    background: white;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
     padding: 1rem 1.5rem;
-    border-bottom: none;
+    font-weight: 600;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
+
 .card-header i {
     color: var(--primary);
     margin-right: 0.5rem;
@@ -740,6 +752,7 @@ body {
     justify-content: center;
     gap: 0.5rem;
 }
+
 .btn-action {
     width: 36px;
     height: 36px;
@@ -753,9 +766,32 @@ body {
     background-color: rgba(20, 165, 181, 0.1);
     color: var(--primary);
 }
+.btn-ver-reserva{
+    background: linear-gradient(135deg, var(--warning) 0%, #ffa653 100%);
+    border: none;
+    border-radius: 20px;
+    padding: 0.4rem 0.8rem;
+    color: white;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.3s;
+    width: auto;
+    text-decoration: none;
+}
+.btn-ver-reserva:hover {
+    background: linear-gradient(135deg, #ff9f43 0%, var(--warning) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    color: white;
+}
 .btn-view:hover {
     background-color: var(--primary);
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 .btn-edit {
     background-color: rgba(235, 223, 45, 0.1);
@@ -764,6 +800,8 @@ body {
 .btn-edit:hover {
     background-color: var(--warning);
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 .btn-delete {
     background-color: rgba(220, 53, 69, 0.1);
@@ -772,6 +810,8 @@ body {
 .btn-delete:hover {
     background-color: #dc3545;
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 

@@ -101,6 +101,7 @@
 
             .badge-cant{
                 background-color: var(--primary-dark) !important;
+                margin-right: 0.5rem;
                 color: #fff !important;
             }
 
@@ -404,7 +405,9 @@
                                                     }
                                                 @endphp
                                                 <tr class="reserva-item">
-                                                    <td><small>#{{ $reserva->id }}</small></td>
+                                                    <td>
+                                                        <small>#{{ $reserva->id }}</small>
+                                                    </td>
                                                     <td>
                                                         <div class="fw-bold">{{ $reserva->titular->nombre ?? '-' }} {{ $reserva->titular->apellido ?? '' }}</div>
                                                         <small class="badge {{ $badgeClass }}">{{ $estado }}</small>
@@ -415,15 +418,15 @@
                                                     <td>
                                                         <div class="fw-medium">{{ $reserva->fecha_llegada ? \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d/m/Y') : 'N/A' }}</div>
                                                         @if($reserva->hora_llegada)
-                                                            <small class="text-muted">{{ $reserva->hora_llegada }}</small>
+                                                            <small class="text-muted"><i class="fa-regular fa-clock"></i> {{ $reserva->hora_llegada }}</small>
                                                         @endif
                                                     </td>
                                                     <td>{{ $reserva->nro_vuelo_llegada ?? '-' }}</td>
                                                     <td>
                                                         @if($reserva->tourReserva->count() > 0)
                                                             <div class="d-flex align-items-center">
-                                                                <span class="badge badge-cant"> {{ $reserva->cantidad_tours }} </span>
-                                                                <br>
+                                                                <span class="badge badge-cant"> {{ $reserva->cantidad_tours }}</span>
+                                                                
                                                                 <div>
                                                                     @foreach($reserva->tourReserva->take(1) as $t)
                                                                         <div class="small">{{ $t->tour->nombreTour }}</div>

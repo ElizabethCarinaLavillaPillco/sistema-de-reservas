@@ -52,8 +52,9 @@
                                         <thead>
                                             <tr>
                                                 <th>#</th>
-                                                <th>Tipo</th>
                                                 <th>Reserva</th>
+                                                <th>Tipo</th>
+                                                
                                                 <th>Titular</th>
                                                 <th>Pais</th>
                                                 <th>Fecha Giro</th>
@@ -67,15 +68,19 @@
                                             @forelse($facturacion as $f)
                                                 <tr>
                                                     <td>{{ $f->id }}</td>
-                                                    <td>{{ $f->tipo_fac }}</td>
                                                     <td>
                                                         @if ($f->reserva)
-                                                            <a href="{{ route('admin.reservas.show', $f->reserva_id) }}">
-                                                                {{ $f->reserva_id }}</a>
+                                                            <a href="{{ route('admin.facturacion.show', $f->reserva_id) }}" 
+                                                                class="btn-action-ver-reserva btn-ver-reserva"
+                                                                    data-bs-toggle="tooltip" title="Ver Reserva">
+                                                                    {{ $f->reserva_id }}
+                                                                </a>
                                                         @else
                                                             <span class="text-muted">No asociada</span>
                                                         @endif
                                                     </td>
+                                                    <td>{{ $f->tipo_fac }}</td>
+                                                    
                                                     
                                                     <td>
                                                         <div class="fw-bold">{{ $f->titular }}</div>

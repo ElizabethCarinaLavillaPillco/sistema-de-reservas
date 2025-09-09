@@ -17,6 +17,12 @@ class DashboardController extends Controller
     {
         $hoy = Carbon::today();
 
+
+        //0. Tours de hoy y mañana (para mostrar en el encabezado)
+        $toursHoy = TourReserva::whereDate('fecha', $hoy)->get();
+        $toursManana = TourReserva::whereDate('fecha', $hoy->copy()->addDay())->get();
+
+
         // 1. Próximas llegadas (las más cercanas, ordenadas por fecha_llegada)
         $proximasLlegadas = Reserva::whereDate('fecha_llegada', '>=', $hoy)
             ->orderBy('fecha_llegada', 'asc')
@@ -103,7 +109,9 @@ class DashboardController extends Controller
             'depositosMensuales',
             'facturadoEmitido',
             'facturasRecibidas',
-            'demandaReservas'
+            'demandaReservas',
+            'toursHoy',
+            'toursManana'
         ));
     }
 }

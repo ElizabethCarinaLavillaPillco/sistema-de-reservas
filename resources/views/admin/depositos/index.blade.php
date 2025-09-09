@@ -51,8 +51,9 @@
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Nombre del Depositante</th>
                                                 <th>Reserva</th>
+                                                <th>Nombre del Depositante</th>
+                                                
                                                 <th>Monto</th>
                                                 <th>Fecha</th>
                                                 <th>Tipo de Depósito</th>
@@ -64,19 +65,24 @@
                                             @forelse($depositos as $deposito)
                                                 <tr>
                                                     <td>{{ $deposito->id }}</td>
+
+                                                    <td>
+                                                        @if ($deposito->reserva)
+                                                            <a href="{{ route('admin.reservas.show', $deposito->reserva_id) }}" 
+                                                                class="btn-action-ver-reserva btn-ver-reserva"
+                                                                    data-bs-toggle="tooltip" title="Ver Reserva">
+                                                                    {{ $deposito->reserva_id }}
+                                                                </a>
+                                                        @else
+                                                            <span class="text-muted">No asociada</span>
+                                                        @endif
+                                                    </td>
                                                     <td>
                                                         <div class="fw-bold">{{ $deposito->nombre_depositante }}
                                                         </div>
                                                     </td>
                                                     
-                                                    <td>
-                                                        @if ($deposito->reserva)
-                                                            <a href="{{ route('admin.reservas.show', $deposito->reserva_id) }}">
-                                                                {{ $deposito->reserva_id }}</a>
-                                                        @else
-                                                            <span class="text-muted">No asociada</span>
-                                                        @endif
-                                                    </td>
+                                                    
                                                     <td>${{ number_format($deposito->monto, 2) }}</td>
                                                     <td>{{ $deposito->fecha  ? \Carbon\Carbon::parse($deposito->fecha)->format('d/m/Y') : 'N/A'  }}</td>
                                                     <td>{{ $deposito->tipo_deposito }}</td>
