@@ -23,7 +23,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('reservas', function (Blueprint $table) {
-            //
+            $table->dropColumn('cantidad_depositos');
         });
+
+        
     }
 };

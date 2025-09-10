@@ -28,7 +28,8 @@ class Reserva extends Model
         'cantidad_tours',
         'cantidad_estadias',
         'total',
-        'adelanto'
+        'adelanto',
+        'cantidad_depositos'
     ];
 
     // Generar ID personalizado incremental con prefijo "R"

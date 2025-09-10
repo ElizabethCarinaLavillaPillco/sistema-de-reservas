@@ -2016,10 +2016,8 @@
 
         /* ---------------- ESTADÍAS (MÚLTIPLES) ---------------- */   
         const listaEstadiasAgregadas = document.getElementById('listaEstadiasAgregadas');
-        const listaDepositosAgregados = document.getElementById('listaDepositosAgregados');
         const cantidadEstadiasInput = document.getElementById('cantidad_estadias');
         
-
         function agregarEstadia() {
             const tipo = document.getElementById('tipo_estadia_input').value;
             const nombre = document.getElementById('nombre_estadia_input').value.trim();
@@ -2093,6 +2091,140 @@
 
             actualizarCantidadEstadias();
             limpiarCamposEstadia();
+
+        }
+
+        function eliminarEstadia(btn) {
+            btn.closest('li').remove();
+            actualizarCantidadEstadias();
+        }
+
+        function actualizarCantidadEstadias() {
+            cantidadEstadiasInput.value = listaEstadiasAgregadas.children.length;
+        }
+
+        function editarEstadia(btn) {
+            const li = btn.closest('li');
+            editandoEstadia = li; // guardamos el que estamos editando
+
+            // recuperar valores de los inputs hidden
+            const tipo = li.querySelector('input[name*="[tipo_estadia]"]').value;
+            const nombre = li.querySelector('input[name*="[nombre_estadia]"]').value;
+            const ubicacion = li.querySelector('input[name*="[ubicacion]"]').value;
+            const fecha = li.querySelector('input[name*="[fecha]"]').value;
+            const habitacion = li.querySelector('input[name*="[habitacion]"]').value;
+
+            // pasamos a los inputs del formulario
+            document.getElementById('tipo_estadia_input').value = tipo;
+            document.getElementById('nombre_estadia_input').value = nombre;
+            document.getElementById('ubicacion_estadia_input').value = ubicacion;
+            document.getElementById('fecha_estadia_input').value = fecha;
+            document.getElementById('habitacion_estadia_input').value = habitacion;
+
+            // cambiar botón
+            const btnAdd = document.getElementById('btn-agregar-estadia');
+            btnAdd.innerText = "Actualizar Estadía";
+            btnAdd.classList.add("editing");
+            document.getElementById('form-estadia').classList.add("editing");
+
+            // 🔹 Scroll suave hacia el formulario
+            document.getElementById('form-estadia').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center' // centra el bloque en la pantalla
+            });
+
+            const form = document.getElementById('form-estadia');
+            form.classList.add('flash');
+            setTimeout(() => form.classList.remove('flash'), 2000); // quitar animación
+
+        }
+
+        function limpiarCamposEstadia() {
+            document.getElementById('tipo_estadia_input').value = '';
+            document.getElementById('nombre_estadia_input').value = '';
+            document.getElementById('ubicacion_estadia_input').value = '';
+            document.getElementById('fecha_estadia_input').value = '';
+            document.getElementById('habitacion_estadia_input').value = '';
+        }
+
+
+        /* ---------------- DEPOSITOS (MÚLTIPLES) ---------------- */   
+        const listaDepositosAgregados = document.getElementById('listaDepositosAgregados');
+        const cantidadDepositosInput = document.getElementById('cantidad_depositos');
+        
+        function agregarDeposito() {
+            const tipo = document.getElementById('tipo_estadia_input').value;
+            const nombre = document.getElementById('nombre_estadia_input').value.trim();
+            const ubicacion = document.getElementById('ubicacion_estadia_input').value.trim();
+            const fecha = document.getElementById('fecha_estadia_input').value;
+            const habitacion = document.getElementById('habitacion_estadia_input').value.trim();
+
+            if (!nombre) {
+                if (!confirm('Estás agregando una estadía sin nombre. ¿Continuar?')) return;
+            }
+
+            //const li = document.createElement('li');
+            //li.classList.add('list-group-item');
+            //li.innerHTML = `
+            if (editandoDeposito) {
+                editandoDeposito.innerHTML = `
+                    <div><strong>Tipo:</strong> ${tipo}</div>
+                    <div><strong>Nombre:</strong> ${nombre || '-'}</div>
+                    <div><strong>Ubicación:</strong> ${ubicacion || '-'}</div>
+                    <div><strong>Fecha:</strong> ${fecha || '-'}</div>
+                    <div><strong>Habitación:</strong> ${habitacion || '-'}</div>
+
+                    <input type="hidden" name="estadias[${depositoIndex}][tipo_estadia]" value="${tipo}">
+                    <input type="hidden" name="estadias[${depositoIndex}][nombre_estadia]" value="${nombre}">
+                    <input type="hidden" name="estadias[${depositoIndex}][ubicacion]" value="${ubicacion}">
+                    <input type="hidden" name="estadias[${depositoIndex}][fecha]" value="${fecha}">
+                    <input type="hidden" name="estadias[${depositoIndex}][habitacion]" value="${habitacion}">
+
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-warning" onclick="editarEstadia(this)">Editar</button>    
+                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarEstadia(this)">Eliminar</button>
+                    </div>
+                `;
+
+                // resetear estado
+                editandoDeposito = null;
+                const btnAdd = document.getElementById('btn-agregar-deposito');
+                btnAdd.innerText = "Agregar Deposito";
+                btnAdd.classList.remove("editing");
+                document.getElementById('form-deposito').classList.remove("editing");
+
+
+            } else {
+                const li = document.createElement('li');
+                li.classList.add('list-group-item');
+                li.dataset.index = depositoIndex;
+
+                li.innerHTML = `
+                    <div><strong>Tipo:</strong> ${tipo}</div>
+                    <div><strong>Nombre:</strong> ${nombre || '-'}</div>
+                    <div><strong>Ubicación:</strong> ${ubicacion || '-'}</div>
+                    <div><strong>Fecha:</strong> ${fecha || '-'}</div>
+                    <div><strong>Habitación:</strong> ${habitacion || '-'}</div>
+
+                    <input type="hidden" name="depositos[${depositoIndex}][tipo_estadia]" value="${tipo}">
+                    <input type="hidden" name="depositos[${depositoIndex}][nombre_estadia]" value="${nombre}">
+                    <input type="hidden" name="depositos[${depositoIndex}][ubicacion]" value="${ubicacion}">
+                    <input type="hidden" name="depositos[${depositoIndex}][fecha]" value="${fecha}">
+                    <input type="hidden" name="depositos[${depositoIndex}][habitacion]" value="${habitacion}">
+
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this)">Eliminar</button>
+                    </div>
+                `;
+
+                listaDepositosAgregadas.appendChild(li);
+                depositoIndex++;
+        
+            }
+
+            actualizarCantidadDepositos();
+            limpiarCamposDeposito();
 
         }
 

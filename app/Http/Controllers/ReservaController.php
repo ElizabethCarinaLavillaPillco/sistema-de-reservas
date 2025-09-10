@@ -98,6 +98,7 @@ class ReservaController extends Controller
             'cantidad_estadias'  => 'required|integer|min:0',
             'total'              => 'required|numeric|min:0',
             'adelanto'           => 'nullable|numeric|min:0',
+            'cantidad_depositos'  => 'nullable|integer|min:0',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -127,17 +128,28 @@ class ReservaController extends Controller
                 }
             }
 
-            if ($request->has('depositos')) {
-                foreach ($request->depositos as $data) {
-                    if (!empty($data['monto'])) {
-                        $reserva->depositos()->create($data);
+            if ($request->has('depositos') && is_array($request->depositos)) {
+                foreach ($request->depositos as $depositoData) {
+                    // Solo crear si hay algún dato importante
+                    if (!empty($depositoData['monto']) || !empty($depositoData['nombre_depositante'])) {
+                        $reserva->depositos()->create([
+                            'nombre_depositante' => $depositoData['nombre_depositante'] ?? null,
+                            'monto'              => $depositoData['monto'] ?? 0,
+                            'fecha'              => $depositoData['fecha'] ?? null,
+                            'metodo'             => $depositoData['metodo'] ?? null,
+                            'observaciones'      => $depositoData['observaciones'] ?? null,
+                        ]);
                     }
                 }
             }
 
+            // Actualizar resumen de pagos
             $adelanto = $reserva->depositos()->sum('monto');
             $reserva->adelanto = $adelanto;
+            $reserva->cantidad_depositos = $reserva->depositos()->count();
             $reserva->save();
+
+
         });
 
         return redirect()->route('admin.reservas.index')
@@ -190,12 +202,13 @@ class ReservaController extends Controller
 
     public function edit($id)
     {
-        $reserva     = Reserva::with([
+        $reserva= Reserva::with([
             'tourReserva.detalleMachupicchu',
             'tourReserva.detalleBoletoTuristico',
             'tourReserva.pasajeros',
             'tourReserva.includes',
-            'estadias'
+            'estadias',
+            'depositos'
         ])->findOrFail($id);
 
         $proveedores = Proveedor::all();
@@ -222,6 +235,7 @@ class ReservaController extends Controller
             'cantidad_estadias'  => 'required|integer|min:0',
             'total'              => 'required|numeric|min:0',
             'adelanto'           => 'nullable|numeric|min:0',
+            'cantidad_depositos' => 'nullable|integer|min:0',
         ]);
 
         DB::transaction(function () use ($request, $id) {
@@ -232,8 +246,8 @@ class ReservaController extends Controller
             Estadia::where('reserva_id', $reserva->id)->delete();
             
             if ($request->filled('pasajeros')) {
-                Pasajero::whereIn('id', $request->pasajeros)
-                    ->update(['reserva_id' => $reserva->id]);
+            Pasajero::whereIn('id', $request->pasajeros)
+                ->update(['reserva_id' => $reserva->id]);
             }
 
             if ($request->has('tours')) {
@@ -253,17 +267,25 @@ class ReservaController extends Controller
                 }
             }
 
-            if ($request->has('depositos')) {
-                foreach ($request->depositos as $data) {
-                    if (!empty($data['monto'])) {
-                        $reserva->depositos()->create($data);
+            if ($request->has('depositos') && is_array($request->depositos)) {
+                foreach ($request->depositos as $depositoData) {
+                    if (!empty($depositoData['monto']) || !empty($depositoData['nombre_depositante'])) {
+                        $reserva->depositos()->create([
+                            'nombre_depositante' => $depositoData['nombre_depositante'] ?? null,
+                            'monto'              => $depositoData['monto'] ?? 0,
+                            'fecha'              => $depositoData['fecha'] ?? null,
+                            'metodo'             => $depositoData['metodo'] ?? null,
+                            'observaciones'      => $depositoData['observaciones'] ?? null,
+                        ]);
                     }
                 }
             }
 
-            $adelanto = $reserva->depositos()->sum('monto');
-            $reserva->adelanto = $adelanto;
+            // Actualizar resumen de pagos
+            $reserva->adelanto = $reserva->depositos()->sum('monto');
+            $reserva->cantidad_depositos = $reserva->depositos()->count();
             $reserva->save();
+
         });
 
         return redirect()->route('admin.reservas.index')
