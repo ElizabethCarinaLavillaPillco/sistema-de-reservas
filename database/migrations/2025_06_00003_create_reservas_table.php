@@ -38,8 +38,6 @@ return new class extends Migration
             $table->decimal('saldo', 10, 2)->virtualAs('`total` - `adelanto`');
             $table->timestamps();
         });
-
-        
     }
 
     public function down(): void

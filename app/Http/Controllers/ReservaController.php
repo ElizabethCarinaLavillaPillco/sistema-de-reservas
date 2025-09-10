@@ -8,27 +8,26 @@ use App\Models\DetalleTourBoletoTuristico;
 use App\Models\Proveedor;
 use App\Models\Tour;
 use App\Models\TourReserva;
+use App\Models\TourInclude;
 use App\Models\Facturacion;
 use App\Models\DetalleTourMachupicchu;
 use App\Models\Estadia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+
 class ReservaController extends Controller
 {
     public function index(Request $request)
     {
         $hoy = Carbon::today();
 
-        // Proximas reservas (solo para estadística rápida arriba)
         $proximasReservas = Reserva::whereDate('fecha_llegada', '>=', $hoy)
             ->orderBy('fecha_llegada', 'asc')
             ->get();
 
-        // Query principal para tabla de reservas
         $reservas = Reserva::with(['proveedor', 'pasajeros', 'tourReserva']);
 
-        // 🔎 Filtro por búsqueda de nombre/apellido del titular
         if ($request->filled('search')) {
             $busqueda = $request->search;
             $reservas->whereHas('titular', function ($q) use ($busqueda) {
@@ -36,37 +35,31 @@ class ReservaController extends Controller
             });
         }
 
-        // 🔎 Filtro por estado de pago
         if ($request->filled('estado_pago')) {
             $reservas->where('estado_pago', $request->estado_pago);
         }
 
-        // 🔎 Filtro por rango de fechas (llegada, salida o tours)
         if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
             $inicio = Carbon::parse($request->fecha_inicio)->startOfDay();
             $fin = Carbon::parse($request->fecha_fin)->endOfDay();
 
             $reservas->where(function ($q) use ($inicio, $fin) {
                 $q->whereBetween('fecha_llegada', [$inicio, $fin])
-                ->orWhereBetween('fecha_salida', [$inicio, $fin])
-                ->orWhereHas('tourReserva', function ($q2) use ($inicio, $fin) {
-                    $q2->whereBetween('fecha', [$inicio, $fin]);
-                });
+                  ->orWhereBetween('fecha_salida', [$inicio, $fin])
+                  ->orWhereHas('tourReserva', function ($q2) use ($inicio, $fin) {
+                      $q2->whereBetween('fecha', [$inicio, $fin]);
+                  });
             });
         }
 
-        // Si viene query "entrantes", mostrar solo desde hoy en adelante
         if ($request->get('entrantes') == 1) {
             $reservas->whereDate('fecha_llegada', '>=', $hoy);
         }
 
-        // Paginación final
         $reservas = $reservas->orderBy('fecha_llegada', 'asc')->paginate(10);
 
         return view('admin.reservas.index', compact('reservas', 'proximasReservas'));
     }
-
-
 
     public function create()
     {
@@ -76,7 +69,6 @@ class ReservaController extends Controller
         
         $pasajerosSinReserva = Pasajero::whereNull('reserva_id')->get();
         return view('admin.reservas.create', compact('proveedores', 'pasajeros', 'tours','pasajerosSinReserva'));
-        
     }
 
     private function generarCodigoReserva()
@@ -88,7 +80,6 @@ class ReservaController extends Controller
         $numero = intval(substr($ultimo->id, 1)) + 1;
         return 'R' . str_pad($numero, 5, '0', STR_PAD_LEFT);
     }
-
 
     public function store(Request $request)
     {
@@ -110,23 +101,19 @@ class ReservaController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            // Generar código y crear la reserva una sola vez
             $data       = $request->all();
             $data['id'] = $this->generarCodigoReserva();
             $reserva    = Reserva::create($data);
 
-            // Asociar pasajeros
             if ($request->filled('pasajeros')) {
                 Pasajero::whereIn('id', $request->pasajeros)
                     ->update(['reserva_id' => $reserva->id]);
             }
 
-            // Tours
             if ($request->has('tours')) {
-                $this->syncTours($reserva, $request->tours);
+                $this->syncTours($reserva, $request->tours, $request);
             }
             
-            // Guardar estadías asociadas
             if ($request->has('estadias') && is_array($request->estadias)) {
                 foreach ($request->estadias as $estadiaData) {
                     Estadia::create([
@@ -140,7 +127,6 @@ class ReservaController extends Controller
                 }
             }
 
-            // Guardar depósitos asociados
             if ($request->has('depositos')) {
                 foreach ($request->depositos as $data) {
                     if (!empty($data['monto'])) {
@@ -148,17 +134,15 @@ class ReservaController extends Controller
                     }
                 }
             }
+
             $adelanto = $reserva->depositos()->sum('monto');
             $reserva->adelanto = $adelanto;
             $reserva->save();
-
-
         });
 
         return redirect()->route('admin.reservas.index')
             ->with('success', 'Reserva creada correctamente.');
     }
-
 
     private function esMachupicchuEspecial($tourId)
     {
@@ -194,6 +178,8 @@ class ReservaController extends Controller
             'pasajeros',
             'tourReserva.detalleMachupicchu',
             'tourReserva.detalleBoletoTuristico',
+            'tourReserva.pasajeros',
+            'tourReserva.includes',
             'estadias',
             'depositos',
             'facturaciones'
@@ -204,7 +190,14 @@ class ReservaController extends Controller
 
     public function edit($id)
     {
-        $reserva     = Reserva::with(['tourReserva.detalleMachupicchu', 'tourReserva.detalleBoletoTuristico','estadias'])->findOrFail($id);
+        $reserva     = Reserva::with([
+            'tourReserva.detalleMachupicchu',
+            'tourReserva.detalleBoletoTuristico',
+            'tourReserva.pasajeros',
+            'tourReserva.includes',
+            'estadias'
+        ])->findOrFail($id);
+
         $proveedores = Proveedor::all();
         $pasajeros   = Pasajero::all();
         $tours       = Tour::all();
@@ -235,22 +228,18 @@ class ReservaController extends Controller
             $reserva = Reserva::findOrFail($id);
             $reserva->update($request->all());
 
-            // Limpiar relaciones anteriores
             TourReserva::where('reserva_id', $reserva->id)->delete();
             Estadia::where('reserva_id', $reserva->id)->delete();
             
-            //pasajeros
             if ($request->filled('pasajeros')) {
                 Pasajero::whereIn('id', $request->pasajeros)
                     ->update(['reserva_id' => $reserva->id]);
             }
 
-            // Tours
             if ($request->has('tours')) {
-                $this->syncTours($reserva, $request->tours);
+                $this->syncTours($reserva, $request->tours, $request);
             }
 
-            // Guardar estadías actualizadas
             if ($request->has('estadias') && is_array($request->estadias)) {
                 foreach ($request->estadias as $estadiaData) {
                     Estadia::create([
@@ -264,7 +253,6 @@ class ReservaController extends Controller
                 }
             }
 
-            // Guardar depósitos asociados
             if ($request->has('depositos')) {
                 foreach ($request->depositos as $data) {
                     if (!empty($data['monto'])) {
@@ -276,8 +264,6 @@ class ReservaController extends Controller
             $adelanto = $reserva->depositos()->sum('monto');
             $reserva->adelanto = $adelanto;
             $reserva->save();
-
-
         });
 
         return redirect()->route('admin.reservas.index')
@@ -293,12 +279,11 @@ class ReservaController extends Controller
             ->with('success', 'Reserva eliminada correctamente.');
     }
 
-    private function syncTours(Reserva $reserva, array $toursData)
+    private function syncTours(Reserva $reserva, array $toursData, Request $request)
     {
         foreach ($toursData as $tourData) {
             if (empty($tourData['tour_id'])) continue;
 
-            // Crear o actualizar TourReserva
             $tourReserva = TourReserva::updateOrCreate(
                 ['id' => $tourData['id'] ?? null],
                 [
@@ -318,18 +303,34 @@ class ReservaController extends Controller
                 ]
             );
 
-            // Machupicchu
             if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
                 $tourReserva->detalleMachupicchu()
                     ->updateOrCreate([], $tourData['detalles_machu']);
             }
 
-            // Boleto turístico
             if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
                 $tourReserva->detalleBoletoTuristico()
                     ->updateOrCreate([], $tourData['detalles_boleto']);
             }
+
+            // 🔹 Guardar pasajeros asignados a este tour
+            $modo = $request->modo[$tourReserva->id] ?? 'todos';
+            if ($modo === 'todos') {
+                $ids = $reserva->pasajeros->pluck('id')->toArray();
+            } else {
+                $ids = $request->pasajeros[$tourReserva->id] ?? [];
+            }
+            $tourReserva->pasajeros()->sync($ids);
+
+            // 🔹 Guardar includes del tour
+            $incluye = $request->includes[$tourReserva->id] ?? [];
+            $tourReserva->includes()->delete();
+            foreach ($incluye as $concepto) {
+                $tourReserva->includes()->create([
+                    'concepto' => $concepto,
+                    'incluido' => true
+                ]);
+            }
         }
     }
-
 }

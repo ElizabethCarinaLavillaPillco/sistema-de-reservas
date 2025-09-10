@@ -27,7 +27,6 @@ class Pasajero extends Model
         'tipo_documento',  
     ];
 
-    // 👉 Accesor para calcular edad
     public function getEdadAttribute()
     {
         return $this->fecha_nacimiento 
@@ -88,6 +87,13 @@ class Pasajero extends Model
             'BTC'         => "$grupo - $categoria",
             'Otro servicio' => "$grupo - $categoria",
         ];
+    }
+
+    public function tours()
+    {
+        return $this->belongsToMany(TourReserva::class, 'tour_reserva_pasajero')
+                    ->withPivot('incluido')
+                    ->withTimestamps();
     }
 
 

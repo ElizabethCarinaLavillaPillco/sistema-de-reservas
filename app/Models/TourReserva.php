@@ -53,4 +53,16 @@ class TourReserva extends Model
         return $this->hasOne(DetalleTourBoletoTuristico::class, 'tours_reserva_id');
     }
 
+    public function pasajeros()
+    {
+        return $this->belongsToMany(Pasajero::class, 'tour_reserva_pasajero')
+                    ->withPivot('incluido')
+                    ->withTimestamps();
+    }
+
+    public function includes()
+    {
+        return $this->hasMany(TourInclude::class);
+    }
+
 }
