@@ -16,11 +16,12 @@ class DashboardController extends Controller
     public function index()
     {
         $hoy = Carbon::today();
-
+        $manana = Carbon::tomorrow()->toDateString(); // Formato 'Y-m-d'
 
         //0. Tours de hoy y mañana (para mostrar en el encabezado)
         $toursHoy = TourReserva::whereDate('fecha', $hoy)->get();
-        $toursManana = TourReserva::whereDate('fecha', $hoy->copy()->addDay())->get();
+        $toursManana = TourReserva::where('fecha', $manana)->get();
+
 
 
         // 1. Próximas llegadas (las más cercanas, ordenadas por fecha_llegada)

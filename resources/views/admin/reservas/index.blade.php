@@ -386,24 +386,30 @@
                                                 <th>Total</th>
                                                 <th>Adelanto</th>
                                                 <th>Saldo</th>
+                                                <th>Estado</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($reservas as $reserva)
                                                 @php
-                                                    $saldo = $reserva->total - $reserva->adelanto;
+                                                    $totalDepositos = $reserva->depositos->sum('monto'); // suma de todos los depósitos
+                                                    $saldo = $reserva->total - $totalDepositos;
+
                                                     if ($saldo <= 0) {
                                                         $estado = 'Pagado';
                                                         $badgeClass = 'badge-success';
-                                                    } elseif ($reserva->adelanto > 0) {
+                                                    } elseif ($totalDepositos > 0) {
                                                         $estado = 'Pago parcial';
                                                         $badgeClass = 'badge-warning';
                                                     } else {
                                                         $estado = 'Pendiente';
                                                         $badgeClass = 'badge-danger';
                                                     }
+
+                                                    $porcentaje = $reserva->total > 0 ? ($totalDepositos / $reserva->total) * 100 : 0;
                                                 @endphp
+
                                                 <tr class="reserva-item">
                                                     <td>
                                                         <small>#{{ $reserva->id }}</small>
@@ -449,23 +455,25 @@
                                                             <span class="text-muted small">Sin estadía</span>
                                                         @endif
                                                     </td>
-                                                    <td class="fw-bold">S/.{{ number_format($reserva->total, 2) }}</td>
-                                                    <td>S/.{{ number_format($reserva->adelanto, 2) }}</td>
+                                                    <td class="fw-bold">${{ number_format($reserva->total, 2) }}</td>
+                                                    <td>${{ number_format($totalDepositos, 2) }}</td>
                                                     <td>
                                                         <strong class="{{ $saldo <= 0 ? 'text-success' : 'text-danger' }}">
-                                                            S/.{{ number_format($saldo, 2) }}
+                                                            ${{ number_format($saldo, 2) }}
                                                         </strong>
+                                                        
                                                         @if($saldo > 0)
                                                             <div class="progress mt-1" style="height: 5px; width: 60px;">
-                                                                @php
-                                                                    $porcentaje = ($reserva->adelanto / $reserva->total) * 100;
-                                                                @endphp
                                                                 <div class="progress-bar bg-{{ $saldo <= 0 ? 'success' : 'warning' }}" 
-                                                                    role="progressbar" style="width: {{ $porcentaje }}%" 
+                                                                    role="progressbar" 
+                                                                    style="width: {{ $porcentaje }}%" 
                                                                     aria-valuenow="{{ $porcentaje }}" aria-valuemin="0" aria-valuemax="100">
                                                                 </div>
                                                             </div>
                                                         @endif
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $badgeClass }}">{{ $estado }}</span>
                                                     </td>
                                                     <td>
                                                         <div class="d-flex gap-2">

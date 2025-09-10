@@ -90,11 +90,7 @@
 
                                                     <td>
                                                         <div class="d-flex gap-2">
-                                                            <a href="{{ route('admin.depositos.show', $deposito->id) }}" 
-                                                            class="btn-action btn-view" 
-                                                            data-bs-toggle="tooltip" title="Ver detalles">
-                                                                <i class="fa fa-eye"></i>
-                                                            </a>
+                                                            
                                                             <a href="{{ route('admin.depositos.edit', $deposito->id) }}" 
                                                             class="btn-action btn-edit" 
                                                             data-bs-toggle="tooltip" title="Editar">

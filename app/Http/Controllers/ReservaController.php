@@ -139,6 +139,20 @@ class ReservaController extends Controller
                     ]);
                 }
             }
+
+            // Guardar depósitos asociados
+            if ($request->has('depositos')) {
+                foreach ($request->depositos as $data) {
+                    if (!empty($data['monto'])) {
+                        $reserva->depositos()->create($data);
+                    }
+                }
+            }
+            $adelanto = $reserva->depositos()->sum('monto');
+            $reserva->adelanto = $adelanto;
+            $reserva->save();
+
+
         });
 
         return redirect()->route('admin.reservas.index')
@@ -249,6 +263,19 @@ class ReservaController extends Controller
                     ]);
                 }
             }
+
+            // Guardar depósitos asociados
+            if ($request->has('depositos')) {
+                foreach ($request->depositos as $data) {
+                    if (!empty($data['monto'])) {
+                        $reserva->depositos()->create($data);
+                    }
+                }
+            }
+
+            $adelanto = $reserva->depositos()->sum('monto');
+            $reserva->adelanto = $adelanto;
+            $reserva->save();
 
 
         });

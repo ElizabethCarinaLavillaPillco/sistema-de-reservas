@@ -3,6 +3,16 @@
 
 @section('styles')
     <style>
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        /* DASHBORAD */
         .dashboard-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
@@ -11,112 +21,74 @@
             margin-bottom: 2rem;
             box-shadow: var(--shadow);
         }
-
         .dashboard-title {
             font-size: 1.8rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-
         .dashboard-subtitle {
             opacity: 0.9;
             font-weight: 300;
         }
 
-
-        .arrival-content{
+        /* CONTENTS Y CONTAINERS */
+        .arrival-content, .machu-content {
             flex: 1;
         }
-
-        .card-header i {
-            color: var(--primary);
-            margin-right: 0.5rem;
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 2rem;
         }
 
-        .card-body {
+        /*CARDS*/
+        .machu-card, .arrival-card, .factura-card, .transaction-card, .tour-card {
+            background: linear-gradient(to right, rgba(20, 165, 181, 0.1) 0%, rgba(20, 165, 181, 0.05) 100%);
+            border-radius: var(--border-radius);
             padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .transaction-card, .factura-card {
+            padding: 1.25rem;
+            border-radius: var(--border-radius);
+            background: white;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+        }        
+        .machu-card:hover, .arrival-card:hover, .card-alert:hover, .transaction-card:hover, .factura-card:hover,.tour-card:hover  {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .machu-card-desktop, .arrival-card-desktop, .factura-card-desktop, .transaction-card-desktop, .tour-card-desktop  {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
         }
 
-        .card-highlight {
-            border-top: 4px solid var(--primary);
-        }
-
-        .card-secondary {
-            border-top: 4px solid var(--primary-light);
-        }
-        
-
-        .card-alert {
-            border-top: 4px solid var(--accent);
-        }
-
-        .card-success {
-            border-top: 4px solid var(--success);
-        }
-
-        .badge-status {
-            padding: 0.4rem 0.8rem;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-
-        .badge-success {
-            background-color: rgba(40, 167, 69, 0.15);
-            color: var(--success);
-        }
-
-        .badge-warning {
-            background-color: rgba(255, 193, 7, 0.15);
-            color: var(--warning);
-        }
-        .badge-salida{
-            background-color: rgba(54, 61, 62, 0.15);
-            color: var(--dark);
-        }
-
-        .badge-danger {
-            background-color: rgba(220, 53, 69, 0.15);
-            color: #dc3545;
-        }
-
-        .badge-primary {
-            background-color: var(--primary-transparent);
-            color: var(--primary);
-        }
-
+        /* ITEMS */
         .arrival-item, .departure-item {
             padding: 1rem;
             border-radius: var(--border-radius);
             margin-bottom: 0.75rem;
             transition: all 0.3s;
         }
-
         .arrival-item {
             background: var(--primary-transparent);
             border-left: 4px solid var(--primary);
         }
-
         .arrival-item:hover {
             background: rgba(20, 165, 181, 0.2);
         }
-
         .departure-item {
             background: #f8f9fa;
             border-left: 4px solid #dee2e6;
         }
-
         .departure-item:hover {
             background: #e9ecef;
         }
-
-        .machu-card, .arrival-card {
-            background: linear-gradient(to right, rgba(20, 165, 181, 0.1) 0%, rgba(20, 165, 181, 0.05) 100%);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
         .factura-item {
             padding: 0.75rem;
             border-radius: var(--border-radius);
@@ -128,18 +100,10 @@
             justify-content: space-between;
         }
 
+        /*/ITEMS ESPECIFICOS DE FACTURACION DEPOSITO*/
         .factura-pendiente {
             background: rgba(220, 53, 69, 0.05);
         }
-
-        .transaction-card, .factura-card {
-            padding: 1.25rem;
-            border-radius: var(--border-radius);
-            background: white;
-            box-shadow: var(--shadow);
-            margin-bottom: 1rem;
-        }
-
         .transaction-icon {
             width: 50px;
             height: 50px;
@@ -150,8 +114,6 @@
             margin-right: 1rem;
             font-size: 1.25rem;
         }
-        
-
         .transaction-deposit {
             background: rgba(40, 167, 69, 0.1);
             color: var(--success);
@@ -160,75 +122,53 @@
             background: rgba(167, 40, 40, 0.1);
             color: #dc3545;
         }
-
         .transaction-invoice {
             background: rgba(20, 165, 181, 0.1);
             color: var(--primary);
         }
-
         .pago-status {
             padding: 1rem;
             border-radius: var(--border-radius);
             text-align: center;
             margin-bottom: 1rem;
         }
-
         .pago-pendiente {
             background: rgba(220, 53, 69, 0.1);
             color: #dc3545;
             border: 1px solid rgba(220, 53, 69, 0.2);
         }
-
         .pago-al-dia {
             background: rgba(40, 167, 69, 0.1);
             color: var(--success);
             border: 1px solid rgba(40, 167, 69, 0.2);
         }
 
+
+        /* BOTONES */
         .pago-pendiente .btn-agregar {
             background: linear-gradient(135deg, rgba(220, 53, 69, 0.15) 0%, rgba(220, 53, 69, 0.3) 100%);
         }
         .pago-pendiente .btn-agregar:hover {
             background: linear-gradient(135deg, rgba(220, 53, 69, 0.3) 0%, rgba(220, 53, 69, 0.5) 100%);
         }
-
         .pago-al-dia .btn-agregar {
             background: linear-gradient(135deg, rgba(40, 167, 69, 0.15) 0%, rgba(40, 167, 69, 0.3) 100%);
         }
         .pago-al-dia .btn-agregar:hover {
             background: linear-gradient(135deg, rgba(40, 167, 69, 0.3) 0%, rgba(40, 167, 69, 0.5) 100%);
         }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-bottom: 2rem;
+        .machu-button-desktop, .arrival-button-desktop, .factura-button-desktop, .transaction-button-desktop  {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            padding: 1rem;
+        }
+        .machu-button-mobile, .arrival-button-mobile, .factura-button-mobile, .transaction-button-mobile  {
+            display: none;
         }
 
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--dark);
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--primary-light);
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-header {
-                text-align: center;
-            }
-            
-            .card-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .card-header .badge {
-                margin-top: 0.5rem;
-            }
-        }
-
+        /*VACIOS*/
         .empty-state {
             text-align: center;
             padding: 2rem;
@@ -241,165 +181,20 @@
             color: #dee2e6;
         }
 
-        /* Estilos para los botones Ver Reserva */
-        .btn-reserva {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border: none;
-            border-radius: 20px;
-            padding: 0.5rem 1rem;
-            color: white;
-            font-weight: 500;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .btn-reservaz {
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
-            border: none;
-            border-radius: 20px;
-            padding: 0.4rem 0.8rem;          /* más pequeño */
-            color: white;
-            font-weight: 500;
-            font-size: 0.8rem;               /* aún más pequeño */
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .btn-actualizar {
-            background: linear-gradient(135deg, var(--warning) 0%, #ff9f43 100%);
-            border: none;
-            border-radius: 20px;
-            padding: 0.4rem 0.8rem;
-            color: white;
-            font-weight: 500;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .btn-agregar {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 20px;
-            text-decoration: none;
-            color: inherit;              /* hereda el color del padre (.pago-pendiente o .pago-al-dia) */
-            background: rgba(0,0,0,0.05);
-            margin-top: 0.5rem;
-        }
-
-        .btn-agregar:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .btn-reserva:hover {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            color: white;
-        }
-        .btn-reservaz:hover {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            color: white;
-        }
-        .btn-actualizar:hover{
-            background: linear-gradient(135deg, #ff9f43 0%, var(--warning) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            color: white;
-        }
-
-        .btn-reserva-sm , .btn-reservaz-sm, .btn-actualizar-sm, .btn-agregar.sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
-        }
-
-        .btn-reservaz + .btn-actualizar {
-            margin-left: 0.5rem;   /* ó 0.75rem / 1rem según necesites */
-        }
-
-
-        /* Animación para los botones */
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(20, 165, 181, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 6px rgba(20, 165, 181, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(20, 165, 181, 0);
-            }
-        }
-
-        .btn-reserva.pulse, .btn-reservaz.pulse, .btn-actualizar.pulse  {
-            animation: pulse 2s infinite;
-        }
-
-        /* Responsive para botones */
+        /* RESPONSIVE */
         @media (max-width: 768px) {
-            .btn-reserva, .btn-reservaz, .btn-actualizar, .btn-agregar  {
-                width: 100%;
-                justify-content: center;
-                margin-top: 0.5rem;
-            }
-            
-            .btn-container {
-                flex-direction: column;
+            .dashboard-header {
+                text-align: center;
             }
         }
-        /* Estilos para el layout de escritorio de Machupicchu */
-        .machu-card-desktop, .arrival-card-desktop, .factura-card-desktop, .transaction-card-desktop  {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 2rem;
-        }
-
-        .machu-content {
-            flex: 1;
-        }
-
-        .machu-button-desktop, .arrival-button-desktop, .factura-button-desktop, .transaction-button-desktop  {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 140px;
-            padding: 1rem;
-        }
-
-        .machu-button-mobile, .arrival-button-mobile, .factura-button-mobile, .transaction-button-mobile  {
-            display: none;
-        }
-
-        /* Estilos responsive */
         @media (max-width: 992px) {
-            .machu-card-desktop, .arrival-card-desktop, .factura-card-desktop, .transaction-card-desktop  {
+            .machu-card-desktop, .arrival-card-desktop, .factura-card-desktop, .transaction-card-desktop, .tour-card-desktop {
                 flex-direction: column;
                 gap: 1rem;
             }
-            
             .machu-button-desktop, .arrival-button-desktop, .factura-button-desktop, .transaction-button-desktop {
                 display: none;
             }
-            
             .machu-button-mobile, .arrival-button-mobile, .factura-button-mobile, .transaction-button-mobile {
                 display: flex;
                 justify-content: center;
@@ -408,28 +203,10 @@
                 border-top: 1px solid rgba(0,0,0,0.1);
             }
         }
-
-        /* Ajustes para pantallas muy grandes */
         @media (min-width: 1400px) {
             .machu-button-desktop, .arrival-button-desktop, .factura-button-desktop, .transaction-button-desktop {
                 min-width: 160px;
             }
-            
-            .btn-reserva, .btn-reservaz, .btn-actualizar {
-                padding: 0.6rem 1.2rem;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Mejora visual para la tarjeta de Machupicchu */
-        .machu-card, .arrival-card, .factura-card, .transaction-card {
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .machu-card:hover, .arrival-card:hover, .card-alert:hover, .transaction-card:hover, .factura-card:hover  {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
     </style>
 @endsection
@@ -444,98 +221,96 @@
 
         <div class="row">
                 <!-- Estadísticas Rápidas -->
-                <div class="card card-highlight">
-                    <div class="card-header">
-                        <div>
-                            <i class="fas fa-calendar-day"></i> Próximos Tours
-                        </div>
-                        <div>
-                            @foreach($toursHoy as $tour)
-                                @if($tour->fecha == \Carbon\Carbon::today()->toDateString() || $tour->fecha == \Carbon\Carbon::tomorrow()->toDateString())
-                                    <span class="badge badge-status badge-success me-2">{{ $tour->nombre }}</span>
-                                @endif
-                            @endforeach
-                            
-                        </div>
-                    </div>
-                    <div class="card-header">
-                        <div>
-                            <span class="badge badge-primary me-2">Hoy: {{ $toursHoy->count() }}</span>
-                            <span class="badge badge-info">Mañana: {{ $toursManana->count() }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="card-body p-0">
-                    
-                        <div class="row no-gutters">
-                            <!-- Sección de Tours de Hoy -->
-                            <div class="col-md-6 border-right">
-                                <div class="p-3 bg-warning-light">
-                                    <h5 class="mb-3"><i class="fas fa-sun me-2"></i> Tours de Hoy</h5>
-                                    
-                                    @if($toursHoy->count() > 0)
-                                        @foreach($toursHoy as $tourHoy)
-                                            <div class="arrival-card mb-3 p-2 bg-white rounded">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div class="flex-grow-1">
-                                                        <h5 class="mb-1">{{ $tourHoy->reserva->titular->nombre ?? 'N/A' }} {{ $tourHoy->reserva->titular->apellido ?? '' }}</h5>
-                                                        <p class="mb-1"><i class="fas fa-users me-1"></i> {{ $tourHoy->reserva->cantidad_pasajeros }} pasajeros</p>
-                                                        <p class="mb-1"><i class="fas fa-route me-1"></i> {{ $tourHoy->tour->nombreTour ?? 'N/A' }}</p>
-
-                                                    </div>
-                                                </div>
-                                                <!-- Botón a la derecha (solo visible en escritorio) -->
-                                                <div class="machu-button-desktop">
-                                                    <a href="{{ route('admin.reservas.show', $tourHoy->reserva->id) }}" class="btn-reserva pulse">
-                                                        <i class="fas fa-eye"></i> Ver Reserva
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @else
-                                        <div class="text-center py-3">
-                                            <i class="fas fa-calendar-times fa-2x mb-2 text-muted"></i>
-                                            <p class="text-muted">No hay tours para hoy</p>
-                                        </div>
-                                    @endif
-                                </div>
+                <div class="container mt-4">
+                    <div class="card card-highlight">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-calendar-day"></i> Próximos Tours
                             </div>
-                            
-                            <!-- Sección de Tours de Mañana -->
-                            <div class="col-md-6">
-                                <div class="p-3 bg-info-light">
-                                    <h5 class="mb-3"><i class="fas fa-cloud-sun me-2"></i> Tours de Mañana</h5>
-                                    
-                                    @if($toursManana->count() > 0)
-                                        @foreach($toursManana as $tourM)
-                                            <div class="arrival-card mb-3 p-2 bg-white rounded">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div class="flex-grow-1">
-                                                        <h5 class="mb-1">{{ $tourM->reserva->titular->nombre ?? 'N/A' }} {{ $tourHoy->reserva->titular->apellido ?? '' }}</h5>
-                                                        <p class="mb-1"><i class="fas fa-users me-1"></i> {{ $tourM->reserva->cantidad_pasajeros }} pasajeros</p>
-                                                        <p class="mb-1"><i class="fas fa-route me-1"></i> {{ $tourM->tour->nombreTour ?? 'N/A' }}</p>
-
+                            <div>
+                                <span class="badge bg-primary me-2">Hoy: {{ $toursHoy->count() }}</span>
+                                <span class="badge bg-info">Mañana: {{ $toursManana->count() }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-0">
+                            <div class="row g-0">
+                                <!-- Sección de Tours de Hoy -->
+                                <div class="col-lg-6 border-end">
+                                    <div class="p-3 bg-warning-light h-100">
+                                        <h5 class="mb-3"><i class="fas fa-sun me-2"></i> Tours de Hoy</h5>
+                                        
+                                        @if($toursHoy->count() > 0)
+                                            @foreach($toursHoy as $tourHoy)
+                                                <div class="tour-card p-3 bg-white">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-1 tour-title">{{ $tourHoy->reserva->titular->nombre ?? 'N/A' }} {{ $tourHoy->reserva->titular->apellido ?? '' }}</h6>
+                                                            <p class="mb-1 small"><i class="fas fa-users me-1"></i> {{ $tourHoy->reserva->cantidad_pasajeros }} pasajeros</p>
+                                                            <p class="mb-1 small"><i class="fas fa-route me-1"></i> {{ $tourHoy->tour->nombreTour ?? 'N/A' }}</p>
+                                                            <p class="mb-0 small text-muted"><i class="fas fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($tourHoy->fecha)->format('d/m/Y') }}</p>
+                                                        </div>
+                                                        <div class="text-end ms-2">
+                                                            <span class="badge bg-primary me-2">Hoy</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end mt-2">
+                                                        <a href="{{ route('admin.reservas.show', $tourHoy->reserva->id) }}" class="btn btn-reserva pulse">
+                                                            <i class="fas fa-eye"></i> Ver Reserva
+                                                        </a>
                                                     </div>
                                                 </div>
-                                                <!-- Botón a la derecha (solo visible en escritorio) -->
-                                                <div class="machu-button-desktop">
-                                                    <a href="{{ route('admin.reservas.show', $tourM->reserva->id) }}" class="btn-reserva pulse">
-                                                        <i class="fas fa-eye"></i> Ver Reserva
-                                                    </a>
-                                                </div>
+                                            @endforeach
+                                        @else
+                                            <div class="text-center py-3">
+                                                <i class="fas fa-calendar-times fa-2x mb-2 text-muted"></i>
+                                                <p class="text-muted">No hay tours para hoy</p>
                                             </div>
-                                        @endforeach
-                                    @else
-                                        <div class="text-center py-3">
-                                            <i class="fas fa-calendar-times fa-2x mb-2 text-muted"></i>
-                                            <p class="text-muted">No hay tours para mañana</p>
-                                        </div>
-                                    @endif
+                                        @endif
+                                    </div>
+                                </div>
+                                
+                                <!-- Sección de Tours de Mañana -->
+                                <div class="col-lg-6">
+                                    <div class="p-3 bg-info-light h-100">
+                                        <h5 class="mb-3"><i class="fas fa-cloud-sun me-2"></i> Tours de Mañana</h5>
+                                        
+                                        @if($toursManana->count() > 0)
+                                            @foreach($toursManana as $tourM)
+                                                <div class="tour-card p-3 bg-white">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-1 tour-title">{{ $tourM->reserva->titular->nombre ?? 'N/A' }} {{ $tourM->reserva->titular->apellido ?? '' }}</h6>
+                                                            <p class="mb-1 small"><i class="fas fa-users me-1"></i> {{ $tourM->reserva->cantidad_pasajeros }} pasajeros</p>
+                                                            <p class="mb-1 small"><i class="fas fa-route me-1"></i> {{ $tourM->tour->nombreTour ?? 'N/A' }}</p>
+                                                            <p class="mb-0 small text-muted"><i class="fas fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($tourM->fecha)->format('d/m/Y') }}</p>
+                                                        </div>
+                                                        <div class="text-end ms-2">
+                                                            <span class="badge bg-info">Mañana</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end mt-2">
+                                                        <a href="{{ route('admin.reservas.show', $tourM->reserva->id) }}" class="btn btn-reserva pulse">
+                                                            <i class="fas fa-eye"></i> Ver Reserva
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            <div class="text-center py-3">
+                                                <i class="fas fa-calendar-times fa-2x mb-2 text-muted"></i>
+                                                <p class="text-muted">No hay tours para mañana</p>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+
+
 
                 <!-- Próximas Llegadas -->
                 <div class="card card-highlight">
@@ -569,7 +344,7 @@
                                     <!-- Botón a la derecha (solo visible en escritorio) -->
                                         
                                         <div class="arrival-button-desktop">
-                                            <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn-reserva pulse">
+                                            <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn btn-reserva pulse">
                                                 <i class="fas fa-eye"></i> Ver Reserva
                                             </a>
                                         </div>
@@ -579,7 +354,7 @@
 
                                 <!-- Botón para móvil (oculto en escritorio) -->
                                 <div class="arrival-button-mobile">
-                                    <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn-reserva pulse">
+                                    <a href="{{ route('admin.reservas.show', $reserva->id) }}" class="btn btn-reserva pulse">
                                         <i class="fas fa-eye"></i> Ver Reserva
                                     </a>
                                 </div>
@@ -682,7 +457,7 @@
                                     
                                     <!-- Botón a la derecha (solo visible en escritorio) -->
                                     <div class="machu-button-desktop">
-                                        <a href="{{ route('admin.reservas.show', $tourMachu->reserva->id) }}" class="btn-reserva pulse">
+                                        <a href="{{ route('admin.reservas.show', $tourMachu->reserva->id) }}" class="btn btn-reserva pulse">
                                             <i class="fas fa-eye"></i> Ver Reserva
                                         </a>
                                     </div>
@@ -690,7 +465,7 @@
                                 
                                 <!-- Botón para móvil (oculto en escritorio) -->
                                 <div class="machu-button-mobile">
-                                    <a href="{{ route('admin.reservas.show', $tourMachu->reserva->id) }}" class="btn-reserva pulse">
+                                    <a href="{{ route('admin.reservas.show', $tourMachu->reserva->id) }}" class="btn btn-reserva pulse">
                                         <i class="fas fa-eye"></i> Ver Reserva
                                     </a>
                                 </div>
@@ -732,11 +507,11 @@
                                     <!-- Botones a la derecha (escritorio) -->
                                     <div class="transaction-button-desktop">
                                         @if(isset($ultimoDeposito->reserva_id))
-                                            <a href="{{ route('admin.reservas.show', $ultimoDeposito->reserva_id) }}" class="btn-reservaz btn-reservaz-sm">
+                                            <a href="{{ route('admin.reservas.show', $ultimoDeposito->reserva_id) }}" class="btn btn-reservaz btn-reservaz-sm">
                                                 <i class="fas fa-eye"></i> Ver Reserva
                                             </a>
                                         @endif
-                                        <a href="{{ route('admin.depositos.edit', $ultimoDeposito->id) }}" class="btn-actualizar btn-actualizar-sm">
+                                        <a href="{{ route('admin.depositos.edit', $ultimoDeposito->id) }}" class="btn btn-actualizar btn-actualizar-sm">
                                             <i class="fas fa-edit"></i> Actualizar
                                         </a>
                                     </div>
@@ -745,11 +520,11 @@
                                 <!-- Botones para móvil (oculto en escritorio) -->
                                 <div class="transaction-button-mobile mt-2">
                                     @if(isset($ultimoDeposito->reserva_id))
-                                        <a href="{{ route('admin.reservas.show', $ultimoDeposito->reserva_id) }}" class="btn-reservaz btn-reservaz-sm w-100 mb-2">
+                                        <a href="{{ route('admin.reservas.show', $ultimoDeposito->reserva_id) }}" class="btn btn-reservaz btn-reservaz-sm w-100 mb-2">
                                             <i class="fas fa-eye"></i> Ver Reserva
                                         </a>
                                     @endif
-                                    <a href="{{ route('admin.depositos.edit', $ultimoDeposito->id) }}" class="btn-actualizar btn-actualizar-sm w-100">
+                                    <a href="{{ route('admin.depositos.edit', $ultimoDeposito->id) }}" class="btn btn-actualizar btn-actualizar-sm w-100">
                                         <i class="fas fa-edit"></i> Actualizar
                                     </a>
                                 </div>
@@ -793,11 +568,11 @@
                                         <!-- Botones a la derecha (escritorio) -->
                                         <div class="factura-button-desktop">
                                             @if(isset($factura->reserva_id))
-                                                <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn-reservaz btn-reservaz-sm">
+                                                <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn btn-reservaz btn-reservaz-sm">
                                                     <i class="fas fa-eye"></i> Ver Reserva
                                                 </a>
                                             @endif
-                                            <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn-actualizar btn-actualizar-sm">
+                                            <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn btn-actualizar btn-actualizar-sm">
                                                 <i class="fas fa-edit"></i> Actualizar
                                             </a>
                                         </div>
@@ -806,11 +581,11 @@
                                     <!-- Botones para móvil (oculto en escritorio) -->
                                     <div class="factura-button-mobile mt-2">
                                         @if(isset($factura->reserva_id))
-                                            <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn-reservaz btn-reservaz-sm w-100 mb-2">
+                                            <a href="{{ route('admin.reservas.show', $factura->reserva_id) }}" class="btn btn-reservaz btn-reservaz-sm w-100 mb-2">
                                                 <i class="fas fa-eye"></i> Ver Reserva
                                             </a>
                                         @endif
-                                        <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn-actualizar btn-actualizar-sm w-100">
+                                        <a href="{{ route('admin.facturacion.edit', $factura->id) }}" class="btn btn-actualizar btn-actualizar-sm w-100">
                                             <i class="fas fa-edit"></i> Actualizar
                                         </a>
                                     </div>
@@ -874,7 +649,7 @@
                                     <!-- Botón debajo -->
                                     <div class="mt-3">
                                         <a href="{{ route('admin.contabilidad.edit', $estadoPagos['ultimo_cubierto']->id) }}" 
-                                        class="btn-agregar btn-agregar-sm">
+                                        class="btn btn-agregar btn-agregar-sm">
                                             <i class="fas fa-plus"></i> Agregar
                                         </a>
                                     </div>
@@ -889,7 +664,7 @@
                                     <!-- Botón debajo -->
                                     <div class="mt-3">
                                         <a href="{{ route('admin.contabilidad.edit', $estadoPagos['ultimo_cubierto']->id) }}" 
-                                        class="btn-agregar btn-agregar-sm">
+                                        class="btn btn-agregar btn-agregar-sm">
                                             <i class="fas fa-plus"></i> Agregar
                                         </a>
                                     </div>
@@ -977,6 +752,26 @@
 
 @section('scripts')
     <script>
+        // Función para mostrar/ocultar panel de depuración
+        function toggleDebug() {
+            const panel = document.getElementById('debugPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Verificación inicial
+        document.addEventListener('DOMContentLoaded', function() {
+            const mananaCount = {{ $toursManana->count() }};
+            const debugCount = document.getElementById('debugCount');
+            
+            if (mananaCount > 0) {
+                debugCount.classList.add('text-success', 'fw-bold');
+            } else {
+                debugCount.classList.add('text-danger', 'fw-bold');
+            }
+            
+            console.log('Tours para mañana desde controlador:', mananaCount);
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             // Datos de ejemplo para los gráficos (deben ser reemplazados con datos reales del controlador)
             const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];

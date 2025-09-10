@@ -377,7 +377,11 @@
                                             </div>
                                             <div class="detail-item">
                                                 <span class="detail-label">Fecha Llegada:</span>
-                                                <span class="detail-value">{{ $reserva->fecha_llegada ? \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d/m/Y') : 'N/A'  }} {{ $reserva->hora_llegada ? ' - '.$reserva->hora_llegada : '' }}</span>
+                                                <span class="detail-value">{{ $reserva->fecha_llegada ? \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d/m/Y') : 'N/A'  }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Hora de Llegada:</span>
+                                                <span class="detail-value">{{ $reserva->hora_llegada ?? '-' }}</span>
                                             </div>
                                             <div class="detail-item">
                                                 <span class="detail-label">Nro Vuelo Llegada:</span>
@@ -386,21 +390,27 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="detail-item">
+                                                <span class="detail-label">Cantidad de pax:</span>
+                                                <span class="detail-value">{{ $reserva->cantidad_pasajeros  ?? '-'}}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Cantidad de tours:</span>
+                                                <span class="detail-value">{{ $reserva->cantidad_tours }}</span>
+                                            </div>
+
+                                            <div class="detail-item">
                                                 <span class="detail-label">Fecha Salida:</span>
-                                                <span class="detail-value">{{ $reserva->fecha_salida ? \Carbon\Carbon::parse($reserva->fecha_salida)->format('d/m/Y') : 'N/A' }} {{ $reserva->hora_salida ? ' - '.$reserva->hora_salida : '' }}</span>
+                                                <span class="detail-value">{{ $reserva->fecha_salida ? \Carbon\Carbon::parse($reserva->fecha_salida)->format('d/m/Y') : 'N/A' }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Hora de Salida:</span>
+                                                <span class="detail-value">{{ $reserva->hora_salida ?? '-'}}</span>
                                             </div>
                                             <div class="detail-item">
                                                 <span class="detail-label">Nro Vuelo Retorno:</span>
                                                 <span class="detail-value">{{ $reserva->nro_vuelo_retorno ?? '-' }}</span>
                                             </div>
-                                            <div class="detail-item">
-                                                <span class="detail-label">Total:</span>
-                                                <span class="detail-value"><span class="badge bg-success">S/. {{ number_format($reserva->total, 2) }}</span></span>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span class="detail-label">Adelanto:</span>
-                                                <span class="detail-value"><span class="badge bg-warning text-dark">S/. {{ number_format($reserva->adelanto, 2) }}</span></span>
-                                            </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -657,8 +667,32 @@
                             </div>
                         </div>
 
+                        
                         <!-- Columna derecha -->
                         <div class="col-lg-4">
+                            <!-- Resumen financiero -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-pie section-icon"></i> Resumen Financiero
+                                </div>
+                                <div class="card-body">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Total Reserva:</span>
+                                        <span class="detail-value fw-bold">S/. {{ number_format($reserva->total, 2) }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Total Depósitos:</span>
+                                        <span class="detail-value">S/. {{ number_format($reserva->depositos->sum('monto'), 2) }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Saldo Pendiente:</span>
+                                        <span class="detail-value fw-bold text-danger">
+                                            S/. {{ number_format($reserva->total - $reserva->depositos->sum('monto'), 2) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Depositos realizados -->
                             <div class="card">
                                 <div class="card-header">
@@ -808,31 +842,8 @@
                                 </div>
                             </div>
 
-                            <!-- Resumen financiero -->
-                            <div class="card">
-                                <div class="card-header">
-                                    <i class="fas fa-chart-pie section-icon"></i> Resumen Financiero
-                                </div>
-                                <div class="card-body">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Total Reserva:</span>
-                                        <span class="detail-value fw-bold">S/. {{ number_format($reserva->total, 2) }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Adelanto:</span>
-                                        <span class="detail-value">S/. {{ number_format($reserva->adelanto, 2) }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Saldo Pendiente:</span>
-                                        <span class="detail-value fw-bold text-danger">S/. {{ number_format($reserva->total - $reserva->adelanto, 2) }}</span>
-                                    </div>
-                                    <hr>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Total Depósitos:</span>
-                                        <span class="detail-value">S/. {{ number_format($reserva->depositos->sum('monto'), 2) }}</span>
-                                    </div>
-                                </div>
-                            </div>
+                            
+
                         </div>
                     </div>
 

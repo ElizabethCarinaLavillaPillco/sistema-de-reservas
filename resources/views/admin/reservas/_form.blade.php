@@ -526,40 +526,92 @@
             <!-- SECCIÓN: FINANZAS -->
             <div class="form-section animate-slide-in" style="animation-delay: 0.3s;">
                 <h3 class="form-section-title">
-                    <i class="fas fa-money-bill-wave"></i> Información Financiera
+                    <i class="fas fa-money-bill-wave"></i> Depósitos
                 </h3>
-                
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="total" class="form-label">Total ($)</label>
-                        <input type="number" step="0.01" name="total" id="total" class="form-control"
-                            value="{{ old('total', $reserva->total ?? '') }}">
+                <div id="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-plus-circle me-2"></i> Agregar Depósito
                     </div>
+                    <div class="card-body">
+                        <!-- Contenido del formulario de depósitos -->
+                        <div id="form-estadia" class="card card-body mb-3 bg-light" >
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label>Nombre del Depositante</label>
+                                    <input type="text" name="depositos[{{ $i }}][nombre_depositante]"
+                                        class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Monto</label>
+                                    <input type="number" step="0.01" 
+                                        name="depositos[{{ $i }}][monto]"
+                                        class="form-control deposito-monto">
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Fecha</label>
+                                    <input type="date" 
+                                        name="depositos[{{ $i }}][fecha]"
+                                        class="form-control">
+                                </div>
 
-                    <div class="col-md-4">
-                        <label for="adelanto" class="form-label">Adelanto ($)</label>
-                        <input type="number" step="0.01" name="adelanto" id="adelanto" class="form-control"
-                            value="{{ old('adelanto', $reserva->adelanto ?? '') }}">
-                    </div>
+                                <div class="col-md-6">
+                                    <label>Tipo de Depósito</label>
+                                    <select name="depositos[{{ $i }}][tipo_deposito]" class="form-control">
+                                        <option value="">Seleccione...</option>
+                                        <option value="Deposito WU">Depósito WU</option>
+                                        <option value="Transferencia BCP">Transferencia BCP</option>
+                                        <option value="Transferencia Interbank">Transferencia Interbank</option>
+                                        <option value="Yape">Yape</option>
+                                        <option value="Plin">Plin</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Observaciones</label>
+                                    <textarea name="depositos[{{ $i }}][observaciones]" class="form-control"></textarea>
+                                </div>
 
-                    <div class="col-md-4">
-                        <label for="saldo" class="form-label">Saldo ($)</label>
-                        <input type="number" step="0.01" id="saldo" class="form-control" readonly>
+                                <div class="col-12 text-end">
+                                    <button type="button" class="btn btn-success" id="btn-agregar-deposito" onclick="agregarDeposit()">Agregar Deposito</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="progress mt-3" style="height: 10px;">
-                    <div class="progress-bar" id="progress-bar-pago" role="progressbar" style="width: 0%">
 
-                    </div>
-                </div>
+                <div id="depositos-agregados">
+                    <strong class="d-block mb-2">Depósitos agregados:</strong>
+                    <ul id="listaDepositosAgregados" class="list-group mb-3">
+                        @if($mode === 'edit')
+                            @foreach($reserva->depositos as $i => $deposito)
+                                <li class="list-group-item">
+                                    <div><strong>Nombre del depositante:</strong> {{ $deposito->nombre_depositante }}</div>
+                                    <div><strong>Monto:</strong> {{ $deposito->monto }}</div>
+                                    <div><strong>Fecha:</strong> {{ $deposito->fecha }}</div>
+                                    <div><strong>Tipo de Deposito:</strong> {{ $deposito->tipo_deposito }}</div>
+                                    <div><strong>Observaciones:</strong> {{ $deposito->observaciones }}</div>
 
-                <div class="d-flex justify-content-between mt-1">
-                    <small class="text-muted">0%</small>
-                    <small class="text-muted" id="progress-text">0%</small>
-                    <small class="text-muted">100%</small>
+
+                                    {{-- Hidden inputs para enviar al update --}}
+                                    <input type="hidden" name="depositos[{{ $i }}][nombre_depositante]" value="{{ $deposito->nombre_depositante }}">
+                                    <input type="hidden" name="depositos[{{ $i }}][monto]" value="{{ $deposito->monto }}">
+                                    <input type="hidden" name="depositos[{{ $i }}][fecha]" value="{{ $deposito->fecha }}">
+                                    <input type="hidden" name="depositos[{{ $i }}][tipo_deposito]" value="{{ $deposito->tipo_deposito }}">
+                                    <input type="hidden" name="depositos[{{ $i }}][observaciones]" value="{{ $deposito->observaciones }}">
+
+                                    <button type="button" class="btn btn-sm btn-warning" onclick="editarEstadia(this)">Editar</button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this, {{ $index }})">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </li>
+                            @endforeach
+                        @endif
+                    </ul>
                 </div>
             </div>
+
+            <input type="hidden" name="cantidad_depositos" id="cantidad_depositos" value="{{ $mode === 'edit' ? $reserva->depositos->count() : 0 }}">
+
 
             <!-- SECCIÓN: TOURS -->
             <div class="form-section animate-slide-in" style="animation-delay: 0.4s;">
@@ -1301,22 +1353,29 @@
         /* ---------------- CALCULAR SALDO SOLO FRONTEND ---------------- */
         document.addEventListener('DOMContentLoaded', function() {
             const totalInput = document.getElementById('total');
-            const adelantoInput = document.getElementById('adelanto');
             const saldoInput = document.getElementById('saldo');
             
             function calcularSaldo() {
                 const total = parseFloat(totalInput.value) || 0;
-                const adelanto = parseFloat(adelantoInput.value) || 0;
-                saldoInput.value = (total - adelanto).toFixed(2);
+                let sumDepositos = 0;
+
+                document.querySelectorAll('.deposito-monto').forEach(input => {
+                    sumDepositos += parseFloat(input.value) || 0;
+                });
+
+                saldoInput.value = (total - sumDepositos).toFixed(2);
             }
-            
+
             totalInput.addEventListener('input', calcularSaldo);
-            adelantoInput.addEventListener('input', calcularSaldo);
-            
-            // Calcular inicialmente si hay valores
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('deposito-monto')) {
+                    calcularSaldo();
+                }
+            });
+
             calcularSaldo();
         });
-        
+
 
         /* ---------------- VARIABLES GLOBALES ---------------- */
         let nombreNormalizado = "";
@@ -1957,6 +2016,7 @@
 
         /* ---------------- ESTADÍAS (MÚLTIPLES) ---------------- */   
         const listaEstadiasAgregadas = document.getElementById('listaEstadiasAgregadas');
+        const listaDepositosAgregados = document.getElementById('listaDepositosAgregados');
         const cantidadEstadiasInput = document.getElementById('cantidad_estadias');
         
 
@@ -2089,5 +2149,50 @@
             document.getElementById('habitacion_estadia_input').value = '';
         }
 
+        //añadir depositos
+        document.getElementById('addDeposito').addEventListener('click', function () {
+        const wrapper = document.getElementById('depositos-wrapper');
+        const index = wrapper.querySelectorAll('.deposito-item').length;
+
+        const template = `
+        <div class="deposito-item border rounded p-3 mb-3">
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Nombre del Depositante</label>
+                    <input type="text" name="depositos[${index}][nombre_depositante]" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label>Monto</label>
+                    <input type="number" step="0.01" 
+                        name="depositos[${index}][monto]" 
+                        class="form-control deposito-monto">
+                </div>
+                <div class="col-md-4">
+                    <label>Fecha</label>
+                    <input type="date" name="depositos[${index}][fecha]" class="form-control">
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <label>Tipo de Depósito</label>
+                    <select name="depositos[${index}][tipo_deposito]" class="form-control">
+                        <option value="">Seleccione...</option>
+                        <option value="Deposito WU">Depósito WU</option>
+                        <option value="Transferencia BCP">Transferencia BCP</option>
+                        <option value="Transferencia Interbank">Transferencia Interbank</option>
+                        <option value="Yape">Yape</option>
+                        <option value="Plin">Plin</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label>Observaciones</label>
+                    <textarea name="depositos[${index}][observaciones]" class="form-control"></textarea>
+                </div>
+            </div>
+        </div>`;
+        
+        wrapper.insertAdjacentHTML('beforeend', template);
+    });
 
     </script>
