@@ -1,6 +1,4 @@
     <style>
-        
-
         .form-container {
             background: white;
             border-radius: var(--border-radius);
@@ -534,29 +532,32 @@
                     </div>
                     <div class="card-body">
                         <!-- Contenido del formulario de depósitos -->
-                        <div id="form-estadia" class="card card-body mb-3 bg-light" >
+                        <div id="form-deposito" class="card card-body mb-3 bg-light" >
                             <div class="row">
                                 <div class="col-md-4">
                                     <label>Nombre del Depositante</label>
-                                    <input type="text" name="depositos[{{ $i }}][nombre_depositante]"
+                                    <input type="text" name="depositos[{{ $depositoData }}][nombre_depositante]"
+                                        id="nombre_deposito_input"  
                                         class="form-control">
                                 </div>
                                 <div class="col-md-4">
                                     <label>Monto</label>
                                     <input type="number" step="0.01" 
-                                        name="depositos[{{ $i }}][monto]"
+                                        name="depositos[{{ $depositoData }}][monto]"
+                                        id="monto_deposito_input"  
                                         class="form-control deposito-monto">
                                 </div>
                                 <div class="col-md-4">
                                     <label>Fecha</label>
                                     <input type="date" 
-                                        name="depositos[{{ $i }}][fecha]"
+                                        name="depositos[{{ $depositoData }}][fecha]"
+                                        id="fecha_deposito_input"  
                                         class="form-control">
                                 </div>
 
                                 <div class="col-md-6">
                                     <label>Tipo de Depósito</label>
-                                    <select name="depositos[{{ $i }}][tipo_deposito]" class="form-control">
+                                    <select name="depositos[{{ $depositoData }}][tipo_deposito]" class="form-control" id="tipo_deposito_input"  >
                                         <option value="">Seleccione...</option>
                                         <option value="Deposito WU">Depósito WU</option>
                                         <option value="Transferencia BCP">Transferencia BCP</option>
@@ -568,11 +569,11 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label>Observaciones</label>
-                                    <textarea name="depositos[{{ $i }}][observaciones]" class="form-control"></textarea>
+                                    <textarea name="depositos[{{ $depositoData }}][observaciones]" class="form-control" id="observaciones_deposito_input"  ></textarea>
                                 </div>
 
                                 <div class="col-12 text-end">
-                                    <button type="button" class="btn btn-success" id="btn-agregar-deposito" onclick="agregarDeposit()">Agregar Deposito</button>
+                                    <button type="button" class="btn btn-success" id="btn-agregar-deposito" onclick="agregarDeposito()">Agregar Deposito</button>
                                 </div>
                             </div>
                         </div>
@@ -599,7 +600,7 @@
                                     <input type="hidden" name="depositos[{{ $i }}][tipo_deposito]" value="{{ $deposito->tipo_deposito }}">
                                     <input type="hidden" name="depositos[{{ $i }}][observaciones]" value="{{ $deposito->observaciones }}">
 
-                                    <button type="button" class="btn btn-sm btn-warning" onclick="editarEstadia(this)">Editar</button>
+                                    <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>
                                     <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this, {{ $index }})">
                                         <i class="fas fa-trash"></i> Eliminar
                                     </button>
@@ -1383,6 +1384,9 @@
 
         let estadiaIndex = {{ $mode === 'edit' ? $reserva->estadias->count() : 0 }};
         let editandoEstadia = null;
+
+        let depositoIndex = {{ $mode === 'edit' ? $reserva->depositos->count() : 0 }};
+        let editandoDeposito = null;
         
         let tourIndex = {{ $mode === 'edit' ? $reserva->tourReserva->count() : 0 }};
         let editandoTour = null;
@@ -2153,14 +2157,14 @@
         const cantidadDepositosInput = document.getElementById('cantidad_depositos');
         
         function agregarDeposito() {
-            const tipo = document.getElementById('tipo_estadia_input').value;
-            const nombre = document.getElementById('nombre_estadia_input').value.trim();
-            const ubicacion = document.getElementById('ubicacion_estadia_input').value.trim();
-            const fecha = document.getElementById('fecha_estadia_input').value;
-            const habitacion = document.getElementById('habitacion_estadia_input').value.trim();
+            const tipo = document.getElementById('tipo_deposito_input').value;
+            const nombre = document.getElementById('nombre_deposito_input').value.trim();
+            const observaciones = document.getElementById('observaciones_deposito_input').value.trim();
+            const fecha = document.getElementById('fecha_deposito_input').value;
+            const monto = document.getElementById('monto_deposito_input').value.trim();
 
             if (!nombre) {
-                if (!confirm('Estás agregando una estadía sin nombre. ¿Continuar?')) return;
+                if (!confirm('Estás agregando una deposito sin nombre. ¿Continuar?')) return;
             }
 
             //const li = document.createElement('li');
@@ -2168,21 +2172,21 @@
             //li.innerHTML = `
             if (editandoDeposito) {
                 editandoDeposito.innerHTML = `
-                    <div><strong>Tipo:</strong> ${tipo}</div>
                     <div><strong>Nombre:</strong> ${nombre || '-'}</div>
-                    <div><strong>Ubicación:</strong> ${ubicacion || '-'}</div>
+                    <div><strong>Monto:</strong> ${monto || '-'}</div>
+                    <div><strong>Tipo:</strong> ${tipo}</div>
                     <div><strong>Fecha:</strong> ${fecha || '-'}</div>
-                    <div><strong>Habitación:</strong> ${habitacion || '-'}</div>
-
-                    <input type="hidden" name="estadias[${depositoIndex}][tipo_estadia]" value="${tipo}">
-                    <input type="hidden" name="estadias[${depositoIndex}][nombre_estadia]" value="${nombre}">
-                    <input type="hidden" name="estadias[${depositoIndex}][ubicacion]" value="${ubicacion}">
-                    <input type="hidden" name="estadias[${depositoIndex}][fecha]" value="${fecha}">
-                    <input type="hidden" name="estadias[${depositoIndex}][habitacion]" value="${habitacion}">
+                    <div><strong>Obervaciones:</strong> ${observaciones || '-'}</div>
+    
+                    <input type="hidden" name="depositos[${depositoIndex}][nombre_depositante]" value="${nombre}">
+                    <input type="hidden" name="depositos[${depositoIndex}][monto]" value="${monto}">
+                    <input type="hidden" name="depositos[${depositoIndex}][tipo_deposito]" value="${tipo}">
+                    <input type="hidden" name="depositos[${depositoIndex}][fecha]" value="${fecha}">
+                    <input type="hidden" name="depositos[${depositoIndex}][observaciones]" value="${observaciones}">
 
                     <div class="mt-2">
-                        <button type="button" class="btn btn-sm btn-warning" onclick="editarEstadia(this)">Editar</button>    
-                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarEstadia(this)">Eliminar</button>
+                        <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>    
+                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this)">Eliminar</button>
                     </div>
                 `;
 
@@ -2200,25 +2204,25 @@
                 li.dataset.index = depositoIndex;
 
                 li.innerHTML = `
-                    <div><strong>Tipo:</strong> ${tipo}</div>
                     <div><strong>Nombre:</strong> ${nombre || '-'}</div>
-                    <div><strong>Ubicación:</strong> ${ubicacion || '-'}</div>
+                    <div><strong>Monto:</strong> ${monto || '-'}</div>
+                    <div><strong>Tipo:</strong> ${tipo}</div>
                     <div><strong>Fecha:</strong> ${fecha || '-'}</div>
-                    <div><strong>Habitación:</strong> ${habitacion || '-'}</div>
-
-                    <input type="hidden" name="depositos[${depositoIndex}][tipo_estadia]" value="${tipo}">
-                    <input type="hidden" name="depositos[${depositoIndex}][nombre_estadia]" value="${nombre}">
-                    <input type="hidden" name="depositos[${depositoIndex}][ubicacion]" value="${ubicacion}">
+                    <div><strong>Obervaciones:</strong> ${observaciones || '-'}</div>
+    
+                    <input type="hidden" name="depositos[${depositoIndex}][nombre_depositante]" value="${nombre}">
+                    <input type="hidden" name="depositos[${depositoIndex}][monto]" value="${monto}">
+                    <input type="hidden" name="depositos[${depositoIndex}][tipo_deposito]" value="${tipo}">
                     <input type="hidden" name="depositos[${depositoIndex}][fecha]" value="${fecha}">
-                    <input type="hidden" name="depositos[${depositoIndex}][habitacion]" value="${habitacion}">
+                    <input type="hidden" name="depositos[${depositoIndex}][observaciones]" value="${observaciones}">
 
                     <div class="mt-2">
-                        <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>
+                        <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>    
                         <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this)">Eliminar</button>
                     </div>
                 `;
 
-                listaDepositosAgregadas.appendChild(li);
+                listaDepositosAgregados.appendChild(li);
                 depositoIndex++;
         
             }
@@ -2228,57 +2232,56 @@
 
         }
 
-        function eliminarEstadia(btn) {
+        function eliminarDeposito(btn) {
             btn.closest('li').remove();
-            actualizarCantidadEstadias();
+            actualizarCantidadDepositos();
         }
 
-        function actualizarCantidadEstadias() {
-            cantidadEstadiasInput.value = listaEstadiasAgregadas.children.length;
+        function actualizarCantidadDepositos() {
+            cantidadDepositosInput.value = listaDepositosAgregados.children.length;
         }
 
-        function editarEstadia(btn) {
+        function editarDeposito(btn) {
             const li = btn.closest('li');
-            editandoEstadia = li; // guardamos el que estamos editando
+            editandoDeposito = li; // guardamos el que estamos editando
 
             // recuperar valores de los inputs hidden
-            const tipo = li.querySelector('input[name*="[tipo_estadia]"]').value;
-            const nombre = li.querySelector('input[name*="[nombre_estadia]"]').value;
-            const ubicacion = li.querySelector('input[name*="[ubicacion]"]').value;
-            const fecha = li.querySelector('input[name*="[fecha]"]').value;
-            const habitacion = li.querySelector('input[name*="[habitacion]"]').value;
+            const tipo = document.getElementById('input[name*="[tipo_deposito]"]').value;
+            const nombre = document.getElementById('input[name*="[nombre_depositante]"]').value;
+            const monto = document.getElecmentById('input[name*="[monto]"]').value;
+            const fecha = document.getElementById('input[name*="[fecha]"]').value;
+            const observaciones = document.getElementById('input[name*="[observaciones]"]').value;
 
             // pasamos a los inputs del formulario
-            document.getElementById('tipo_estadia_input').value = tipo;
-            document.getElementById('nombre_estadia_input').value = nombre;
-            document.getElementById('ubicacion_estadia_input').value = ubicacion;
-            document.getElementById('fecha_estadia_input').value = fecha;
-            document.getElementById('habitacion_estadia_input').value = habitacion;
+            document.getElementById('tipo_deposito_input').value = tipo;
+            document.getElementById('nombre_deposito_input').value = nombre;
+            document.getElementById('monto_deposito_input').value = monto;
+            document.getElementById('fecha_deposito_input').value = fecha;
+            document.getElementById('observaciones_deposito_input').value = observaciones_deposito_input;
 
             // cambiar botón
-            const btnAdd = document.getElementById('btn-agregar-estadia');
-            btnAdd.innerText = "Actualizar Estadía";
+            const btnAdd = document.getElementById('btn-agregar-deposito');
             btnAdd.classList.add("editing");
-            document.getElementById('form-estadia').classList.add("editing");
+            document.getElementById('form-deposito').classList.add("editing");
 
             // 🔹 Scroll suave hacia el formulario
-            document.getElementById('form-estadia').scrollIntoView({
+            document.getElementById('form-deposito').scrollIntoView({
                 behavior: 'smooth',
                 block: 'center' // centra el bloque en la pantalla
             });
 
-            const form = document.getElementById('form-estadia');
+            const form = document.getElementById('form-deposito');
             form.classList.add('flash');
             setTimeout(() => form.classList.remove('flash'), 2000); // quitar animación
 
         }
 
-        function limpiarCamposEstadia() {
-            document.getElementById('tipo_estadia_input').value = '';
-            document.getElementById('nombre_estadia_input').value = '';
-            document.getElementById('ubicacion_estadia_input').value = '';
-            document.getElementById('fecha_estadia_input').value = '';
-            document.getElementById('habitacion_estadia_input').value = '';
+        function limpiarCamposDeposito() {
+            document.getElementById('tipo_deposito_input').value = '';
+            document.getElementById('nombre_deposito_input').value = '';
+            document.getElementById('monto_deposito_input').value = '';
+            document.getElementById('fecha_deposito_input').value = '';
+            document.getElementById('observaciones_deposito_input').value = '';
         }
 
         //añadir depositos

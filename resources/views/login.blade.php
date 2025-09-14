@@ -52,7 +52,7 @@
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
             width: 100%;
-            max-width: 420px;
+            max-width: 450px;
             padding: 2.5rem;
             position: relative;
             z-index: 10;
@@ -315,7 +315,7 @@
                 <div class="logo-placeholder">
                     <i class="fas fa-plane"></i> <!-- Puedes reemplazar con tu logo -->
                 </div>
-                <h1 class="company-name">Expediciones Allikay</h1>
+                <h1 class="company-name">Expediciones Allinkay</h1>
                 <h5 class="company-tagline">Ines Travel</h5>
                 <p class="company-tagline">Viajes y Experiencias Únicas</p>
             </div>
