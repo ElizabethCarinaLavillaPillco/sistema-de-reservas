@@ -496,9 +496,9 @@
                                     <i class="fas fa-route section-icon"></i> Tours
                                 </div>
                                 <div class="card-body">
-                                    @if($reserva->tourReserva->count())
+                                    @if($reserva->toursReserva->count())
                                         <div class="accordion" id="accordionTours">
-                                            @foreach($reserva->tourReserva as $index => $tour)
+                                            @foreach($reserva->toursReserva as $index => $tour)
                                                 <div class="accordion-item mb-2 border-0">
                                                     <h2 class="accordion-header" id="heading{{ $index }}">
                                                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $index }}" aria-expanded="false" aria-controls="collapse{{ $index }}">

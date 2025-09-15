@@ -429,16 +429,16 @@
                                                     </td>
                                                     <td>{{ $reserva->nro_vuelo_llegada ?? '-' }}</td>
                                                     <td>
-                                                        @if($reserva->tourReserva->count() > 0)
+                                                        @if($reserva->toursReserva->count() > 0)
                                                             <div class="d-flex align-items-center">
                                                                 <span class="badge badge-cant"> {{ $reserva->cantidad_tours }}</span>
                                                                 
                                                                 <div>
-                                                                    @foreach($reserva->tourReserva->take(1) as $t)
+                                                                    @foreach($reserva->toursReserva->take(1) as $t)
                                                                         <div class="small">{{ $t->tour->nombreTour }}</div>
                                                                     @endforeach
-                                                                    @if($reserva->tourReserva->count() > 1)
-                                                                        <em class="small">+{{ $reserva->tourReserva->count() - 1 }} más</em>
+                                                                    @if($reserva->toursReserva->count() > 1)
+                                                                        <em class="small">+{{ $reserva->toursReserva->count() - 1 }} más</em>
                                                                     @endif
                                                                 </div>
                                                             </div>

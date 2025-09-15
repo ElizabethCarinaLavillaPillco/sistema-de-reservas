@@ -14,50 +14,71 @@ use App\Http\Controllers\{
     DepositosController,
     FacturacionController,
     EstadiaController,
-    TourReservaController,
+    ToursReservaController,
     ContabilidadController
 };
 
-// Rutas de login
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login'])->name('login');
+// Ruta principal - Página web pública (nueva con Inertia + React)
+Route::get('/', function () {
+    return Inertia::render('Home/Index');
+})->name('home');
 
-// Autenticación de Laravel
+// Otras rutas públicas
+Route::get('/tours', function () {
+    return Inertia::render('Tours/Index');
+})->name('tours.index');
+
+Route::get('/tours/{id}', function ($id) {
+    return Inertia::render('Tours/Show', ['tourId' => $id]);
+})->name('tours.show');
+
+Route::get('/about', function () {
+    return Inertia::render('About/Index');
+})->name('about');
+
+Route::get('/contact', function () {
+    return Inertia::render('Contact/Index');
+})->name('contact');
+
+// Rutas de autenticación (mantenemos las existentes)
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
 Auth::routes();
 
-// Redirección por defecto
-Route::get('/', fn() => redirect()->route('login'));
-
-// Dashboard protegido
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware('auth')
-    ->name('dashboard');
-
-// Zona protegida de administración
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-
-    // Recursos principales
-    Route::resource('usuarios', UsuarioController::class);
-    Route::resource('reservas', ReservaController::class);
-    Route::resource('pasajeros', PasajeroController::class);
-    Route::resource('tours', ToursController::class);
-    Route::resource('proveedores', ProveedoresController::class);
+// Zona protegida de administración (sistema actual)
+Route::middleware('auth')->group(function () {
     
-    // Relacionados con reservas
-    Route::resource('depositos', DepositosController::class);
-    Route::resource('facturacion', FacturacionController::class); // plural correcto
-    Route::resource('estadias', EstadiaController::class);
-    Route::resource('tours-reserva', TourReservaController::class); // kebab-case para coherencia
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Prefijo admin para todas las rutas del sistema
+    Route::prefix('admin')->name('admin.')->group(function () {
+        // Recursos principales
+        Route::resource('usuarios', UsuarioController::class);
+        Route::resource('reservas', ReservaController::class);
+        Route::resource('pasajeros', PasajeroController::class);
+        Route::resource('tours', ToursController::class);
+        Route::resource('proveedores', ProveedoresController::class);
+        
+        // Relacionados con reservas
+        Route::resource('depositos', DepositosController::class);
+        Route::resource('facturacion', FacturacionController::class);
+        Route::resource('estadias', EstadiaController::class);
+        Route::resource('tours_reserva', ToursReservaController::class);
 
-    // Independientes
-    Route::resource('facturas', FacturaController::class);
-    Route::resource('contabilidad', ContabilidadController::class);
+        // Independientes
+        Route::resource('facturas', FacturaController::class);
+        Route::resource('contabilidad', ContabilidadController::class);
 
-    // Subrutas específicas de reserva
-    Route::prefix('reservas/{reserva}')->name('reservas.')->group(function () {
-        Route::get('pasajeros', [ReservaController::class, 'verPasajeros'])->name('pasajeros');
-        Route::get('proveedores', [ReservaController::class, 'verProveedores'])->name('proveedores');
-        Route::get('tours', [ReservaController::class, 'verTours'])->name('tours');
+        // Subrutas específicas de reserva
+        Route::prefix('reservas/{reserva}')->name('reservas.')->group(function () {
+            Route::get('pasajeros', [ReservaController::class, 'verPasajeros'])->name('pasajeros');
+            Route::get('proveedores', [ReservaController::class, 'verProveedores'])->name('proveedores');
+            Route::get('tours', [ReservaController::class, 'verTours'])->name('tours');
+        });
     });
-
 });
+
+// Ruta de demostración
+Route::get('/demo', function () {
+    return Inertia::render('Demo/Index');
+})->name('demo');

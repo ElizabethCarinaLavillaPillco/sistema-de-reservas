@@ -89,12 +89,11 @@ class Pasajero extends Model
         ];
     }
 
-    public function tours()
+    public function toursReservas()
     {
-        return $this->belongsToMany(TourReserva::class, 'tour_reserva_pasajero')
-                    ->withPivot('incluido')
+        return $this->belongsToMany(ToursReserva::class, 'tours_reserva_pasajero')
+                    ->withPivot('incluido', 'comentario') 
                     ->withTimestamps();
     }
-
 
 }

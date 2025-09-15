@@ -73,17 +73,17 @@ class Reserva extends Model
     }
 
     // Tours reservados (relación intermedia)
-    public function tourReserva()
+    public function toursReserva()
     {
-        return $this->hasMany(TourReserva::class, 'reserva_id', 'id');
+        return $this->hasMany(ToursReserva::class, 'reserva_id', 'id');
     }
 
-    // Tours asociados a la reserva (a través de TourReserva)
+    // Tours asociados a la reserva (a través de ToursReserva)
     public function tours()
     {
         return $this->hasManyThrough(
             Tour::class,
-            TourReserva::class,
+            ToursReserva::class,
             'reserva_id', // Foreign key en tour_reservas
             'id',         // Foreign key en tours
             'id',         // Local key en reservas

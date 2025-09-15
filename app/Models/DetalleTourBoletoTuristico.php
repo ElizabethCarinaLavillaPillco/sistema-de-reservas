@@ -19,20 +19,20 @@ class DetalleTourBoletoTuristico extends Model
         'comentario_entrada_propiedad_priv',
     ];
 
-    public function tourReserva()
+    public function toursReserva()
     {
-        return $this->belongsTo(TourReserva::class,'tours_reserva_id');
+        return $this->belongsTo(ToursReserva::class,'tours_reserva_id');
     }
 
     public function reserva()
     {
         return $this->hasOneThrough(
             Reserva::class,         // Modelo final
-            TourReserva::class,     // Modelo intermedio
-            'id',                   // Clave primaria en TourReserva
+            ToursReserva::class,     // Modelo intermedio
+            'id',                   // Clave primaria en ToursReserva
             'id',                   // Clave primaria en Reserva
-            'tours_reserva_id',     // FK en DetalleTourMachupicchu → TourReserva
-            'reserva_id'            // FK en TourReserva → Reserva
+            'tours_reserva_id',     // FK en DetalleTourMachupicchu → ToursReserva
+            'reserva_id'            // FK en ToursReserva → Reserva
         );
     }
 }

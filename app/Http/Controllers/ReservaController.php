@@ -7,8 +7,8 @@ use App\Models\Pasajero;
 use App\Models\DetalleTourBoletoTuristico;
 use App\Models\Proveedor;
 use App\Models\Tour;
-use App\Models\TourReserva;
-use App\Models\TourInclude;
+use App\Models\ToursReserva;
+use App\Models\ToursInclude;
 use App\Models\Facturacion;
 use App\Models\DetalleTourMachupicchu;
 use App\Models\Estadia;
@@ -26,7 +26,7 @@ class ReservaController extends Controller
             ->orderBy('fecha_llegada', 'asc')
             ->get();
 
-        $reservas = Reserva::with(['proveedor', 'pasajeros', 'tourReserva']);
+        $reservas = Reserva::with(['proveedor', 'pasajeros', 'toursReserva']);
 
         if ($request->filled('search')) {
             $busqueda = $request->search;
@@ -46,7 +46,7 @@ class ReservaController extends Controller
             $reservas->where(function ($q) use ($inicio, $fin) {
                 $q->whereBetween('fecha_llegada', [$inicio, $fin])
                   ->orWhereBetween('fecha_salida', [$inicio, $fin])
-                  ->orWhereHas('tourReserva', function ($q2) use ($inicio, $fin) {
+                  ->orWhereHas('toursReserva', function ($q2) use ($inicio, $fin) {
                       $q2->whereBetween('fecha', [$inicio, $fin]);
                   });
             });
@@ -188,10 +188,10 @@ class ReservaController extends Controller
         $reserva = Reserva::with([
             'proveedor',
             'pasajeros',
-            'tourReserva.detalleMachupicchu',
-            'tourReserva.detalleBoletoTuristico',
-            'tourReserva.pasajeros',
-            'tourReserva.includes',
+            'toursReserva.detalleMachupicchu',
+            'toursReserva.detalleBoletoTuristico',
+            'toursReserva.pasajeros',
+            'toursReserva.includes',
             'estadias',
             'depositos',
             'facturaciones'
@@ -203,10 +203,10 @@ class ReservaController extends Controller
     public function edit($id)
     {
         $reserva= Reserva::with([
-            'tourReserva.detalleMachupicchu',
-            'tourReserva.detalleBoletoTuristico',
-            'tourReserva.pasajeros',
-            'tourReserva.includes',
+            'toursReserva.detalleMachupicchu',
+            'toursReserva.detalleBoletoTuristico',
+            'toursReserva.pasajeros',
+            'toursReserva.includes',
             'estadias',
             'depositos'
         ])->findOrFail($id);
@@ -242,18 +242,23 @@ class ReservaController extends Controller
             $reserva = Reserva::findOrFail($id);
             $reserva->update($request->all());
 
-            TourReserva::where('reserva_id', $reserva->id)->delete();
+            // 🔹 Limpiar datos relacionados que se recrean
+            //ToursReserva::where('reserva_id', $reserva->id)->delete();
             Estadia::where('reserva_id', $reserva->id)->delete();
-            
+            $reserva->depositos()->delete(); // ✅ evita duplicados
+
+            // 🔹 Actualizar pasajeros
             if ($request->filled('pasajeros')) {
-            Pasajero::whereIn('id', $request->pasajeros)
-                ->update(['reserva_id' => $reserva->id]);
+                Pasajero::whereIn('id', $request->pasajeros)
+                    ->update(['reserva_id' => $reserva->id]);
             }
 
+            // 🔹 Guardar tours
             if ($request->has('tours')) {
                 $this->syncTours($reserva, $request->tours, $request);
             }
 
+            // 🔹 Guardar estadías
             if ($request->has('estadias') && is_array($request->estadias)) {
                 foreach ($request->estadias as $estadiaData) {
                     Estadia::create([
@@ -267,6 +272,7 @@ class ReservaController extends Controller
                 }
             }
 
+            // 🔹 Guardar depósitos
             if ($request->has('depositos') && is_array($request->depositos)) {
                 foreach ($request->depositos as $depositoData) {
                     if (!empty($depositoData['monto']) || !empty($depositoData['nombre_depositante'])) {
@@ -281,16 +287,16 @@ class ReservaController extends Controller
                 }
             }
 
-            // Actualizar resumen de pagos
+            // 🔹 Actualizar resumen de pagos
             $reserva->adelanto = $reserva->depositos()->sum('monto');
             $reserva->cantidad_depositos = $reserva->depositos()->count();
             $reserva->save();
-
         });
 
         return redirect()->route('admin.reservas.index')
             ->with('success', 'Reserva actualizada correctamente.');
     }
+
 
     public function destroy($id)
     {
@@ -306,7 +312,7 @@ class ReservaController extends Controller
         foreach ($toursData as $tourData) {
             if (empty($tourData['tour_id'])) continue;
 
-            $tourReserva = TourReserva::updateOrCreate(
+            $toursReserva = ToursReserva::updateOrCreate(
                 ['id' => $tourData['id'] ?? null],
                 [
                     'reserva_id'      => $reserva->id,
@@ -325,34 +331,53 @@ class ReservaController extends Controller
                 ]
             );
 
+            // 🔹 Machupicchu / Boleto turístico
             if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
-                $tourReserva->detalleMachupicchu()
+                $toursReserva->detalleMachupicchu()
                     ->updateOrCreate([], $tourData['detalles_machu']);
             }
-
             if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
-                $tourReserva->detalleBoletoTuristico()
+                $toursReserva->detalleBoletoTuristico()
                     ->updateOrCreate([], $tourData['detalles_boleto']);
             }
 
-            // 🔹 Guardar pasajeros asignados a este tour
-            $modo = $request->modo[$tourReserva->id] ?? 'todos';
-            if ($modo === 'todos') {
-                $ids = $reserva->pasajeros->pluck('id')->toArray();
-            } else {
-                $ids = $request->pasajeros[$tourReserva->id] ?? [];
-            }
-            $tourReserva->pasajeros()->sync($ids);
+            $modo = $request->modo[$toursReserva->id] ?? 'todos';
+            $syncData = [];
 
+            if ($modo === 'todos') {
+                foreach ($reserva->pasajeros as $p) {
+                    $syncData[$p->id] = [
+                        'incluido'   => true,
+                        'comentario' => null
+                    ];
+                }
+            } else {
+                $pasajerosSeleccionados = $request->pasajeros[$toursReserva->id] ?? [];
+                $comentarios            = $request->comentarios[$toursReserva->id] ?? [];
+
+                foreach ($pasajerosSeleccionados as $idPasajero) {
+                    $syncData[$idPasajero] = [
+                        'incluido'   => true,
+                        'comentario' => $comentarios[$idPasajero] ?? null
+                    ];
+                }
+            }
+
+            $toursReserva->pasajeros()->sync($syncData);
+
+            // ========================================
             // 🔹 Guardar includes del tour
-            $incluye = $request->includes[$tourReserva->id] ?? [];
-            $tourReserva->includes()->delete();
+            // ========================================
+            $incluye = $request->includes[$toursReserva->id] ?? [];
+            $toursReserva->includes()->delete();
             foreach ($incluye as $concepto) {
-                $tourReserva->includes()->create([
+                $toursReserva->includes()->create([
                     'concepto' => $concepto,
                     'incluido' => true
                 ]);
             }
+
         }
     }
+
 }

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TourReserva;
+use App\Models\ToursReserva;
 use App\Models\Reserva;
 use App\Models\Tour;
 use Illuminate\Http\Request;
 
-class TourReservaController extends Controller
+class ToursReservaController extends Controller
 {
     public function store(Request $request)
     {
@@ -27,20 +27,20 @@ class TourReservaController extends Controller
             'incluye_tren' => 'boolean',
         ]);
 
-        $tourReserva = TourReserva::create($request->only([
+        $toursReserva = ToursReserva::create($request->only([
             'reserva_id', 'tour_id', 'fecha', 'empresa', 'tipo_tour',
             'idioma', 'lugar_recojo', 'hora_recojo', 'precio_unitario',
             'cantidad', 'observaciones', 'incluye_entrada', 'incluye_tren'
         ]));
 
-        $tour = $tourReserva->tour;
+        $tour = $toursReserva->tour;
 
         if ($tour && $tour->esMachupicchuEspecial() && $request->has('detalles_machu')) {
-            $tourReserva->detalleMachupicchu()->create($request->detalles_machu);
+            $toursReserva->detalleMachupicchu()->create($request->detalles_machu);
         }
 
         if ($tour && $tour->esBoletoTuristico() && $request->has('detalles_boleto')) {
-            $tourReserva->detalleBoletoTuristico()->create($request->detalles_boleto);
+            $toursReserva->detalleBoletoTuristico()->create($request->detalles_boleto);
         }
 
 
@@ -51,28 +51,28 @@ class TourReservaController extends Controller
 
     public function update(Request $request, $id)
     {
-        $tourReserva->update($request->only([
+        $toursReserva->update($request->only([
             'tour_id', 'fecha', 'empresa', 'tipo_tour',
             'idioma', 'lugar_recojo', 'hora_recojo',
             'precio_unitario', 'cantidad', 'observaciones',
             'incluye_entrada', 'incluye_tren'
         ]));
 
-        $tour = $tourReserva->tour;
+        $tour = $toursReserva->tour;
 
         if ($tour && $tour->esMachupicchuEspecial() && $request->has('detalles_machu')) {
-            if ($tourReserva->detalleMachupicchu) {
-                $tourReserva->detalleMachupicchu->update($request->detalles_machu);
+            if ($toursReserva->detalleMachupicchu) {
+                $toursReserva->detalleMachupicchu->update($request->detalles_machu);
             } else {
-                $tourReserva->detalleMachupicchu()->create($request->detalles_machu);
+                $toursReserva->detalleMachupicchu()->create($request->detalles_machu);
             }
         }
 
         if ($tour && $tour->esBoletoTuristico() && $request->has('detalles_boleto')) {
-            if ($tourReserva->detalleBoletoTuristico) {
-                $tourReserva->detalleBoletoTuristico->update($request->detalles_boleto);
+            if ($toursReserva->detalleBoletoTuristico) {
+                $toursReserva->detalleBoletoTuristico->update($request->detalles_boleto);
             } else {
-                $tourReserva->detalleBoletoTuristico()->create($request->detalles_boleto);
+                $toursReserva->detalleBoletoTuristico()->create($request->detalles_boleto);
             }
         }
 
@@ -85,8 +85,8 @@ class TourReservaController extends Controller
 
     public function destroy($id)
     {
-        $tourReserva = TourReserva::findOrFail($id);
-        $tourReserva->delete();
+        $toursReserva = ToursReserva::findOrFail($id);
+        $toursReserva->delete();
 
         return back()->with('success', 'Tour eliminado de la reserva.');
     }

@@ -7,14 +7,21 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('tours_reserva', function (Blueprint $table) {
+        Schema::create('tours_reservas', function (Blueprint $table) {
             $table->id();
-            
-            // En tours_reserva
-            $table->string('reserva_id');
-            $table->foreign('reserva_id')->references('id')->on('reservas')->onDelete('cascade');
 
-            $table->foreignId('tour_id')->nullable()->constrained('tours')->onDelete('set null');
+            // FK hacia reservas (string personalizado como R001, etc.)
+            $table->string('reserva_id');
+            $table->foreign('reserva_id')
+                ->references('id')
+                ->on('reservas')
+                ->onDelete('cascade');
+
+            // FK hacia tours
+            $table->foreignId('tour_id')
+                ->nullable()
+                ->constrained('tours')
+                ->onDelete('set null');
 
             $table->date('fecha')->nullable();
             $table->string('empresa')->nullable();
@@ -27,18 +34,15 @@ return new class extends Migration {
             $table->integer('cantidad')->default(1);
             $table->text('observaciones')->nullable();
 
-            // NUEVO: campo para saber si tiene entrada y tren
             $table->boolean('incluye_entrada')->default(false);
             $table->boolean('incluye_tren')->default(false);
 
             $table->timestamps();
         });
-
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('tour_reservas');
+        Schema::dropIfExists('tours_reservas');
     }
 };
-

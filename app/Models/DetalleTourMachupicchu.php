@@ -50,20 +50,20 @@ class DetalleTourMachupicchu extends Model
         'horario_retorno'    => 'datetime:H:i',
     ];
 
-    public function tourReserva()
+    public function toursReserva()
     {
-        return $this->belongsTo(TourReserva::class, 'tours_reserva_id', 'id');
+        return $this->belongsTo(ToursReserva::class, 'tours_reserva_id', 'id');
     }
     
     public function reserva()
     {
         return $this->hasOneThrough(
             Reserva::class,         // Modelo final
-            TourReserva::class,     // Modelo intermedio
-            'id',                   // Clave primaria en TourReserva
+            ToursReserva::class,     // Modelo intermedio
+            'id',                   // Clave primaria en ToursReserva
             'id',                   // Clave primaria en Reserva
-            'tours_reserva_id',     // FK en DetalleTourMachupicchu → TourReserva
-            'reserva_id'            // FK en TourReserva → Reserva
+            'tours_reserva_id',     // FK en DetalleTourMachupicchu → ToursReserva
+            'reserva_id'            // FK en ToursReserva → Reserva
         );
     }
 }

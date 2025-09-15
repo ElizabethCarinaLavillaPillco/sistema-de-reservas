@@ -390,17 +390,23 @@
                     <i class="fas fa-users"></i> Titular y Pasajeros
                 </h3>
                 
-                <!-- TITULAR (BUSCADOR) -->
+                <!-- TITULAR DE LA RESERVA -->
                 <div class="detail-container mb-4">
-                    <label class="form-label">Titular (buscar pasajero)</label>
+                    <label class="form-label">Titular de la reserva</label>
                     <div class="input-group">
-                        <input list="listaTitulares" id="busquedaTitular" class="form-control"
-                            placeholder="Escribe nombre del pasajero (seleccionar)">
+                        <input list="listaTitulares" 
+                            id="busquedaTitular" 
+                            class="form-control"
+                            placeholder="Escribe o selecciona un pasajero de la reserva">
+
                         <datalist id="listaTitulares">
-                            @foreach($pasajeros as $p)
-                                <option value="{{ $p->nombre }} {{ $p->apellido }} ({{ $p->documento }})" data-id="{{ $p->id }}"></option>
+                            @foreach($reserva->pasajeros as $p)
+                                <option value="{{ $p->nombre }} {{ $p->apellido }} ({{ $p->documento }})" 
+                                        data-id="{{ $p->id }}">
+                                </option>
                             @endforeach
                         </datalist>
+
                         <button type="button" id="btnSeleccionarTitular" class="btn btn-outline-primary">
                             <i class="fas fa-check me-1"></i> Seleccionar
                         </button>
@@ -408,23 +414,22 @@
                             <i class="fas fa-times me-1"></i> Limpiar
                         </button>
                     </div>
-                    
-                    <input type="hidden" name="titular_id" id="titular_id_hidden" value="{{ old('titular_id', $reserva->titular_id ?? '') }}">
 
+                    <input type="hidden" name="titular_id" id="titular_id_hidden" 
+                        value="{{ old('titular_id', $reserva->titular_id ?? '') }}">
+
+                    <!-- Mostrar si ya hay un titular seleccionado -->
                     <div id="titularSeleccionado" class="mt-2">
-                        @if(old('titular_id', $reserva->titular_id ?? false))
-                            @php
-                                $titSel = $pasajeros->firstWhere('id', old('titular_id', $reserva->titular_id ?? null));
-                            @endphp
-                            @if($titSel)
-                                <div class="alert alert-success mt-2">
-                                    <i class="fas fa-user-check me-2"></i>
-                                    Titular seleccionado: <strong>{{ $titSel->nombre }} {{ $titSel->apellido }} ({{ $titSel->documento }})</strong>
-                                </div>
-                            @endif
+                        @if($reserva->titular)
+                            <div class="alert alert-success mt-2 p-2">
+                                <i class="fas fa-user-check me-2"></i>
+                                Titular actual: 
+                                <strong>{{ $reserva->titular->nombre }} {{ $reserva->titular->apellido }} ({{ $reserva->titular->documento }})</strong>
+                            </div>
                         @endif
                     </div>
                 </div>
+
 
                 <!-- PASAJEROS (MÚLTIPLES) -->
                 <div class="detail-container">
@@ -470,7 +475,9 @@
                         </ul>
                     </div>
                 </div>
-                    <input type="hidden" name="cantidad_pasajeros" id="cantidad_pasajeros" value="{{ count($pasajerosOld) }}">
+
+                <input type="hidden" name="cantidad_pasajeros" id="cantidad_pasajeros" value="{{ count($pasajerosOld) }}">
+            
             </div>
 
             <!-- SECCIÓN: FECHAS Y VUELOS -->
@@ -524,86 +531,88 @@
             <!-- SECCIÓN: FINANZAS -->
             <div class="form-section animate-slide-in" style="animation-delay: 0.3s;">
                 <h3 class="form-section-title">
-                    <i class="fas fa-money-bill-wave"></i> Depósitos
+                    <i class="fas fa-money-bill-wave"></i> Finanzas
                 </h3>
-                <div id="card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-plus-circle me-2"></i> Agregar Depósito
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>Total (USD)</label>
+                        <input type="number" step="0.01" id="total" name="total"
+                            value="{{ $mode === 'edit' ? $reserva->total : 0 }}"
+                            class="form-control">
                     </div>
-                    <div class="card-body">
-                        <!-- Contenido del formulario de depósitos -->
-                        <div id="form-deposito" class="card card-body mb-3 bg-light" >
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <label>Nombre del Depositante</label>
-                                    <input type="text" name="depositos[{{ $depositoData }}][nombre_depositante]"
-                                        id="nombre_deposito_input"  
-                                        class="form-control">
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Monto</label>
-                                    <input type="number" step="0.01" 
-                                        name="depositos[{{ $depositoData }}][monto]"
-                                        id="monto_deposito_input"  
-                                        class="form-control deposito-monto">
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Fecha</label>
-                                    <input type="date" 
-                                        name="depositos[{{ $depositoData }}][fecha]"
-                                        id="fecha_deposito_input"  
-                                        class="form-control">
-                                </div>
+                    <div class="col-md-4">
+                        <label>Adelanto (USD)</label>
+                        <input type="number" step="0.01" id="adelanto" name="adelanto"
+                            value="{{ $mode === 'edit' ? $reserva->adelanto : 0 }}"
+                            class="form-control" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Saldo (USD)</label>
+                        <input type="number" step="0.01" id="saldo" name="saldo"
+                            value="{{ $mode === 'edit' ? $reserva->total - $reserva->adelanto : 0 }}"
+                            class="form-control" readonly>
+                    </div>
+                </div>
 
-                                <div class="col-md-6">
-                                    <label>Tipo de Depósito</label>
-                                    <select name="depositos[{{ $depositoData }}][tipo_deposito]" class="form-control" id="tipo_deposito_input"  >
-                                        <option value="">Seleccione...</option>
-                                        <option value="Deposito WU">Depósito WU</option>
-                                        <option value="Transferencia BCP">Transferencia BCP</option>
-                                        <option value="Transferencia Interbank">Transferencia Interbank</option>
-                                        <option value="Yape">Yape</option>
-                                        <option value="Plin">Plin</option>
-                                        <option value="Otro">Otro</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label>Observaciones</label>
-                                    <textarea name="depositos[{{ $depositoData }}][observaciones]" class="form-control" id="observaciones_deposito_input"  ></textarea>
-                                </div>
+                <!-- FORMULARIO DE DEPÓSITO -->
+                <div id="form-deposito" class="card card-body mb-3 bg-light">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Nombre del Depositante</label>
+                            <input type="text" id="nombre_deposito_input" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label>Monto</label>
+                            <input type="number" step="0.01" id="monto_deposito_input" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label>Fecha</label>
+                            <input type="date" id="fecha_deposito_input" class="form-control">
+                        </div>
 
-                                <div class="col-12 text-end">
-                                    <button type="button" class="btn btn-success" id="btn-agregar-deposito" onclick="agregarDeposito()">Agregar Deposito</button>
-                                </div>
-                            </div>
+                        <div class="col-md-6 mt-2">
+                            <label>Tipo de Depósito</label>
+                            <select id="tipo_deposito_input" class="form-control">
+                                <option value="">Seleccione...</option>
+                                <option value="Deposito WU">Depósito WU</option>
+                                <option value="Transferencia BCP">Transferencia BCP</option>
+                                <option value="Transferencia Interbank">Transferencia Interbank</option>
+                                <option value="Yape">Yape</option>
+                                <option value="Plin">Plin</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <label>Observaciones</label>
+                            <textarea id="observaciones_deposito_input" class="form-control"></textarea>
+                        </div>
+
+                        <div class="col-12 text-end mt-3">
+                            <button type="button" class="btn btn-success" onclick="agregarDeposito()">Agregar Depósito</button>
                         </div>
                     </div>
                 </div>
 
+                <!-- LISTA DE DEPÓSITOS -->
                 <div id="depositos-agregados">
                     <strong class="d-block mb-2">Depósitos agregados:</strong>
                     <ul id="listaDepositosAgregados" class="list-group mb-3">
                         @if($mode === 'edit')
                             @foreach($reserva->depositos as $i => $deposito)
-                                <li class="list-group-item">
-                                    <div><strong>Nombre del depositante:</strong> {{ $deposito->nombre_depositante }}</div>
+                                <li class="list-group-item" data-index="{{ $i }}">
+                                    <div><strong>Nombre:</strong> {{ $deposito->nombre_depositante }}</div>
                                     <div><strong>Monto:</strong> {{ $deposito->monto }}</div>
                                     <div><strong>Fecha:</strong> {{ $deposito->fecha }}</div>
-                                    <div><strong>Tipo de Deposito:</strong> {{ $deposito->tipo_deposito }}</div>
+                                    <div><strong>Tipo:</strong> {{ $deposito->metodo }}</div>
                                     <div><strong>Observaciones:</strong> {{ $deposito->observaciones }}</div>
 
-
-                                    {{-- Hidden inputs para enviar al update --}}
+                                    <!-- Hidden inputs -->
                                     <input type="hidden" name="depositos[{{ $i }}][nombre_depositante]" value="{{ $deposito->nombre_depositante }}">
                                     <input type="hidden" name="depositos[{{ $i }}][monto]" value="{{ $deposito->monto }}">
                                     <input type="hidden" name="depositos[{{ $i }}][fecha]" value="{{ $deposito->fecha }}">
-                                    <input type="hidden" name="depositos[{{ $i }}][tipo_deposito]" value="{{ $deposito->tipo_deposito }}">
+                                    <input type="hidden" name="depositos[{{ $i }}][metodo]" value="{{ $deposito->metodo }}">
                                     <input type="hidden" name="depositos[{{ $i }}][observaciones]" value="{{ $deposito->observaciones }}">
-
-                                    <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this, {{ $index }})">
-                                        <i class="fas fa-trash"></i> Eliminar
-                                    </button>
                                 </li>
                             @endforeach
                         @endif
@@ -611,7 +620,8 @@
                 </div>
             </div>
 
-            <input type="hidden" name="cantidad_depositos" id="cantidad_depositos" value="{{ $mode === 'edit' ? $reserva->depositos->count() : 0 }}">
+            <input type="hidden" name="cantidad_depositos" id="cantidad_depositos"
+                value="{{ $mode === 'edit' ? $reserva->depositos->count() : 0 }}">
 
 
             <!-- SECCIÓN: TOURS -->
@@ -696,6 +706,45 @@
                                         <div class="col-md-4">
                                             <label>Cantidad:</label>
                                             <input type="number" id="cantidad" min="1" value="1" class="form-control" name="cantidad">
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <!-- INTEGRANTES DEL TOUR -->
+                                        <div class="col-md-12">
+                                            <label>Integrantes:</label>
+                                            <div>
+                                                <label class="me-3">
+                                                    <input type="radio" name="modo[{{ $i }}]" value="todos" checked 
+                                                        onchange="toggleIntegrantes({{ $i }})"> Todos
+                                                </label>
+                                                <label>
+                                                    <input type="radio" name="modo[{{ $i }}]" value="personalizado" 
+                                                        onchange="toggleIntegrantes({{ $i }})"> Personalizado
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12 mt-2 d-none" id="integrantes-personalizados-{{ $i }}">
+                                            <ul class="list-group">
+                                                @foreach ($reserva->pasajeros as $p) 
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <input type="checkbox" 
+                                                                name="pasajeros[{{ $i }}][]" 
+                                                                value="{{ $p->id }}" 
+                                                                class="chk-pasajero-{{ $i }}" 
+                                                                onchange="toggleComentario({{ $i }}, {{ $p->id }})">
+                                                            {{ $p->nombre }} {{ $p->apellido }} ({{ $p->documento }})
+                                                        </div>
+                                                        <input type="text" 
+                                                            name="comentarios[{{ $i }}][{{ $p->id }}]" 
+                                                            class="form-control form-control-sm ms-2 comentario-pasajero-{{ $i }}" 
+                                                            placeholder="Comentario opcional" 
+                                                            disabled>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
                                         </div>
                                     </div>
 
@@ -1069,7 +1118,7 @@
                         <strong class="d-block mb-3">Tours agregados:</strong>
                         <ul id="listaToursAgregados" class="list-group mb-3">
                                 @if($mode === 'edit')
-                                    @foreach($reserva->tourReserva as $i => $tour)
+                                    @foreach($reserva->toursReserva as $i => $tour)
                                         <li class="list-group-item">
                                             <div><strong>Tour:</strong> {{ $tour->tour->nombreTour }}</div>
                                             <div><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($tour->fecha)->format('Y-m-d') }}</div>
@@ -1152,7 +1201,7 @@
 
             </div>
 
-            <input type="hidden" name="cantidad_tours" id="cantidad_tours" value="{{ $mode === 'edit' ? $reserva->tourReserva->count() : 0 }}">
+            <input type="hidden" name="cantidad_tours" id="cantidad_tours" value="{{ $mode === 'edit' ? $reserva->toursReserva->count() : 0 }}">
 
 
 
@@ -1297,7 +1346,6 @@
         });
 
 
-
         /* ---------------- PASAJEROS (MÚLTIPLES) ---------------- */
         const listaPasajerosAgregados = document.getElementById('listaPasajerosAgregados');
         const inputBusqueda = document.getElementById('busquedaPasajero');
@@ -1338,44 +1386,14 @@
             inputBusqueda.value = '';
             
         }
-
         function eliminarPasajero(btn, id) {
             pasajerosYaAgregados.delete(id);
             btn.closest('li').remove();
             actualizarCantidadPasajeros();
         }
-
         function actualizarCantidadPasajeros() {
             cantidadPasajerosInput.value = pasajerosYaAgregados.size;
         }
-
-
-
-        /* ---------------- CALCULAR SALDO SOLO FRONTEND ---------------- */
-        document.addEventListener('DOMContentLoaded', function() {
-            const totalInput = document.getElementById('total');
-            const saldoInput = document.getElementById('saldo');
-            
-            function calcularSaldo() {
-                const total = parseFloat(totalInput.value) || 0;
-                let sumDepositos = 0;
-
-                document.querySelectorAll('.deposito-monto').forEach(input => {
-                    sumDepositos += parseFloat(input.value) || 0;
-                });
-
-                saldoInput.value = (total - sumDepositos).toFixed(2);
-            }
-
-            totalInput.addEventListener('input', calcularSaldo);
-            document.addEventListener('input', function(e) {
-                if (e.target.classList.contains('deposito-monto')) {
-                    calcularSaldo();
-                }
-            });
-
-            calcularSaldo();
-        });
 
 
         /* ---------------- VARIABLES GLOBALES ---------------- */
@@ -1384,17 +1402,59 @@
 
         let estadiaIndex = {{ $mode === 'edit' ? $reserva->estadias->count() : 0 }};
         let editandoEstadia = null;
-
-        let depositoIndex = {{ $mode === 'edit' ? $reserva->depositos->count() : 0 }};
-        let editandoDeposito = null;
         
-        let tourIndex = {{ $mode === 'edit' ? $reserva->tourReserva->count() : 0 }};
+        let tourIndex = {{ $mode === 'edit' ? $reserva->toursReserva->count() : 0 }};
         let editandoTour = null;
 
-        let idTourReserva = '';
+        let idToursReserva = '';
         let indexUsado;
 
+        let integrantesPreview = '';
+        let integrantesInputs = '';
 
+        /* ---------------- INTEGRANTES del TOUR ---------------- */
+        function toggleIntegrantes(tourIndex) {
+            const personalizadoDiv = document.getElementById(`integrantes-personalizados-${tourIndex}`);
+            const radioPersonalizado = document.querySelector(`input[name="modo[${tourIndex}]"][value="personalizado"]`);
+
+            if (radioPersonalizado.checked) {
+                personalizadoDiv.classList.remove('d-none');
+            } else {
+                personalizadoDiv.classList.add('d-none');
+                // desmarcar y deshabilitar comentarios si se vuelve a "Todos"
+                document.querySelectorAll(`.chk-pasajero-${tourIndex}`).forEach(chk => {
+                    chk.checked = false;
+                });
+                document.querySelectorAll(`.comentario-pasajero-${tourIndex}`).forEach(input => {
+                    input.disabled = true;
+                    input.value = '';
+                });
+            }
+        }
+
+        function toggleComentario(tourIndex, pasajeroId) {
+            const chk = document.querySelector(`.chk-pasajero-${tourIndex}[value="${pasajeroId}"]`);
+            const input = document.querySelector(`input[name="comentarios[${tourIndex}][${pasajeroId}]"]`);
+            if (chk && input) {
+                input.disabled = !chk.checked;
+                if (!chk.checked) input.value = '';
+            }
+        }
+
+        function actualizarCantidadIntegrantes() {
+            const tipo = document.querySelector('input[name="integrantes_tipo"]:checked').value;
+            let cantidad = 0;
+
+            if (tipo === 'todos') {
+                cantidad = document.querySelectorAll('.chk-pasajero').length;
+            }else {
+                document.querySelectorAll('.chk-pasajero').forEach(chk => {
+                    if (chk.checked) cantidad++;
+                });
+            }
+
+            document.getElementById('cantidad').value = Math.max(1, cantidad); // mínimo 1
+        }
 
         /* ---------------- TOURS (MÚLTIPLES) ---------------- */
         const especiales = [
@@ -1648,6 +1708,8 @@
         // ------------- TOURS (AGREGAR, EDITAR)----------------
         const listaToursAgregados = document.getElementById('listaToursAgregados');
         const cantidadToursInput = document.getElementById('cantidad_tours');
+        const tipoIntegrantes = document.querySelector('input[name="integrantes_tipo"]:checked').value;
+
         function agregarTour() {
             const id = safeValue('id_tour');
             const nombre = safeValue('nombreTour');
@@ -1667,18 +1729,40 @@
                 return;
             }
 
-            let idTourReserva = '';
+            let idToursReserva = '';
             if (editandoTour) {
-                idTourReserva = editandoTour.querySelector('input[name*="[id]"]')?.value || '';
+                idToursReserva = editandoTour.querySelector('input[name*="[id]"]')?.value || '';
             }
 
-            
-
             if (editandoTour) {
-                idTourReserva = editandoTour.querySelector('input[name*="[id]"]')?.value || '';
+                idToursReserva = editandoTour.querySelector('input[name*="[id]"]')?.value || '';
                 indexUsado = editandoTour.dataset.index; // 👈 Usar el índice del LI actual
             } else {
                 indexUsado = tourIndex; // 👈 Usar el global SOLO para nuevos
+            }
+
+            if (tipoIntegrantes === 'todos') {
+                integrantesPreview = '<div><strong>Integrantes:</strong> Todos</div>';
+                integrantesInputs = `<input type="hidden" name="tours[${indexUsado}][integrantes_tipo]" value="todos">`;
+            } else {
+                integrantesPreview = '<div><strong>Integrantes:</strong> ';
+                const seleccionados = [];
+
+                document.querySelectorAll('.chk-pasajero:checked').forEach(chk => {
+                    const id = chk.dataset.id;
+                    const nombre = chk.closest('li').innerText.trim().split("\n")[0];
+                    const comentario = document.querySelector(`.comentario-pasajero[data-id="${id}"]`).value;
+
+                    seleccionados.push(nombre);
+
+                    integrantesInputs += `
+                        <input type="hidden" name="tours[${indexUsado}][pasajeros][${id}][incluido]" value="1">
+                        <input type="hidden" name="tours[${indexUsado}][pasajeros][${id}][comentario]" value="${comentario}">
+                    `;
+                });
+
+                integrantesPreview += seleccionados.join(', ') + '</div>';
+                integrantesInputs += `<input type="hidden" name="tours[${indexUsado}][integrantes_tipo]" value="personalizado">`;
             }
 
 
@@ -1769,7 +1853,7 @@
                     <div><strong>Observaciones:</strong> ${observaciones || '-'}</div>
                     ${extrasPreview}
 
-                    <input type="hidden" name="tours[${indexUsado}][id]" value="${idTourReserva}">
+                    <input type="hidden" name="tours[${indexUsado}][id]" value="${idToursReserva}">
                     <input type="hidden" name="tours[${indexUsado}][tour_id]" value="${id}">
                     <input type="hidden" name="tours[${indexUsado}][nombreTour]" value="${nombre}">
                     <input type="hidden" name="tours[${indexUsado}][fecha]" value="${fecha}">
@@ -1824,6 +1908,9 @@
                     <input type="hidden" name="tours[${indexUsado}][observaciones]" value="${observaciones}">
                     ${extras}
 
+                    ${integrantesPreview}
+                    ${integrantesInputs}
+
                     <div class="mt-2">
                         <button type="button" class="btn btn-sm btn-warning" onclick="editarTour(this)">Editar</button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="eliminarTour(this)">Eliminar</button>
@@ -1852,7 +1939,7 @@
             editandoTour = li;
 
             // Cargar valores
-            const idTourReserva = li.querySelector('input[name*="[id]"]')?.value || '';
+            const idToursReserva = li.querySelector('input[name*="[id]"]')?.value || '';
             const id = li.querySelector('input[name*="[tour_id]"]').value;
             const fecha = li.querySelector('input[name*="[fecha]"]').value;
             const tipo = li.querySelector('input[name*="[tipo_tour]"]').value;
@@ -2151,183 +2238,85 @@
             document.getElementById('habitacion_estadia_input').value = '';
         }
 
-
-        /* ---------------- DEPOSITOS (MÚLTIPLES) ---------------- */   
+        /* ---------------- DEPÓSITOS (MÚLTIPLES) ---------------- */
         const listaDepositosAgregados = document.getElementById('listaDepositosAgregados');
+        const totalInput = document.getElementById('total');
+        const adelantoInput = document.getElementById('adelanto');
+        const saldoInput = document.getElementById('saldo');
         const cantidadDepositosInput = document.getElementById('cantidad_depositos');
-        
+
+        let depositoIndex = {{ $mode === 'edit' ? $reserva->depositos->count() : 0 }};
+
         function agregarDeposito() {
-            const tipo = document.getElementById('tipo_deposito_input').value;
-            const nombre = document.getElementById('nombre_deposito_input').value.trim();
-            const observaciones = document.getElementById('observaciones_deposito_input').value.trim();
+            const nombre = document.getElementById('nombre_deposito_input').value;
+            const monto = parseFloat(document.getElementById('monto_deposito_input').value) || 0;
             const fecha = document.getElementById('fecha_deposito_input').value;
-            const monto = document.getElementById('monto_deposito_input').value.trim();
+            const metodo = document.getElementById('tipo_deposito_input').value;
+            const observaciones = document.getElementById('observaciones_deposito_input').value;
 
-            if (!nombre) {
-                if (!confirm('Estás agregando una deposito sin nombre. ¿Continuar?')) return;
+            if (!nombre || monto <= 0) {
+                alert("Debe ingresar nombre y monto válidos.");
+                return;
             }
 
-            //const li = document.createElement('li');
-            //li.classList.add('list-group-item');
-            //li.innerHTML = `
-            if (editandoDeposito) {
-                editandoDeposito.innerHTML = `
-                    <div><strong>Nombre:</strong> ${nombre || '-'}</div>
-                    <div><strong>Monto:</strong> ${monto || '-'}</div>
-                    <div><strong>Tipo:</strong> ${tipo}</div>
-                    <div><strong>Fecha:</strong> ${fecha || '-'}</div>
-                    <div><strong>Obervaciones:</strong> ${observaciones || '-'}</div>
-    
-                    <input type="hidden" name="depositos[${depositoIndex}][nombre_depositante]" value="${nombre}">
-                    <input type="hidden" name="depositos[${depositoIndex}][monto]" value="${monto}">
-                    <input type="hidden" name="depositos[${depositoIndex}][tipo_deposito]" value="${tipo}">
-                    <input type="hidden" name="depositos[${depositoIndex}][fecha]" value="${fecha}">
-                    <input type="hidden" name="depositos[${depositoIndex}][observaciones]" value="${observaciones}">
+            // Crear elemento visual
+            const li = document.createElement('li');
+            li.classList.add('list-group-item');
+            li.innerHTML = `
+                <div><strong>Nombre:</strong> ${nombre}</div>
+                <div><strong>Monto:</strong> ${monto.toFixed(2)}</div>
+                <div><strong>Fecha:</strong> ${fecha}</div>
+                <div><strong>Tipo:</strong> ${metodo}</div>
+                <div><strong>Observaciones:</strong> ${observaciones}</div>
 
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>    
-                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this)">Eliminar</button>
-                    </div>
-                `;
+                <input type="hidden" name="depositos[${depositoIndex}][nombre_depositante]" value="${nombre}">
+                <input type="hidden" name="depositos[${depositoIndex}][monto]" value="${monto}">
+                <input type="hidden" name="depositos[${depositoIndex}][fecha]" value="${fecha}">
+                <input type="hidden" name="depositos[${depositoIndex}][metodo]" value="${metodo}">
+                <input type="hidden" name="depositos[${depositoIndex}][observaciones]" value="${observaciones}">
+            `;
+            listaDepositosAgregados.appendChild(li);
 
-                // resetear estado
-                editandoDeposito = null;
-                const btnAdd = document.getElementById('btn-agregar-deposito');
-                btnAdd.innerText = "Agregar Deposito";
-                btnAdd.classList.remove("editing");
-                document.getElementById('form-deposito').classList.remove("editing");
+            depositoIndex++;
+            cantidadDepositosInput.value = depositoIndex;
 
-
-            } else {
-                const li = document.createElement('li');
-                li.classList.add('list-group-item');
-                li.dataset.index = depositoIndex;
-
-                li.innerHTML = `
-                    <div><strong>Nombre:</strong> ${nombre || '-'}</div>
-                    <div><strong>Monto:</strong> ${monto || '-'}</div>
-                    <div><strong>Tipo:</strong> ${tipo}</div>
-                    <div><strong>Fecha:</strong> ${fecha || '-'}</div>
-                    <div><strong>Obervaciones:</strong> ${observaciones || '-'}</div>
-    
-                    <input type="hidden" name="depositos[${depositoIndex}][nombre_depositante]" value="${nombre}">
-                    <input type="hidden" name="depositos[${depositoIndex}][monto]" value="${monto}">
-                    <input type="hidden" name="depositos[${depositoIndex}][tipo_deposito]" value="${tipo}">
-                    <input type="hidden" name="depositos[${depositoIndex}][fecha]" value="${fecha}">
-                    <input type="hidden" name="depositos[${depositoIndex}][observaciones]" value="${observaciones}">
-
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>    
-                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this)">Eliminar</button>
-                    </div>
-                `;
-
-                listaDepositosAgregados.appendChild(li);
-                depositoIndex++;
-        
-            }
-
-            actualizarCantidadDepositos();
-            limpiarCamposDeposito();
-
-        }
-
-        function eliminarDeposito(btn) {
-            btn.closest('li').remove();
-            actualizarCantidadDepositos();
-        }
-
-        function actualizarCantidadDepositos() {
-            cantidadDepositosInput.value = listaDepositosAgregados.children.length;
-        }
-
-        function editarDeposito(btn) {
-            const li = btn.closest('li');
-            editandoDeposito = li; // guardamos el que estamos editando
-
-            // recuperar valores de los inputs hidden
-            const tipo = document.getElementById('input[name*="[tipo_deposito]"]').value;
-            const nombre = document.getElementById('input[name*="[nombre_depositante]"]').value;
-            const monto = document.getElecmentById('input[name*="[monto]"]').value;
-            const fecha = document.getElementById('input[name*="[fecha]"]').value;
-            const observaciones = document.getElementById('input[name*="[observaciones]"]').value;
-
-            // pasamos a los inputs del formulario
-            document.getElementById('tipo_deposito_input').value = tipo;
-            document.getElementById('nombre_deposito_input').value = nombre;
-            document.getElementById('monto_deposito_input').value = monto;
-            document.getElementById('fecha_deposito_input').value = fecha;
-            document.getElementById('observaciones_deposito_input').value = observaciones_deposito_input;
-
-            // cambiar botón
-            const btnAdd = document.getElementById('btn-agregar-deposito');
-            btnAdd.classList.add("editing");
-            document.getElementById('form-deposito').classList.add("editing");
-
-            // 🔹 Scroll suave hacia el formulario
-            document.getElementById('form-deposito').scrollIntoView({
-                behavior: 'smooth',
-                block: 'center' // centra el bloque en la pantalla
-            });
-
-            const form = document.getElementById('form-deposito');
-            form.classList.add('flash');
-            setTimeout(() => form.classList.remove('flash'), 2000); // quitar animación
-
-        }
-
-        function limpiarCamposDeposito() {
-            document.getElementById('tipo_deposito_input').value = '';
+            // Recalcular adelanto y saldo
+            recalcularFinanzas();
+            
+            // Limpiar inputs del form de depósito
             document.getElementById('nombre_deposito_input').value = '';
             document.getElementById('monto_deposito_input').value = '';
             document.getElementById('fecha_deposito_input').value = '';
+            document.getElementById('tipo_deposito_input').value = '';
             document.getElementById('observaciones_deposito_input').value = '';
         }
 
-        //añadir depositos
-        document.getElementById('addDeposito').addEventListener('click', function () {
-        const wrapper = document.getElementById('depositos-wrapper');
-        const index = wrapper.querySelectorAll('.deposito-item').length;
+        function recalcularFinanzas() {
+            const total = parseFloat(totalInput.value) || 0;
+            let adelanto = 0;
 
-        const template = `
-        <div class="deposito-item border rounded p-3 mb-3">
-            <div class="row">
-                <div class="col-md-4">
-                    <label>Nombre del Depositante</label>
-                    <input type="text" name="depositos[${index}][nombre_depositante]" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label>Monto</label>
-                    <input type="number" step="0.01" 
-                        name="depositos[${index}][monto]" 
-                        class="form-control deposito-monto">
-                </div>
-                <div class="col-md-4">
-                    <label>Fecha</label>
-                    <input type="date" name="depositos[${index}][fecha]" class="form-control">
-                </div>
-            </div>
-            <div class="row mt-2">
-                <div class="col-md-6">
-                    <label>Tipo de Depósito</label>
-                    <select name="depositos[${index}][tipo_deposito]" class="form-control">
-                        <option value="">Seleccione...</option>
-                        <option value="Deposito WU">Depósito WU</option>
-                        <option value="Transferencia BCP">Transferencia BCP</option>
-                        <option value="Transferencia Interbank">Transferencia Interbank</option>
-                        <option value="Yape">Yape</option>
-                        <option value="Plin">Plin</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label>Observaciones</label>
-                    <textarea name="depositos[${index}][observaciones]" class="form-control"></textarea>
-                </div>
-            </div>
-        </div>`;
-        
-        wrapper.insertAdjacentHTML('beforeend', template);
-    });
+            listaDepositosAgregados.querySelectorAll('input[name*="[monto]"]').forEach(input => {
+                adelanto += parseFloat(input.value) || 0;
+            });
 
+            adelantoInput.value = adelanto.toFixed(2);
+            saldoInput.value = (total - adelanto).toFixed(2);
+        }
+
+        // Recalcular cuando cambie el total
+        totalInput.addEventListener('input', recalcularFinanzas);
+
+        // Si ya hay depósitos cargados (modo edición), recalcular al inicio
+        window.addEventListener('load', recalcularFinanzas);
+
+
+
+        /* ----------------------- checked --------------------- */
+        document.querySelectorAll('.chk-pasajero').forEach(chk => {
+            chk.addEventListener('change', function() {
+                const input = document.querySelector(`.comentario-pasajero[data-id="${this.dataset.id}"]`);
+                input.disabled = !this.checked;
+                actualizarCantidadIntegrantes();
+            });
+        });
     </script>

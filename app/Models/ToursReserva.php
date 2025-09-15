@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TourReserva extends Model
+class ToursReserva extends Model
 {
     use HasFactory;
-    protected $table = 'tours_reserva';
+    protected $table = 'tours_reservas';
     protected $fillable = [
         'reserva_id',
         'tour_id',
@@ -53,16 +53,17 @@ class TourReserva extends Model
         return $this->hasOne(DetalleTourBoletoTuristico::class, 'tours_reserva_id');
     }
 
+    public function includes()
+    {
+        return $this->hasMany(ToursInclude::class, 'tours_reserva_id');
+    }
+
     public function pasajeros()
     {
-        return $this->belongsToMany(Pasajero::class, 'tour_reserva_pasajero')
-                    ->withPivot('incluido')
+        return $this->belongsToMany(Pasajero::class, 'tours_reserva_pasajero')
+                    ->withPivot('incluido', 'comentario') 
                     ->withTimestamps();
     }
 
-    public function includes()
-    {
-        return $this->hasMany(TourInclude::class);
-    }
 
 }
