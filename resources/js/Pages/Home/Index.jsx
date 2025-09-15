@@ -1,41 +1,36 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import Layout from '../../Components/Layout/Layout';
-import Hero from '../../Components/Sections/Hero';
-import TourGrid from '../../Components/Sections/TourGrid';
 
-export default function Home({ tours }) {
+export default function Home() {
     return (
         <Layout>
             <Head title="Inicio - Turismo Adventures" />
             
-            <Hero />
-            
-            <section className="py-16 bg-gray-50">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                            Tours Populares
-                        </h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
-                            Descubre nuestros destinos más solicitados por los viajeros
-                        </p>
-                    </div>
-                    
-                    <TourGrid tours={tours} />
-                    
-                    <div className="text-center mt-12">
-                        <Link 
-                            href="/tours" 
-                            className="inline-block bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition"
+            {/* Hero Section */}
+            <section className="bg-gradient-to-r from-primary-500 to-primary-700 text-white py-20">
+                <div className="container mx-auto px-4 text-center">
+                    <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
+                        Descubre la Magia del Perú
+                    </h1>
+                    <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto animate-fade-in animation-delay-200">
+                        Experiencias únicas que quedarán para siempre en tu memoria
+                    </p>
+                    <div className="animate-fade-in animation-delay-400">
+                        <a 
+                            href="https://wa.me/51123456789?text=Hola,%20me%20interesa%20reservar%20un%20tour" 
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-secondary-500 hover:bg-secondary-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition shadow-2xl hover:shadow-3xl inline-block"
                         >
-                            Ver Todos los Tours
-                        </Link>
+                            🎯 Reserva Tu Aventura Ahora
+                        </a>
                     </div>
                 </div>
             </section>
+
+            {/* Más secciones irían aquí */}
             
-            {/* Más secciones... */}
         </Layout>
     );
 }

@@ -589,7 +589,9 @@
                         </div>
 
                         <div class="col-12 text-end mt-3">
-                            <button type="button" class="btn btn-success" onclick="agregarDeposito()">Agregar Depósito</button>
+                            <button type="button" class="btn btn-success" id="btn-agregar-deposito"
+                            onclick="agregarDeposito()">Agregar Depósito</button>
+
                         </div>
                     </div>
                 </div>
@@ -2238,52 +2240,77 @@
             document.getElementById('habitacion_estadia_input').value = '';
         }
 
-        /* ---------------- DEPÓSITOS (MÚLTIPLES) ---------------- */
+        /* ---------------- DEPÓSITOS SCRIPT---------------- */
         const listaDepositosAgregados = document.getElementById('listaDepositosAgregados');
         const totalInput = document.getElementById('total');
         const adelantoInput = document.getElementById('adelanto');
         const saldoInput = document.getElementById('saldo');
         const cantidadDepositosInput = document.getElementById('cantidad_depositos');
+        const btnAgregarDeposito = document.getElementById('btn-agregar-deposito');
 
         let depositoIndex = {{ $mode === 'edit' ? $reserva->depositos->count() : 0 }};
+        let depositoEditando = null; // guarda el <li> que estamos editando
 
         function agregarDeposito() {
-            const nombre = document.getElementById('nombre_deposito_input').value;
+            const nombre = document.getElementById('nombre_deposito_input').value.trim();
             const monto = parseFloat(document.getElementById('monto_deposito_input').value) || 0;
             const fecha = document.getElementById('fecha_deposito_input').value;
             const metodo = document.getElementById('tipo_deposito_input').value;
-            const observaciones = document.getElementById('observaciones_deposito_input').value;
+            const observaciones = document.getElementById('observaciones_deposito_input').value.trim();
 
             if (!nombre || monto <= 0) {
                 alert("Debe ingresar nombre y monto válidos.");
                 return;
             }
 
-            // Crear elemento visual
-            const li = document.createElement('li');
-            li.classList.add('list-group-item');
-            li.innerHTML = `
-                <div><strong>Nombre:</strong> ${nombre}</div>
-                <div><strong>Monto:</strong> ${monto.toFixed(2)}</div>
-                <div><strong>Fecha:</strong> ${fecha}</div>
-                <div><strong>Tipo:</strong> ${metodo}</div>
-                <div><strong>Observaciones:</strong> ${observaciones}</div>
+            if (depositoEditando) {
+                // 🔹 Editar
+                depositoEditando.innerHTML = renderDepositoHTML(nombre, monto, fecha, metodo, observaciones, depositoEditando.dataset.index);
+                depositoEditando = null;
+                btnAgregarDeposito.textContent = "Agregar Depósito";
+            } else {
+                // 🔹 Nuevo
+                const li = document.createElement('li');
+                li.classList.add('list-group-item');
+                li.dataset.index = depositoIndex;
+                li.innerHTML = renderDepositoHTML(nombre, monto, fecha, metodo, observaciones, depositoIndex);
+                listaDepositosAgregados.appendChild(li);
 
-                <input type="hidden" name="depositos[${depositoIndex}][nombre_depositante]" value="${nombre}">
-                <input type="hidden" name="depositos[${depositoIndex}][monto]" value="${monto}">
-                <input type="hidden" name="depositos[${depositoIndex}][fecha]" value="${fecha}">
-                <input type="hidden" name="depositos[${depositoIndex}][metodo]" value="${metodo}">
-                <input type="hidden" name="depositos[${depositoIndex}][observaciones]" value="${observaciones}">
-            `;
-            listaDepositosAgregados.appendChild(li);
+                depositoIndex++;
+            }
 
-            depositoIndex++;
-            cantidadDepositosInput.value = depositoIndex;
+            // 🔹 Actualizar cantidad de depósitos
+            cantidadDepositosInput.value = listaDepositosAgregados.querySelectorAll('li').length;
 
-            // Recalcular adelanto y saldo
             recalcularFinanzas();
-            
-            // Limpiar inputs del form de depósito
+            limpiarFormularioDeposito();
+        }
+
+        function eliminarDeposito(button) {
+            const li = button.closest('li');
+            li.remove();
+
+            // 🔹 Actualizar cantidad de depósitos después de borrar
+            cantidadDepositosInput.value = listaDepositosAgregados.querySelectorAll('li').length;
+
+            recalcularFinanzas();
+        }
+
+        function editarDeposito(button) {
+            const li = button.closest('li');
+            depositoEditando = li;
+
+            // Rellenar el formulario con valores del depósito
+            document.getElementById('nombre_deposito_input').value = li.querySelector('input[name*="[nombre_depositante]"]').value;
+            document.getElementById('monto_deposito_input').value = li.querySelector('input[name*="[monto]"]').value;
+            document.getElementById('fecha_deposito_input').value = li.querySelector('input[name*="[fecha]"]').value;
+            document.getElementById('tipo_deposito_input').value = li.querySelector('input[name*="[metodo]"]').value;
+            document.getElementById('observaciones_deposito_input').value = li.querySelector('input[name*="[observaciones]"]').value;
+
+            btnAgregarDeposito.textContent = "Guardar Cambios";
+        }
+
+        function limpiarFormularioDeposito() {
             document.getElementById('nombre_deposito_input').value = '';
             document.getElementById('monto_deposito_input').value = '';
             document.getElementById('fecha_deposito_input').value = '';
@@ -2303,12 +2330,8 @@
             saldoInput.value = (total - adelanto).toFixed(2);
         }
 
-        // Recalcular cuando cambie el total
         totalInput.addEventListener('input', recalcularFinanzas);
-
-        // Si ya hay depósitos cargados (modo edición), recalcular al inicio
         window.addEventListener('load', recalcularFinanzas);
-
 
 
         /* ----------------------- checked --------------------- */
