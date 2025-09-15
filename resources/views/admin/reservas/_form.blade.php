@@ -1710,7 +1710,6 @@
         // ------------- TOURS (AGREGAR, EDITAR)----------------
         const listaToursAgregados = document.getElementById('listaToursAgregados');
         const cantidadToursInput = document.getElementById('cantidad_tours');
-        const tipoIntegrantes = document.querySelector('input[name="integrantes_tipo"]:checked').value;
 
         function agregarTour() {
             const id = safeValue('id_tour');
