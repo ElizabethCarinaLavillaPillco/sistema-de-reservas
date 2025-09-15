@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 use App\Http\Controllers\Auth\LoginController;
+
 use App\Http\Controllers\{
     DashboardController,
     UsuarioController,
@@ -44,6 +46,11 @@ Route::get('/contact', function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Auth::routes();
+
+// Ruta de demostración
+Route::get('/demo', function () {
+    return Inertia::render('Demo/Index');
+})->name('demo');
 
 // Zona protegida de administración (sistema actual)
 Route::middleware('auth')->group(function () {
