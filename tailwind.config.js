@@ -5,7 +5,6 @@ module.exports = {
         "./resources/**/*.js",
         "./resources/**/*.jsx",
         "./storage/framework/views/*.php",
-        "./public/index.html",
     ],
     theme: {
         extend: {

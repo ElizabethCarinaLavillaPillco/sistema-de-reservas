@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
 
+//comentarios
 export default defineConfig({
     plugins: [
         laravel({
@@ -10,4 +11,8 @@ export default defineConfig({
         }),
         react(),
     ],
+    server: {
+        host: '127.0.0.1',
+        port: 5173,
+    },
 });
