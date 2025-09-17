@@ -87,7 +87,7 @@ export default function Header() {
                             <img 
                                 src="/images/logo.png" 
                                 alt="Turismo Adventures" 
-                                className="h-10 md:h-12"
+                                className="h-10 md:h-12 max-h-12 object-contain" 
                                 onError={(e) => {
                                     e.target.src = 'https://via.placeholder.com/150x50/14b8a6/white?text=Turismo+Adventures';
                                 }}
