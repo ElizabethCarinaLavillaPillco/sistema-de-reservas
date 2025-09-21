@@ -5,7 +5,7 @@ import Layout from '../../Components/Layout/Layout';
 export default function Home() {
     return (
         <Layout>
-            <Head title="Inicio - Turismo Adventures" />
+            <Head title="Inicio - Expediciones Allinkay" />
             
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-primary-500 to-primary-700 text-white py-20">
@@ -18,7 +18,7 @@ export default function Home() {
                     </p>
                     <div className="animate-fade-in animation-delay-400">
                         <a 
-                            href="https://wa.me/51123456789?text=Hola,%20me%20interesa%20reservar%20un%20tour" 
+                            href="https://wa.me/51995669380?text=Hola,%20me%20interesa%20reservar%20un%20tour" 
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-secondary-500 hover:bg-secondary-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition shadow-2xl hover:shadow-3xl inline-block"

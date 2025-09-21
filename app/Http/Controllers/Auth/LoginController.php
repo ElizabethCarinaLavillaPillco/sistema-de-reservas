@@ -12,7 +12,7 @@ class LoginController extends Controller
     // Mostrar el formulario de login
 public function showLoginForm()
 {
-    return view('login');
+    return view('auth.login');
 }
 
 public function login(Request $request)

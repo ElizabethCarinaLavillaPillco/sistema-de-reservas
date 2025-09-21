@@ -23,7 +23,7 @@ export default function Footer() {
                                     <div className="relative bg-white/95 backdrop-blur-sm rounded-xl p-4 h-16 md:h-20 object-contain transition-transform group-hover:scale-105">
                                         <img 
                                             src="/images/logo.png" 
-                                            alt="Turismo Adventures" 
+                                            alt="Expediciones Allinkay" 
                                             className="h-full w-auto object-contain"
                                             onError={(e) => {
                                                 e.target.src = 'https://via.placeholder.com/150x50/14b8a6/white?text=Turismo+Adventures';
