@@ -22,3 +22,28 @@
         @inertia
     </body>
 </html>
+
+@if (request()->is('dashboard', 'admin/*'))
+<script>
+// Intentar pantalla completa automáticamente para rutas del sistema
+document.addEventListener('DOMContentLoaded', function() {
+    function enterFullscreen() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen && !document.fullscreenElement) {
+            elem.requestFullscreen().catch(err => {
+                console.log('Error al intentar pantalla completa:', err);
+            });
+        }
+    }
+    
+    // Intentar al cargar
+    enterFullscreen();
+    
+    // También intentar con la primera interacción del usuario
+    document.addEventListener('click', function firstClick() {
+        enterFullscreen();
+        document.removeEventListener('click', firstClick);
+    });
+});
+</script>
+@endif
