@@ -7,7 +7,7 @@ use App\Models\Facturacion;
 use App\Models\Deposito;
 use App\Models\Factura;
 use App\Models\Contabilidad;
-use App\Models\TourReserva;
+use App\Models\ToursReserva;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -19,8 +19,8 @@ class DashboardController extends Controller
         $manana = Carbon::tomorrow()->toDateString(); // Formato 'Y-m-d'
 
         //0. Tours de hoy y mañana (para mostrar en el encabezado)
-        $toursHoy = TourReserva::whereDate('fecha', $hoy)->get();
-        $toursManana = TourReserva::where('fecha', $manana)->get();
+        $toursHoy = ToursReserva::whereDate('fecha', $hoy)->get();
+        $toursManana = ToursReserva::where('fecha', $manana)->get();
 
 
 
@@ -38,7 +38,7 @@ class DashboardController extends Controller
             ->get();
 
         // 3. Próximo tour Machupicchu (cualquier variante)
-        $proximoMachu = TourReserva::whereHas('tour', function ($q) {
+        $proximoMachu = ToursReserva::whereHas('tour', function ($q) {
                 $q->whereIn('nombreTour', [
                     'Machupicchu Full Day',
                     'Machupicchu Conexión',

@@ -606,14 +606,14 @@
                                     <div><strong>Nombre:</strong> {{ $deposito->nombre_depositante }}</div>
                                     <div><strong>Monto:</strong> {{ $deposito->monto }}</div>
                                     <div><strong>Fecha:</strong> {{ $deposito->fecha }}</div>
-                                    <div><strong>Tipo:</strong> {{ $deposito->metodo }}</div>
+                                    <div><strong>Tipo:</strong> {{ $deposito->tipo_deposito }}</div>
                                     <div><strong>Observaciones:</strong> {{ $deposito->observaciones }}</div>
 
                                     <!-- Hidden inputs -->
                                     <input type="hidden" name="depositos[{{ $i }}][nombre_depositante]" value="{{ $deposito->nombre_depositante }}">
                                     <input type="hidden" name="depositos[{{ $i }}][monto]" value="{{ $deposito->monto }}">
                                     <input type="hidden" name="depositos[{{ $i }}][fecha]" value="{{ $deposito->fecha }}">
-                                    <input type="hidden" name="depositos[{{ $i }}][metodo]" value="{{ $deposito->metodo }}">
+                                    <input type="hidden" name="depositos[{{ $i }}][tipo_deposito]" value="{{ $deposito->tipo_deposito }}">
                                     <input type="hidden" name="depositos[{{ $i }}][observaciones]" value="{{ $deposito->observaciones }}">
                                 </li>
                             @endforeach
@@ -2254,7 +2254,7 @@
             const nombre = document.getElementById('nombre_deposito_input').value.trim();
             const monto = parseFloat(document.getElementById('monto_deposito_input').value) || 0;
             const fecha = document.getElementById('fecha_deposito_input').value;
-            const metodo = document.getElementById('tipo_deposito_input').value;
+            const tipo_deposito = document.getElementById('tipo_deposito_input').value;
             const observaciones = document.getElementById('observaciones_deposito_input').value.trim();
 
             if (!nombre || monto <= 0) {
@@ -2264,7 +2264,7 @@
 
             if (depositoEditando) {
                 // 🔹 Editar
-                depositoEditando.innerHTML = renderDepositoHTML(nombre, monto, fecha, metodo, observaciones, depositoEditando.dataset.index);
+                depositoEditando.innerHTML = renderDepositoHTML(nombre, monto, fecha, tipo_deposito, observaciones, depositoEditando.dataset.index);
                 depositoEditando = null;
                 btnAgregarDeposito.textContent = "Agregar Depósito";
             } else {
@@ -2272,7 +2272,7 @@
                 const li = document.createElement('li');
                 li.classList.add('list-group-item');
                 li.dataset.index = depositoIndex;
-                li.innerHTML = renderDepositoHTML(nombre, monto, fecha, metodo, observaciones, depositoIndex);
+                li.innerHTML = renderDepositoHTML(nombre, monto, fecha, tipo_deposito, observaciones, depositoIndex);
                 listaDepositosAgregados.appendChild(li);
 
                 depositoIndex++;
@@ -2303,7 +2303,7 @@
             document.getElementById('nombre_deposito_input').value = li.querySelector('input[name*="[nombre_depositante]"]').value;
             document.getElementById('monto_deposito_input').value = li.querySelector('input[name*="[monto]"]').value;
             document.getElementById('fecha_deposito_input').value = li.querySelector('input[name*="[fecha]"]').value;
-            document.getElementById('tipo_deposito_input').value = li.querySelector('input[name*="[metodo]"]').value;
+            document.getElementById('tipo_deposito_input').value = li.querySelector('input[name*="[tipo_deposito]"]').value;
             document.getElementById('observaciones_deposito_input').value = li.querySelector('input[name*="[observaciones]"]').value;
 
             btnAgregarDeposito.textContent = "Guardar Cambios";

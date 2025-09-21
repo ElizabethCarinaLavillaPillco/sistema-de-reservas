@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
 
 
 
-Route::post('/v1/login', function (Request $request) {
+Route::post('/v1/auth/login', function (Request $request) {
     $request->validate([
         'correo' => 'required|email',
         'password' => 'required'

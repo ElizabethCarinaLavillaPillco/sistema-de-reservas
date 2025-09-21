@@ -136,7 +136,7 @@ class ReservaController extends Controller
                             'nombre_depositante' => $depositoData['nombre_depositante'] ?? null,
                             'monto'              => $depositoData['monto'] ?? 0,
                             'fecha'              => $depositoData['fecha'] ?? null,
-                            'metodo'             => $depositoData['metodo'] ?? null,
+                            'tipo_deposito'      => $depositoData['tipo_deposito'] ?? null,
                             'observaciones'      => $depositoData['observaciones'] ?? null,
                         ]);
                     }
@@ -280,7 +280,7 @@ class ReservaController extends Controller
                             'nombre_depositante' => $depositoData['nombre_depositante'] ?? null,
                             'monto'              => $depositoData['monto'] ?? 0,
                             'fecha'              => $depositoData['fecha'] ?? null,
-                            'metodo'             => $depositoData['metodo'] ?? null,
+                            'tipo_deposito'      => $depositoData['tipo_deposito'] ?? null,
                             'observaciones'      => $depositoData['observaciones'] ?? null,
                         ]);
                     }
