@@ -323,68 +323,130 @@ const AdvantageCard = ({ advantage, index }) => {
         </div>
     );
 };
-// Componente para la tarjeta de foto de Instagram
-const InstagramCard = ({ post, index }) => {
-    return (
-        <div className={`group relative overflow-hidden rounded-xl shadow-lg transform transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-fade-in animation-delay-${index * 100}`}>
-            {/* Imagen */}
-            <div className="relative aspect-square overflow-hidden">
-                <img 
-                    src={post.image} 
-                    alt={post.caption} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
-                {/* Iconos de interacción */}
-                <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="flex items-center text-white">
-                        <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 5 7.5c0 2.7 1.94 4.96 4.5 5.5.08.02.15.02.23.02.08 0 .15-.01.23-.02 2.56-.54 4.5-2.8 4.5-5.5 0-3.08-3.42-5.5-7.5-5.5-3.78 0-6.4 2.86-6.42 6.35 0 3.8 2.85 7.4 6.4 8.9L12 21.35z"/>
-                        </svg>
-                        <span>{post.likes}</span>
-                    </div>
-                    <div className="flex items-center text-white">
-                        <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-                        </svg>
-                        <span>{post.comments}</span>
-                    </div>
-                </div>
-            </div>
+// Hook personalizado para manejar los carruseles
+const useCarousel = () => {
+    const moveCarousel = (carouselId, direction) => {
+        const carousel = document.getElementById(carouselId);
+        if (!carousel) return;
+        
+        const scrollAmount = carousel.offsetWidth;
+        
+        if (direction === 'next') {
+            carousel.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        } else {
+            carousel.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+    
+    const goToSlide = (carouselId, slideIndex) => {
+        const carousel = document.getElementById(carouselId);
+        if (!carousel) return;
+        
+        const scrollAmount = carousel.offsetWidth * slideIndex;
+        
+        carousel.scrollTo({
+            left: scrollAmount,
+            behavior: 'smooth'
+        });
+    };
+    
+    // Función para reproducir el video
+    const playVideo = (index) => {
+        const video = document.getElementById(`video-${index}`);
+        if (video) {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+    };
+    
+    // Función para actualizar la duración del video
+    const updateDuration = (index) => {
+        const video = document.getElementById(`video-${index}`);
+        const durationElement = document.getElementById(`duration-${index}`);
+        
+        if (video && durationElement) {
+            const duration = video.duration;
+            const minutes = Math.floor(duration / 60);
+            const seconds = Math.floor(duration % 60);
+            durationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+    };
+    
+    // Efecto para configurar los videos cuando el componente se monta
+    useEffect(() => {
+        testimonials.forEach((_, index) => {
+            const video = document.getElementById(`video-${index}`);
             
-            {/* Categoría */}
-            <div className="absolute top-3 left-3">
-                <span className="inline-block bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-primary-700">
-                    {post.category}
-                </span>
-            </div>
-        </div>
-    );
-};
-// Componente para la categoría
-const CategoryCard = ({ category, index }) => {
-    return (
-        <div className={`group relative overflow-hidden rounded-xl shadow-md transform transition-all duration-500 hover:scale-105 hover:shadow-xl animate-fade-in animation-delay-${index * 100}`}>
-            {/* Imagen */}
-            <div className="relative aspect-video overflow-hidden">
-                <img 
-                    src={category.image} 
-                    alt={category.name} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            if (video) {
+                // Actualizar la duración cuando los metadatos se cargan
+                video.addEventListener('loadedmetadata', () => {
+                    updateDuration(index);
+                });
                 
-                {/* Contenido */}
-                <div className="absolute inset-0 flex flex-col justify-end p-4">
-                    <h3 className="text-xl font-bold text-white mb-1">{category.name}</h3>
-                    <p className="text-sm text-white/80">{category.count} fotos</p>
-                </div>
-            </div>
-        </div>
-    );
+                // Mostrar/ocultar el overlay cuando el video se reproduce/pausa
+                video.addEventListener('play', () => {
+                    const overlay = video.parentElement.querySelector('.absolute.inset-0');
+                    if (overlay) {
+                        overlay.style.opacity = '0';
+                    }
+                });
+                
+                video.addEventListener('pause', () => {
+                    const overlay = video.parentElement.querySelector('.absolute.inset-0');
+                    if (overlay && video.currentTime === 0) {
+                        overlay.style.opacity = '1';
+                    }
+                });
+                
+                video.addEventListener('ended', () => {
+                    const overlay = video.parentElement.querySelector('.absolute.inset-0');
+                    if (overlay) {
+                        overlay.style.opacity = '1';
+                    }
+                });
+            }
+        });
+        
+        // Limpieza de event listeners
+        return () => {
+            testimonials.forEach((_, index) => {
+                const video = document.getElementById(`video-${index}`);
+                if (video) {
+                    video.removeEventListener('loadedmetadata', () => updateDuration(index));
+                    video.removeEventListener('play', () => {
+                        const overlay = video.parentElement.querySelector('.absolute.inset-0');
+                        if (overlay) {
+                            overlay.style.opacity = '0';
+                        }
+                    });
+                    video.removeEventListener('pause', () => {
+                        const overlay = video.parentElement.querySelector('.absolute.inset-0');
+                        if (overlay && video.currentTime === 0) {
+                            overlay.style.opacity = '1';
+                        }
+                    });
+                    video.removeEventListener('ended', () => {
+                        const overlay = video.parentElement.querySelector('.absolute.inset-0');
+                        if (overlay) {
+                            overlay.style.opacity = '1';
+                        }
+                    });
+                }
+            });
+        };
+    }, []);
+    
+    return { moveCarousel, goToSlide, playVideo };
 };
-
 
 // Iconos SVG para los destinos
 const LocationIcon = () => (
@@ -442,6 +504,8 @@ const PriceIcon = () => (
 
 
 export default function Home() {
+    const { moveCarousel, goToSlide, playVideo } = useCarousel();
+
     // Datos de los tours populares
     const popularTours = [
         {
@@ -755,82 +819,82 @@ export default function Home() {
             ]
         }
     ];
-    // Datos de las publicaciones de Instagram
-    const instagramPosts = [
+    // Datos de testimonios
+    const testimonials = [
         {
-            id: 1,
-            image: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            caption: "Camino Inca con vistas espectaculares",
-            likes: 245,
-            comments: 32,
-            category: "Machu Picchu"
+            name: "María García",
+            location: "México",
+            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b642?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            video: "/images/videos/videoRecomendado2.mp4",
+            comment: "La experiencia del Camino Inca fue increíble. Los guías son muy profesionales y conocedores de la historia. Sin duda, una aventura inolvidable."
         },
         {
-            id: 2,
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            caption: "Valle Sagrado en todo su esplendor",
-            likes: 189,
-            comments: 21,
-            category: "Valle Sagrado"
+            name: "Carlos Rodríguez",
+            location: "Colombia",
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            video: "/images/videos/videoRecomendado1.mp4",
+            comment: "El tour a Machu Picchu superó todas mis expectativas. La organización fue perfecta y la atención al cliente excepcional."
         },
         {
-            id: 3,
-            image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            caption: "Lago Titicaca, el lago navegable más alto del mundo",
-            likes: 312,
-            comments: 28,
-            category: "Puno"
-        },
-        {
-            id: 4,
-            image: "https://images.unsplash.com/photo-1558979158-65a1eaa08691?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            caption: "Montaña de 7 Colores, un espectáculo de la naturaleza",
-            likes: 428,
-            comments: 45,
-            category: "Cusco"
-        },
-        {
-            id: 5,
-            image: "https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            caption: "City Tour por el centro histórico de Lima",
-            likes: 156,
-            comments: 18,
-            category: "Lima"
-        },
-        {
-            id: 6,
-            image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            caption: "Disfrutando del paraíso en Paracas",
-            likes: 278,
-            comments: 31,
-            category: "Ica"
+            name: "Ana Silva",
+            location: "Brasil",
+            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            video: "/images/videos/videoRecomendado3.mp4",
+            comment: "Viajar con Expediciones Allinkay fue la mejor decisión. Me cuidaron en cada detalle y me hicieron sentir como en familia."
         }
     ];
-    // Datos de las categorías
-    const categories = [
+    // Datos de mensajes de WhatsApp
+    const whatsappMessages = [
         {
-            id: 1,
-            name: "Machu Picchu",
-            image: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            count: 124
+            name: "Juan Pérez",
+            text: "¡Gracias por el increíble tour a Machu Picchu! La experiencia fue inolvidable y los guías fueron excelentes. Definitivamente los recomendaré.",
+            date: "15/05/2023",
+            image: "/images/capturaRecomenacion1.jpg"
         },
         {
-            id: 2,
-            name: "City Tour",
-            image: "https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            count: 87
+            name: "Laura Fernández",
+            text: "El tour al Valle Sagrado estuvo perfecto. Todo muy bien organizado y los paisajes espectaculares. Volveré a viajar con ustedes.",
+            date: "22/05/2023",
+            image: "/images/capturaRecomenacion2.jpg"
         },
         {
-            id: 3,
-            name: "Trekking",
-            image: "https://images.unsplash.com/photo-1526392060635-9d6019884377?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            count: 156
+            name: "Roberto Gómez",
+            text: "Quiero agradecer por la atención personalizada durante mi viaje. El Salkantay Trek fue un desafío, pero valió cada paso. ¡Gracias!",
+            date: "30/05/2023",
+            image: "/images/capturaRecomenacion3.jpg"
+        }
+    ];    
+    // Datos de fotos de Instagram
+    const instagramPhotos = [
+        {
+            image: "images/maras1.jpg",
+            likes: "245",
+            comments: "32"
         },
         {
-            id: 4,
-            name: "Naturaleza",
-            image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            count: 203
+            image: "images/insta1.jpg",
+            likes: "189",
+            comments: "28"
+        },
+        {
+            image: "images/insta2.jpg",
+            likes: "312",
+            comments: "45"
+        },
+        {
+            image: "images/insta3.jpg",
+            likes: "278",
+            comments: "36"
+        },
+        {
+            image: "images/insta4.jpg",
+            likes: "421",
+            comments: "52"
+        },
+        {
+            image: "images/machupicchu-1.jpg",
+            likes: "356",
+            comments: "41"
         }
     ];
     
@@ -1243,36 +1307,48 @@ export default function Home() {
             </section>
 
             {/*  Sección 7: Mira las opiniones de nuestro clientes*/}
-            <section className="py-16 bg-gradient-to-b from-white to-primary-50 relative overflow-hidden">
+            <section className="py-16 bg-gradient-to-br from-primary-900 to-primary-700 text-white relative overflow-hidden">
                 {/* Elementos decorativos animados */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                    {/* Círculos animados */}
-                    <div className="absolute top-20 right-10 w-32 h-32 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-                    <div className="absolute bottom-20 left-10 w-40 h-40 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+                    {/* Partículas animadas */}
+                    {[...Array(30)].map((_, i) => (
+                        <div 
+                            key={i}
+                            className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
+                            style={{
+                                top: `${Math.random() * 100}%`,
+                                left: `${Math.random() * 100}%`,
+                                animationDelay: `${Math.random() * 5}s`,
+                                animationDuration: `${3 + Math.random() * 4}s`
+                            }}
+                        ></div>
+                    ))}
+                    
+                    {/* Círculos de colores */}
+                    <div className="absolute top-20 right-20 w-64 h-64 bg-secondary-400/20 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
+                    <div className="absolute bottom-20 left-20 w-80 h-80 bg-accent-400/20 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
                 </div>
                 
                 <div className="container mx-auto px-4 relative z-10">
-                    {/* Título de la sección con animación */}
+                    {/* Título de la sección */}
                     <div className="text-center mb-12 animate-fade-in">
                         <div className="inline-block relative mb-6">
-                            <h2 className="text-3xl md:text-4xl font-bold text-primary-800 relative">
-                                Mira Nuestros <span className="text-primary-500">Clientes Satisfechos</span>
-                                <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full"></div>
+                            <h2 className="text-3xl md:text-4xl font-bold relative">
+                                Mira Nuestros <span className="text-secondary-300">Clientes Satisfechos</span>
+                                <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-secondary-400 to-accent-400 rounded-full"></div>
                             </h2>
                         </div>
-                        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                            Descubre las experiencias de nuestros clientes a través de nuestras últimas publicaciones en Instagram.
+                        <p className="text-lg text-primary-100 max-w-3xl mx-auto">
+                            Las experiencias de nuestros clientes hablan por sí mismas. Descubre por qué somos la elección preferida de viajeros de todo el mundo.
                         </p>
                     </div>
                     
-                    {/* Grid de Instagram */}
-                    <div className="mb-16">
+                    {/* Collage de Instagram */}
+                    <div className="mb-16 animate-fade-in animation-delay-200">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-primary-800 flex items-center">
-                                <svg className="w-6 h-6 mr-2 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 6.98.059 1.281.073 1.689.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.948-.073zm0 5.838c3.006 0 3.362.012 4.53.07 2.077.096 3.228 1.581 3.228 3.22.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.096 2.077-1.581 3.228-3.22.058-1.265.07-1.645.07-4.849 0-3.204-.012-3.584-.07-4.849-.096-2.077-1.581-3.228-3.22-.058-1.265-.07-1.645-.07-4.849 0-3.204.012-3.584.07-4.849.096-2.077 1.581-3.228 3.22-.058 1.265-.07 1.645-.07 4.849 0 3.204.012 3.584.07 4.849.096 2.077 1.581 3.228 3.22.058 1.265.07 1.645.07 4.849z"/>
-                                    <path d="M15.835 5.465c-.074 0-.146-.01-.219-.025a5.5 5.5 0 00-2.23-.5 5.5 5.5 0 00-2.23.5c-.073.015-.145.025-.219.025a5.5 5.5 0 00-3.5 3.5c0 .074.01.146.025.219.1.706.25 1.39.5 2.03.5a5.5 5.5 0 002.23-.5c.073-.015.145-.025.219-.025.074 0 .146.01.219.025a5.5 5.5 0 002.23.5c.64.25 1.324.4 2.03.5.073-.015.145-.025.219-.025a5.5 5.5 0 003.5-3.5c0-.074-.01-.146-.025-.219a5.5 5.5 0 00-.5-2.03 5.5 5.5 0 00-.5-2.03c.015-.073.025-.145.025-.219z"/>
+                            <h3 className="text-2xl font-bold flex items-center">
+                                <svg className="w-6 h-6 mr-2 text-secondary-300" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
                                 </svg>
                                 @expediciones_allinkay1
                             </h3>
@@ -1280,48 +1356,266 @@ export default function Home() {
                                 href="https://instagram.com/expediciones_allinkay1" 
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-primary-600 hover:text-primary-800 font-medium flex items-center"
+                                className="flex items-center bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium transition transform hover:scale-105 hover:shadow-lg"
                             >
-                                Seguir en Instagram
-                                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <span>Seguir en Instagram</span>
+                                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                 </svg>
                             </a>
                         </div>
                         
+                        {/* Grid de fotos de Instagram */}
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                            {instagramPosts.map((post, index) => (
-                                <InstagramCard key={post.id} post={post} index={index} />
+                            {instagramPhotos.map((photo, index) => (
+                                <div key={index} className="relative group overflow-hidden rounded-2xl aspect-square">
+                                    <img 
+                                        src={photo.image} 
+                                        alt={`Instagram ${index + 1}`} 
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <div className="text-white text-center">
+                                            <div className="flex items-center justify-center mb-2">
+                                                <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                                                </svg>
+                                                <span>{photo.likes}</span>
+                                            </div>
+                                            <div className="flex items-center justify-center">
+                                                <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                                                </svg>
+                                                <span>{photo.comments}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>
                     
-                    {/* Categorías */}
-                    <div className="mb-12">
-                        <h3 className="text-xl font-bold text-primary-800 mb-6 text-center">Explora por Categorías</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {categories.map((category, index) => (
-                                <CategoryCard key={category.id} category={category} index={index} />
-                            ))}
+                    {/* Sección de testimonios y WhatsApp */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        {/* Testimonios en video */}
+                        <div className="animate-fade-in animation-delay-400">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-2xl font-bold flex items-center">
+                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Testimonios
+                                </h3>
+                            </div>
+                            
+                            {/* Carrusel de videos */}
+                            <div className="relative">
+                                <div className="overflow-hidden rounded-2xl">
+                                    <div className="flex transition-transform duration-500 ease-in-out" id="videoCarousel">
+                                        {testimonials.map((testimonial, index) => (
+                                            <div key={index} className="w-full flex-shrink-0">
+                                                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
+                                                    <div className="flex items-center mb-4">
+                                                        <img 
+                                                            src={testimonial.avatar} 
+                                                            alt={testimonial.name} 
+                                                            className="w-12 h-12 rounded-full object-cover mr-4"
+                                                        />
+                                                        <div>
+                                                            <h4 className="font-bold text-white">{testimonial.name}</h4>
+                                                            <p className="text-sm text-primary-200">{testimonial.location}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="aspect-video bg-black/30 rounded-xl overflow-hidden mb-4 relative group">
+                                                        {/* Video element */}
+                                                        <video 
+                                                            className="w-full h-full object-cover"
+                                                            controls
+                                                            poster="https://images.unsplash.com/photo-1596178065887-1198b6149b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                                            id={`video-${index}`}
+                                                        >
+                                                            <source src={testimonial.video} type="video/mp4" />
+                                                            Tu navegador no soporta el elemento de video.
+                                                        </video>
+                                                        
+                                                        {/* Overlay personalizado */}
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                            {/* Botón de play estilizado */}
+                                                            <button 
+                                                                onClick={() => playVideo(index)}
+                                                                className="w-16 h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center transform transition-transform group-hover:scale-110 shadow-lg"
+                                                            >
+                                                                <svg className="w-8 h-8 text-primary-700 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <path d="M8 5v14l11-7z" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        {/* Indicador de duración */}
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                                                            <div className="flex items-center text-white text-sm">
+                                                                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                                                                </svg>
+                                                                <span id={`duration-${index}`}>0:00</span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Título del video */}
+                                                        <div className="absolute top-4 left-4 right-4">
+                                                            <h4 className="text-white font-bold text-lg drop-shadow-lg">
+                                                                Testimonio de {testimonial.name}
+                                                            </h4>
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-white/90 italic">"{testimonial.comment}"</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                {/* Controles del carrusel */}
+                                <button 
+                                    onClick={() => moveCarousel('videoCarousel', 'prev')}
+                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center ml-2 z-10"
+                                >
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button 
+                                    onClick={() => moveCarousel('videoCarousel', 'next')}
+                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center mr-2 z-10"
+                                >
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                                
+                                {/* Indicadores */}
+                                <div className="flex justify-center mt-4 space-x-2">
+                                    {testimonials.map((_, index) => (
+                                        <button 
+                                            key={index}
+                                            onClick={() => goToSlide('videoCarousel', index)}
+                                            className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-secondary-400' : 'bg-white/30'}`}
+                                        ></button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Capturas de WhatsApp */}
+                        <div className="animate-fade-in animation-delay-600">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-2xl font-bold flex items-center">
+                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    Mensajes de Clientes
+                                </h3>
+                            </div>
+                            
+                            {/* Carrusel de WhatsApp */}
+                            <div className="relative">
+                                <div className="overflow-hidden rounded-2xl">
+                                    <div className="flex transition-transform duration-500 ease-in-out" id="whatsappCarousel">
+                                        {whatsappMessages.map((message, index) => (
+                                            <div key={index} className="w-full flex-shrink-0">
+                                                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
+                                                    <div className="flex items-center mb-4">
+                                                        <div className="relative">
+                                                            <div className="absolute -inset-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full blur opacity-75"></div>
+                                                            <div className="relative bg-green-500 rounded-full w-12 h-12 flex items-center justify-center">
+                                                                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/>
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <h4 className="font-bold text-white">{message.name}</h4>
+                                                            <p className="text-sm text-primary-200">WhatsApp</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-white rounded-2xl p-4 mb-4">
+                                                        <img 
+                                                            src={message.image} 
+                                                            alt={`Captura de WhatsApp de ${message.name}`}
+                                                            className="w-full h-auto object-cover rounded-xl"
+                                                        />
+                                                    </div>
+                                                    <div className="text-right text-sm text-primary-200">
+                                                        {message.date}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                {/* Controles del carrusel */}
+                                <button 
+                                    onClick={() => moveCarousel('whatsappCarousel', 'prev')}
+                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center ml-2 z-10"
+                                >
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button 
+                                    onClick={() => moveCarousel('whatsappCarousel', 'next')}
+                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center mr-2 z-10"
+                                >
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                                
+                                {/* Indicadores */}
+                                <div className="flex justify-center mt-4 space-x-2">
+                                    {whatsappMessages.map((_, index) => (
+                                        <button 
+                                            key={index}
+                                            onClick={() => goToSlide('whatsappCarousel', index)}
+                                            className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-secondary-400' : 'bg-white/30'}`}
+                                        ></button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    {/* Botón para ver más */}
-                    <div className="text-center animate-fade-in animation-delay-800">
-                        <a 
-                            href="https://instagram.com/expediciones_allinkay1" 
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-bold text-lg transition transform hover:scale-105 hover:shadow-lg relative overflow-hidden group"
-                        >
-                            <span className="relative z-10 flex items-center">
+                    {/* Botones de redes sociales */}
+                    <div className="text-center mt-16 animate-fade-in animation-delay-800">
+                        <p className="text-lg text-primary-100 mb-6 max-w-2xl mx-auto">
+                            ¿Quieres ver más contenido? Síguenos en nuestras redes sociales para no perderte ninguna de nuestras aventuras.
+                        </p>
+                        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+                            <a 
+                                href="https://instagram.com/expediciones_allinkay1" 
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-full font-medium transition transform hover:scale-105 hover:shadow-lg"
+                            >
                                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 6.98.059 1.281.073 1.689.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.948-.073zm0 5.838c3.006 0 3.362.012 4.53.07 2.077.096 3.228 1.581 3.228 3.22.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.096 2.077-1.581 3.228-3.22.058-1.265.07-1.645.07-4.849 0-3.204-.012-3.584-.07-4.849-.096-2.077-1.581-3.228-3.22-.058-1.265-.07-1.645-.07-4.849 0-3.204.012-3.584.07-4.849.096-2.077 1.581-3.228 3.22-.058 1.265.07 1.645.07 4.849 0 3.204.012 3.584.07 4.849.096 2.077 1.581 3.228 3.22.058 1.265.07 1.645.07 4.849z"/>
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
                                 </svg>
                                 Mira nuestros últimos registros
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </a>
+                            </a>
+                            <a 
+                                href="https://www.facebook.com/people/Expediciones-Allinkay/100077454003699/#" 
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-full font-medium transition transform hover:scale-105 hover:shadow-lg"
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                                Síguenos en Facebook
+                            </a>
+                        </div>
                     </div>
                 </div>
             </section>
