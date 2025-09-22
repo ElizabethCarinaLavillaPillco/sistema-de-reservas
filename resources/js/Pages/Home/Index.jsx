@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import Layout from '../../Components/Layout/Layout';
+import { useCarousel } from '../../hooks/useCarousel';
 
 // Componente para el contador animado
 const Counter = ({ end, duration = 3, suffix = '' }) => {
@@ -27,7 +28,6 @@ const Counter = ({ end, duration = 3, suffix = '' }) => {
     
     return <span>{count}{suffix}</span>;
 };
-// Componente para la tarjeta de tour
 const TourCard = ({ tour, index }) => {
     return (
         <div className={`bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl border-2 border-primary-100 animate-fade-in animation-delay-${index * 100}`}>
@@ -86,7 +86,6 @@ const TourCard = ({ tour, index }) => {
         </div>
     );
 };
-// Componente para la tarjeta de trekking
 const TrekkingCard = ({ tour, index }) => {
     return (
         <div className={`bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl border-2 border-primary-100 animate-fade-in animation-delay-${index * 100}`}>
@@ -156,7 +155,6 @@ const TrekkingCard = ({ tour, index }) => {
         </div>
     );
 };
-// Componente para la tarjeta de experiencia
 const ExperienceCard = ({ experience, index }) => {
     return (
         <div className={`group relative overflow-hidden rounded-2xl shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-fade-in animation-delay-${index * 100}`}>
@@ -197,7 +195,6 @@ const ExperienceCard = ({ experience, index }) => {
         </div>
     );
 };
-// Componente para la tarjeta de destino
 const DestinationCard = ({ destination, index }) => {
     return (
         <div className={`group relative overflow-hidden rounded-2xl shadow-xl transform transition-all duration-700 hover:scale-105 hover:shadow-2xl animate-fade-in animation-delay-${index * 150}`}>
@@ -284,7 +281,6 @@ const DestinationCard = ({ destination, index }) => {
         </div>
     );
 };
-// Componente para la tarjeta de ventaja
 const AdvantageCard = ({ advantage, index }) => {
     return (
         <div className={`group relative bg-white rounded-2xl shadow-lg p-6 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl border-2 border-primary-100 animate-fade-in animation-delay-${index * 100}`}>
@@ -322,130 +318,6 @@ const AdvantageCard = ({ advantage, index }) => {
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-bl-full opacity-50"></div>
         </div>
     );
-};
-// Hook personalizado para manejar los carruseles
-const useCarousel = () => {
-    const moveCarousel = (carouselId, direction) => {
-        const carousel = document.getElementById(carouselId);
-        if (!carousel) return;
-        
-        const scrollAmount = carousel.offsetWidth;
-        
-        if (direction === 'next') {
-            carousel.scrollBy({
-                left: scrollAmount,
-                behavior: 'smooth'
-            });
-        } else {
-            carousel.scrollBy({
-                left: -scrollAmount,
-                behavior: 'smooth'
-            });
-        }
-    };
-    
-    const goToSlide = (carouselId, slideIndex) => {
-        const carousel = document.getElementById(carouselId);
-        if (!carousel) return;
-        
-        const scrollAmount = carousel.offsetWidth * slideIndex;
-        
-        carousel.scrollTo({
-            left: scrollAmount,
-            behavior: 'smooth'
-        });
-    };
-    
-    // Función para reproducir el video
-    const playVideo = (index) => {
-        const video = document.getElementById(`video-${index}`);
-        if (video) {
-            if (video.paused) {
-                video.play();
-            } else {
-                video.pause();
-            }
-        }
-    };
-    
-    // Función para actualizar la duración del video
-    const updateDuration = (index) => {
-        const video = document.getElementById(`video-${index}`);
-        const durationElement = document.getElementById(`duration-${index}`);
-        
-        if (video && durationElement) {
-            const duration = video.duration;
-            const minutes = Math.floor(duration / 60);
-            const seconds = Math.floor(duration % 60);
-            durationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-    };
-    
-    // Efecto para configurar los videos cuando el componente se monta
-    useEffect(() => {
-        testimonials.forEach((_, index) => {
-            const video = document.getElementById(`video-${index}`);
-            
-            if (video) {
-                // Actualizar la duración cuando los metadatos se cargan
-                video.addEventListener('loadedmetadata', () => {
-                    updateDuration(index);
-                });
-                
-                // Mostrar/ocultar el overlay cuando el video se reproduce/pausa
-                video.addEventListener('play', () => {
-                    const overlay = video.parentElement.querySelector('.absolute.inset-0');
-                    if (overlay) {
-                        overlay.style.opacity = '0';
-                    }
-                });
-                
-                video.addEventListener('pause', () => {
-                    const overlay = video.parentElement.querySelector('.absolute.inset-0');
-                    if (overlay && video.currentTime === 0) {
-                        overlay.style.opacity = '1';
-                    }
-                });
-                
-                video.addEventListener('ended', () => {
-                    const overlay = video.parentElement.querySelector('.absolute.inset-0');
-                    if (overlay) {
-                        overlay.style.opacity = '1';
-                    }
-                });
-            }
-        });
-        
-        // Limpieza de event listeners
-        return () => {
-            testimonials.forEach((_, index) => {
-                const video = document.getElementById(`video-${index}`);
-                if (video) {
-                    video.removeEventListener('loadedmetadata', () => updateDuration(index));
-                    video.removeEventListener('play', () => {
-                        const overlay = video.parentElement.querySelector('.absolute.inset-0');
-                        if (overlay) {
-                            overlay.style.opacity = '0';
-                        }
-                    });
-                    video.removeEventListener('pause', () => {
-                        const overlay = video.parentElement.querySelector('.absolute.inset-0');
-                        if (overlay && video.currentTime === 0) {
-                            overlay.style.opacity = '1';
-                        }
-                    });
-                    video.removeEventListener('ended', () => {
-                        const overlay = video.parentElement.querySelector('.absolute.inset-0');
-                        if (overlay) {
-                            overlay.style.opacity = '1';
-                        }
-                    });
-                }
-            });
-        };
-    }, []);
-    
-    return { moveCarousel, goToSlide, playVideo };
 };
 
 // Iconos SVG para los destinos
@@ -487,7 +359,7 @@ const GuideIcon = () => (
 );
 const TransportIcon = () => (
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 01-2 2z" />
     </svg>
 );
 const ClockIcon = () => (
@@ -502,10 +374,65 @@ const PriceIcon = () => (
 );
 
 
-
 export default function Home() {
-    const { moveCarousel, goToSlide, playVideo } = useCarousel();
+    // Datos de testimonios
+    const testimonials = [
+        {
+            name: "María García",
+            location: "España",
+            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b642?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            video: "/images/videos/videoRecomendado2.mp4",
+            comment: "La experiencia del Camino Inca fue increíble. Los guías son muy profesionales y conocedores de la historia. Sin duda, una aventura inolvidable."
+        },
+        {
+            name: "Carlos Rodríguez",
+            location: "México",
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            video: "/images/videos/videoRecomendado1.mp4",
+            comment: "El tour a Machu Picchu superó todas mis expectativas. La organización fue perfecta y la atención al cliente excepcional."
+        },
+        {
+            name: "Ana Silva",
+            location: "Brasil",
+            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            video: "/images/videos/videoRecomendado3.mp4",
+            comment: "Viajar con Expediciones Allinkay fue la mejor decisión. Me cuidaron en cada detalle y me hicieron sentir como en familia."
+        }
+    ];
+    // Datos de mensajes de WhatsApp
+    const whatsappMessages = [
+        {
+            name: "Juan Pérez",
+            text: "¡Gracias por el increíble tour a Machu Picchu! La experiencia fue inolvidable y los guías fueron excelentes. Definitivamente los recomendaré.",
+            date: "15/05/2023"
+        },
+        {
+            name: "Laura Fernández",
+            text: "El tour al Valle Sagrado estuvo perfecto. Todo muy bien organizado y los paisajes espectaculares. Volveré a viajar con ustedes.",
+            date: "22/05/2023"
+        },
+        {
+            name: "Roberto Gómez",
+            text: "Quiero agradecer por la atención personalizada durante mi viaje. El Salkantay Trek fue un desafío, pero valió cada paso. ¡Gracias!",
+            date: "30/05/2023"
+        }
+    ];
+    const { 
+        currentIndex: videoIndex,
+        moveNext: moveVideoNext,
+        movePrev: moveVideoPrev,
+        goToSlide: goToVideoSlide,
+        toggleVideo,
+        updateVideoDuration
+    } = useCarousel(testimonials);
 
+    const { 
+        currentIndex: whatsappIndex,
+        moveNext: moveWhatsappNext,
+        movePrev: moveWhatsappPrev,
+        goToSlide: goToWhatsappSlide
+    } = useCarousel(whatsappMessages);
+    
     // Datos de los tours populares
     const popularTours = [
         {
@@ -755,6 +682,7 @@ export default function Home() {
         {
             id: 1,
             title: "Seguridad y Seguimiento",
+            description: "Tu seguridad es nuestra prioridad. Monitoreamos cada etapa de tu viaje para garantizar una experiencia sin preocupaciones.",
             icon: SecurityIcon,
             features: [
                 "Monitoreo 24/7 durante tu viaje",
@@ -766,6 +694,7 @@ export default function Home() {
         {
             id: 2,
             title: "Atención Personalizada",
+            description: "Tratamos a cada cliente como único. Adaptamos nuestros servicios a tus necesidades y preferencias.",
             icon: SupportIcon,
             features: [
                 "Asignación de coordinador personal",
@@ -777,6 +706,7 @@ export default function Home() {
         {
             id: 3,
             title: "Guías Certificados",
+            description: "Nuestros guías son profesionales certificados con profundo conocimiento de la cultura e historia local.",
             icon: GuideIcon,
             features: [
                 "Guías locales expertos",
@@ -788,6 +718,7 @@ export default function Home() {
         {
             id: 4,
             title: "Recojo de Aeropuerto",
+            description: "Olvida las preocupaciones de transporte. Te recogemos del aeropuerto y te llevamos a tu hotel sin costo adicional.",
             icon: TransportIcon,
             features: [
                 "Traslados incluidos",
@@ -799,6 +730,7 @@ export default function Home() {
         {
             id: 5,
             title: "Horarios Flexibles",
+            description: "Adaptamos nuestros horarios a tu conveniencia. Ofrecemos salidas diarias y horarios personalizados.",
             icon: ClockIcon,
             features: [
                 "Salidas diarias garantizadas",
@@ -810,6 +742,7 @@ export default function Home() {
         {
             id: 6,
             title: "Buenos Precios",
+            description: "Ofrecemos la mejor relación calidad-precio. Sin costos ocultos y opciones para todos los presupuestos.",
             icon: PriceIcon,
             features: [
                 "Precios transparentes",
@@ -819,51 +752,7 @@ export default function Home() {
             ]
         }
     ];
-    // Datos de testimonios
-    const testimonials = [
-        {
-            name: "María García",
-            location: "México",
-            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b642?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-            video: "/images/videos/videoRecomendado2.mp4",
-            comment: "La experiencia del Camino Inca fue increíble. Los guías son muy profesionales y conocedores de la historia. Sin duda, una aventura inolvidable."
-        },
-        {
-            name: "Carlos Rodríguez",
-            location: "Colombia",
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-            video: "/images/videos/videoRecomendado1.mp4",
-            comment: "El tour a Machu Picchu superó todas mis expectativas. La organización fue perfecta y la atención al cliente excepcional."
-        },
-        {
-            name: "Ana Silva",
-            location: "Brasil",
-            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-            video: "/images/videos/videoRecomendado3.mp4",
-            comment: "Viajar con Expediciones Allinkay fue la mejor decisión. Me cuidaron en cada detalle y me hicieron sentir como en familia."
-        }
-    ];
-    // Datos de mensajes de WhatsApp
-    const whatsappMessages = [
-        {
-            name: "Juan Pérez",
-            text: "¡Gracias por el increíble tour a Machu Picchu! La experiencia fue inolvidable y los guías fueron excelentes. Definitivamente los recomendaré.",
-            date: "15/05/2023",
-            image: "/images/capturaRecomenacion1.jpg"
-        },
-        {
-            name: "Laura Fernández",
-            text: "El tour al Valle Sagrado estuvo perfecto. Todo muy bien organizado y los paisajes espectaculares. Volveré a viajar con ustedes.",
-            date: "22/05/2023",
-            image: "/images/capturaRecomenacion2.jpg"
-        },
-        {
-            name: "Roberto Gómez",
-            text: "Quiero agradecer por la atención personalizada durante mi viaje. El Salkantay Trek fue un desafío, pero valió cada paso. ¡Gracias!",
-            date: "30/05/2023",
-            image: "/images/capturaRecomenacion3.jpg"
-        }
-    ];    
+
     // Datos de fotos de Instagram
     const instagramPhotos = [
         {
@@ -1412,7 +1301,10 @@ export default function Home() {
                             {/* Carrusel de videos */}
                             <div className="relative">
                                 <div className="overflow-hidden rounded-2xl">
-                                    <div className="flex transition-transform duration-500 ease-in-out" id="videoCarousel">
+                                    <div 
+                                        className="flex transition-transform duration-500 ease-in-out"
+                                        style={{ transform: `translateX(-${videoIndex * 100}%)` }}
+                                    >
                                         {testimonials.map((testimonial, index) => (
                                             <div key={index} className="w-full flex-shrink-0">
                                                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
@@ -1427,49 +1319,23 @@ export default function Home() {
                                                             <p className="text-sm text-primary-200">{testimonial.location}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="aspect-video bg-black/30 rounded-xl overflow-hidden mb-4 relative group">
-                                                        {/* Video element */}
+                                                    <div className="aspect-video bg-black/30 rounded-xl overflow-hidden mb-4">
                                                         <video 
+                                                            id={`video-${index}`}
                                                             className="w-full h-full object-cover"
                                                             controls
                                                             poster="https://images.unsplash.com/photo-1596178065887-1198b6149b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                                            id={`video-${index}`}
+                                                            onClick={() => toggleVideo(`video-${index}`)}
+                                                            onLoadedMetadata={() => updateVideoDuration(`video-${index}`, `duration-${index}`)}
                                                         >
                                                             <source src={testimonial.video} type="video/mp4" />
                                                             Tu navegador no soporta el elemento de video.
                                                         </video>
-                                                        
-                                                        {/* Overlay personalizado */}
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                                            {/* Botón de play estilizado */}
-                                                            <button 
-                                                                onClick={() => playVideo(index)}
-                                                                className="w-16 h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center transform transition-transform group-hover:scale-110 shadow-lg"
-                                                            >
-                                                                <svg className="w-8 h-8 text-primary-700 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                                                    <path d="M8 5v14l11-7z" />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                        
-                                                        {/* Indicador de duración */}
-                                                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                                                            <div className="flex items-center text-white text-sm">
-                                                                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-                                                                </svg>
-                                                                <span id={`duration-${index}`}>0:00</span>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        {/* Título del video */}
-                                                        <div className="absolute top-4 left-4 right-4">
-                                                            <h4 className="text-white font-bold text-lg drop-shadow-lg">
-                                                                Testimonio de {testimonial.name}
-                                                            </h4>
-                                                        </div>
                                                     </div>
-                                                    <p className="text-white/90 italic">"{testimonial.comment}"</p>
+                                                    <div className="flex justify-between items-center">
+                                                        <p className="text-white/90 italic">"{testimonial.comment}"</p>
+                                                        <span id={`duration-${index}`} className="text-sm text-white/70">0:00</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -1478,16 +1344,18 @@ export default function Home() {
                                 
                                 {/* Controles del carrusel */}
                                 <button 
-                                    onClick={() => moveCarousel('videoCarousel', 'prev')}
-                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center ml-2 z-10"
+                                    onClick={moveVideoPrev}
+                                    disabled={videoIndex === 0}
+                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center ml-2 z-10 hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
                                 <button 
-                                    onClick={() => moveCarousel('videoCarousel', 'next')}
-                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center mr-2 z-10"
+                                    onClick={moveVideoNext}
+                                    disabled={videoIndex === testimonials.length - 1}
+                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center mr-2 z-10 hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1499,14 +1367,16 @@ export default function Home() {
                                     {testimonials.map((_, index) => (
                                         <button 
                                             key={index}
-                                            onClick={() => goToSlide('videoCarousel', index)}
-                                            className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-secondary-400' : 'bg-white/30'}`}
+                                            onClick={() => goToVideoSlide(index)}
+                                            className={`w-3 h-3 rounded-full transition-colors ${
+                                                index === videoIndex ? 'bg-secondary-400' : 'bg-white/30 hover:bg-white/50'
+                                            }`}
                                         ></button>
                                     ))}
                                 </div>
                             </div>
                         </div>
-                        
+    
                         {/* Capturas de WhatsApp */}
                         <div className="animate-fade-in animation-delay-600">
                             <div className="flex items-center justify-between mb-6">
@@ -1521,7 +1391,10 @@ export default function Home() {
                             {/* Carrusel de WhatsApp */}
                             <div className="relative">
                                 <div className="overflow-hidden rounded-2xl">
-                                    <div className="flex transition-transform duration-500 ease-in-out" id="whatsappCarousel">
+                                    <div 
+                                        className="flex transition-transform duration-500 ease-in-out"
+                                        style={{ transform: `translateX(-${whatsappIndex * 100}%)` }}
+                                    >
                                         {whatsappMessages.map((message, index) => (
                                             <div key={index} className="w-full flex-shrink-0">
                                                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
@@ -1557,16 +1430,18 @@ export default function Home() {
                                 
                                 {/* Controles del carrusel */}
                                 <button 
-                                    onClick={() => moveCarousel('whatsappCarousel', 'prev')}
-                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center ml-2 z-10"
+                                    onClick={moveWhatsappPrev}
+                                    disabled={whatsappIndex === 0}
+                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center ml-2 z-10 hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
                                 <button 
-                                    onClick={() => moveCarousel('whatsappCarousel', 'next')}
-                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center mr-2 z-10"
+                                    onClick={moveWhatsappNext}
+                                    disabled={whatsappIndex === whatsappMessages.length - 1}
+                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center mr-2 z-10 hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1578,8 +1453,10 @@ export default function Home() {
                                     {whatsappMessages.map((_, index) => (
                                         <button 
                                             key={index}
-                                            onClick={() => goToSlide('whatsappCarousel', index)}
-                                            className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-secondary-400' : 'bg-white/30'}`}
+                                            onClick={() => goToWhatsappSlide(index)}
+                                            className={`w-3 h-3 rounded-full transition-colors ${
+                                                index === whatsappIndex ? 'bg-secondary-400' : 'bg-white/30 hover:bg-white/50'
+                                            }`}
                                         ></button>
                                     ))}
                                 </div>
