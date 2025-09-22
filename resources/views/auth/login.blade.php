@@ -299,6 +299,29 @@
                 font-size: 1.5rem;
             }
         }
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            color: var(--primary-dark);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-outline-primary:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(20, 165, 181, 0.3);
+        }
+
+        .btn-outline-primary .position-absolute {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+        }
+
+        .btn-outline-primary:hover .position-absolute {
+            width: 100%;
+            transition: width 0.4s ease-out;
+        }
     </style>
 </head>
 <body>
@@ -351,6 +374,15 @@
                     <button type="submit" class="btn btn-login">
                         <i class="fas fa-sign-in-alt me-2"></i>Ingresar
                     </button>
+                </div>
+
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url('/') }}" class="btn btn-outline-primary position-relative overflow-hidden rounded-pill px-4 py-3 fw-semibold">
+                        <span class="position-relative z-1">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </span>
+                        <span class="position-absolute top-0 start-0 w-0 h-full bg-primary transition-all duration-500 ease-out rounded-pill"></span>
+                    </a>
                 </div>
                 
                 <div class="text-center mt-3">

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Closure; // ← ESTA LÍNEA FALTABA
 
 class HandleInertiaRequests extends Middleware
 {
@@ -12,7 +13,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @var string
      */
-    protected $rootView = 'app'; // Asegúrate que diga 'app'
+    protected $rootView = 'app';
 
     /**
      * Determine the current asset version.
@@ -43,5 +44,31 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
         ]);
+    }
+
+    /**
+     * Handle the incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return \Illuminate\Http\Response
+     */
+    public function handle($request, Closure $next)
+    {
+        // Excluir rutas de autenticación y del sistema admin de Inertia
+        if ($request->is(
+            'login', 
+            'logout', 
+            'password/*',
+            'login-debug',
+            'dashboard',
+            'admin/*',
+            'register'
+        )) {
+            return $next($request);
+        }
+        
+        // Para todas las demás rutas (página web pública), aplicar Inertia
+        return parent::handle($request, $next);
     }
 }

@@ -20,7 +20,9 @@ use App\Http\Controllers\{
     ContabilidadController
 };
 
-// Ruta principal - Página web pública (nueva con Inertia + React)
+// ==================== RUTAS PÚBLICAS (React/Inertia) ====================
+
+// Ruta principal - Página web pública
 Route::get('/', function () {
     return Inertia::render('Home/Index');
 })->name('home');
@@ -42,19 +44,36 @@ Route::get('/contact', function () {
     return Inertia::render('Contact/Index');
 })->name('contact');
 
-// Rutas de autenticación (mantenemos las existentes)
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Auth::routes();
-
-// Ruta de demostración
+// Ruta de demostración (modo demo)
 Route::get('/demo', function () {
     return Inertia::render('Demo/Index');
 })->name('demo');
 
-// Zona protegida de administración (sistema actual)
+// Ruta temporal para diagnóstico del login
+Route::get('/login-debug', function () {
+    // Forzar una vista Blade sin middleware de Inertia
+    return response()
+        ->view('auth.login')
+        ->header('X-Inertia', 'false');
+});
+
+// ==================== RUTAS DE AUTENTICACIÓN (Blade) ====================
+
+// Rutas de login - DEBEN usar Blade, NO Inertia
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+
+// Si necesitas temporalmente el debug, comenta la línea anterior y descomenta esta:
+// Route::get('/login', function () { return redirect('/login-debug'); });
+
+// Rutas de autenticación de Laravel
+Auth::routes(['register' => false]); // Deshabilitar registro si no lo necesitas
+
+// ==================== RUTAS PROTEGIDAS (Sistema Admin - Blade) ====================
+
 Route::middleware('auth')->group(function () {
     
+    // Dashboard del sistema
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Prefijo admin para todas las rutas del sistema
@@ -84,8 +103,3 @@ Route::middleware('auth')->group(function () {
         });
     });
 });
-
-// Ruta de demostración
-Route::get('/demo', function () {
-    return Inertia::render('Demo/Index');
-})->name('demo');

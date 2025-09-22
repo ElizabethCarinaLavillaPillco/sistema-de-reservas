@@ -333,12 +333,16 @@ export default function Header() {
                                             Reserva ya
                                         </span>
                                     </a>
-                                    <Link 
+                                    <a 
                                         href="/login" 
-                                        className="btn-glow bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-full hover:from-primary-500 hover:to-primary-500 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl relative overflow-hidden group text-sm"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            window.location.href = '/login'; // Navegación normal
+                                        }}
+                                        className="bg-primary-600 text-white px-6 py-2 rounded-full hover:bg-primary-700 transition"
                                     >
-                                        Acceder
-                                    </Link>
+                                        Acceder al Sistema
+                                    </a>
                                 </div>
 
                                 {/* Mobile Menu Button */}
@@ -410,6 +414,11 @@ export default function Header() {
                                             </a>
                                             <Link 
                                                 href="/login" 
+                                                target="_blank"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    window.location.href = '/login'; // Navegación normal
+                                                }}
                                                 className="block bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-2 rounded-full text-center hover:from-primary-700 hover:to-primary-800 transition-all transform hover:scale-105 shadow-lg text-sm"
                                             >
                                                 Acceder
