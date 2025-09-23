@@ -934,7 +934,7 @@ export default function Home() {
                     {/* Botón para ver todos los tours */}
                     <div className="text-center mt-12 animate-fade-in animation-delay-800">
                         <Link 
-                            href="/tours" 
+                            href="/Tours" 
                             className="inline-flex items-center bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-medium transition transform hover:scale-105 hover:shadow-lg relative overflow-hidden group"
                         >
                             <span className="relative z-10">Ver Todos los Tours</span>

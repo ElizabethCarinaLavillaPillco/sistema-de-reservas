@@ -27,13 +27,28 @@ Route::get('/', function () {
     return Inertia::render('Home/Index');
 })->name('home');
 
-// Otras rutas públicas
-Route::get('/tours', function () {
-    return Inertia::render('Tours/Index');
-})->name('tours.index');
+use App\Http\Controllers\TourController;
+Route::get('/tours', [TourController::class, 'index'])->name('tours.index');
+Route::get('/tours/{id}', [TourController::class, 'show'])->name('tours.show');
 
+// Ruta para el listado de tours
+Route::get('/tours', function () {
+    // Aquí deberías obtener los tours de tu base de datos
+    $tours = App\Models\Tour::all();
+    return Inertia::render('Tours/Index', ['tours' => $tours]);
+})->name('tours.index');
+// Ruta para el detalle de un tour
 Route::get('/tours/{id}', function ($id) {
-    return Inertia::render('Tours/Show', ['tourId' => $id]);
+    // Aquí deberías obtener el tour específico de tu base de datos
+    $tour = App\Models\Tour::findOrFail($id);
+    $toursRecomendados = App\Models\Tour::inRandomOrder()->take(8)->get();
+    $googleMapsApiKey = env('GOOGLE_MAPS_API_KEY');
+    
+    return Inertia::render('Tours/Show', [
+        'tour' => $tour,
+        'toursRecomendados' => $toursRecomendados,
+        'googleMapsApiKey' => $googleMapsApiKey,
+    ]);
 })->name('tours.show');
 
 Route::get('/about', function () {
