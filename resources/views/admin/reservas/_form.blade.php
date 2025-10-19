@@ -366,9 +366,11 @@
                             @endforeach
                         </select>
                     </div>
-                    
+
                     <!-- PROVEEDOR (solo si tipo = Agencia) -->
-                    <div class="col-md-6 conditional-field" id="proveedor_container" style="{{ old('tipo_reserva', $reserva->tipo_reserva ?? '') === 'Agencia' ? 'max-height: 500px; opacity: 1;' : '' }}">
+                    <div class="col-md-6 conditional-field"
+                        id="proveedor_container"
+                        style="display: none;"> {{-- Se oculta por defecto --}}
                         <label for="proveedor_id" class="form-label">Proveedor</label>
                         <select name="proveedor_id" id="proveedor_id" class="form-select">
                             <option value="">-- Seleccionar proveedor --</option>
@@ -717,31 +719,31 @@
                                             <label>Integrantes:</label>
                                             <div>
                                                 <label class="me-3">
-                                                    <input type="radio" name="modo[{{ $i }}]" value="todos" checked 
-                                                        onchange="toggleIntegrantes({{ $i }})"> Todos
+                                                    <input type="radio" name="modo" value="todos" checked 
+                                                        onchange="toggleIntegrantes()"> Todos
                                                 </label>
                                                 <label>
-                                                    <input type="radio" name="modo[{{ $i }}]" value="personalizado" 
-                                                        onchange="toggleIntegrantes({{ $i }})"> Personalizado
+                                                    <input type="radio" name="modo" value="personalizado" 
+                                                        onchange="toggleIntegrantes()"> Personalizado
                                                 </label>
                                             </div>
                                         </div>
 
-                                        <div class="col-md-12 mt-2 d-none" id="integrantes-personalizados-{{ $i }}">
+                                        <div class="col-md-12 mt-2 d-none" id="integrantes-personalizados">
                                             <ul class="list-group">
-                                                @foreach ($reserva->pasajeros as $p) 
+                                                @foreach ($reserva->pasajeros ?? [] as $p)
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div>
                                                             <input type="checkbox" 
-                                                                name="pasajeros[{{ $i }}][]" 
+                                                                name="pasajeros[]" 
                                                                 value="{{ $p->id }}" 
-                                                                class="chk-pasajero-{{ $i }}" 
-                                                                onchange="toggleComentario({{ $i }}, {{ $p->id }})">
+                                                                class="chk-pasajero" 
+                                                                onchange="toggleComentario({{ $p->id }})">
                                                             {{ $p->nombre }} {{ $p->apellido }} ({{ $p->documento }})
                                                         </div>
                                                         <input type="text" 
-                                                            name="comentarios[{{ $i }}][{{ $p->id }}]" 
-                                                            class="form-control form-control-sm ms-2 comentario-pasajero-{{ $i }}" 
+                                                            name="comentarios[{{ $p->id }}]" 
+                                                            class="form-control form-control-sm ms-2 comentario-pasajero" 
                                                             placeholder="Comentario opcional" 
                                                             disabled>
                                                     </li>
@@ -749,6 +751,7 @@
                                             </ul>
                                         </div>
                                     </div>
+
 
 
                                     <div class="row mb-2">
@@ -1305,6 +1308,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
         // Mostrar/ocultar proveedor si tipo = Agencia
         const tipoReservaSelect = document.getElementById('tipo_reserva');
         const proveedorContainer = document.getElementById('proveedor_container');
@@ -1415,33 +1419,51 @@
         let integrantesInputs = '';
 
         /* ---------------- INTEGRANTES del TOUR ---------------- */
-        function toggleIntegrantes(tourIndex) {
-            const personalizadoDiv = document.getElementById(`integrantes-personalizados-${tourIndex}`);
-            const radioPersonalizado = document.querySelector(`input[name="modo[${tourIndex}]"][value="personalizado"]`);
+        function toggleIntegrantes(tourIndex = null) {
+            const prefix = tourIndex !== null ? `-${tourIndex}` : '';
+            const personalizadoDiv = document.getElementById(`integrantes-personalizados${prefix}`);
+            const radioPersonalizado = document.querySelector(
+                tourIndex !== null
+                    ? `input[name="modo[${tourIndex}]"][value="personalizado"]`
+                    : `input[name="modo"][value="personalizado"]`
+            );
+
+            if (!personalizadoDiv || !radioPersonalizado) return;
 
             if (radioPersonalizado.checked) {
                 personalizadoDiv.classList.remove('d-none');
             } else {
                 personalizadoDiv.classList.add('d-none');
                 // desmarcar y deshabilitar comentarios si se vuelve a "Todos"
-                document.querySelectorAll(`.chk-pasajero-${tourIndex}`).forEach(chk => {
-                    chk.checked = false;
-                });
-                document.querySelectorAll(`.comentario-pasajero-${tourIndex}`).forEach(input => {
+                const chkSelector = tourIndex !== null ? `.chk-pasajero-${tourIndex}` : `.chk-pasajero`;
+                const inputSelector = tourIndex !== null ? `.comentario-pasajero-${tourIndex}` : `.comentario-pasajero`;
+                document.querySelectorAll(chkSelector).forEach(chk => (chk.checked = false));
+                document.querySelectorAll(inputSelector).forEach(input => {
                     input.disabled = true;
                     input.value = '';
                 });
             }
         }
 
-        function toggleComentario(tourIndex, pasajeroId) {
-            const chk = document.querySelector(`.chk-pasajero-${tourIndex}[value="${pasajeroId}"]`);
-            const input = document.querySelector(`input[name="comentarios[${tourIndex}][${pasajeroId}]"]`);
+        function toggleComentario(tourIndex = null, pasajeroId) {
+            const chkSelector =
+                tourIndex !== null
+                    ? `.chk-pasajero-${tourIndex}[value="${pasajeroId}"]`
+                    : `.chk-pasajero[value="${pasajeroId}"]`;
+            const inputSelector =
+                tourIndex !== null
+                    ? `input[name="comentarios[${tourIndex}][${pasajeroId}]"]`
+                    : `input[name="comentarios[${pasajeroId}]"]`;
+
+            const chk = document.querySelector(chkSelector);
+            const input = document.querySelector(inputSelector);
+
             if (chk && input) {
                 input.disabled = !chk.checked;
                 if (!chk.checked) input.value = '';
             }
         }
+
 
         function actualizarCantidadIntegrantes() {
             const tipo = document.querySelector('input[name="integrantes_tipo"]:checked').value;
@@ -1711,6 +1733,10 @@
         const listaToursAgregados = document.getElementById('listaToursAgregados');
         const cantidadToursInput = document.getElementById('cantidad_tours');
 
+        // ------------- TOURS (AGREGAR, EDITAR)----------------
+        const listaToursAgregados = document.getElementById('listaToursAgregados');
+        const cantidadToursInput = document.getElementById('cantidad_tours');
+
         function agregarTour() {
             const id = safeValue('id_tour');
             const nombre = safeValue('nombreTour');
@@ -1733,14 +1759,15 @@
             let idToursReserva = '';
             if (editandoTour) {
                 idToursReserva = editandoTour.querySelector('input[name*="[id]"]')?.value || '';
+                indexUsado = editandoTour.dataset.index;
+            } else {
+                indexUsado = tourIndex;
             }
 
-            if (editandoTour) {
-                idToursReserva = editandoTour.querySelector('input[name*="[id]"]')?.value || '';
-                indexUsado = editandoTour.dataset.index; // 👈 Usar el índice del LI actual
-            } else {
-                indexUsado = tourIndex; // 👈 Usar el global SOLO para nuevos
-            }
+            const tipoIntegrantes = document.querySelector(`input[name="modo[${indexUsado}]"]:checked`).value;
+
+            let integrantesPreview = '';
+            let integrantesInputs = '';
 
             if (tipoIntegrantes === 'todos') {
                 integrantesPreview = '<div><strong>Integrantes:</strong> Todos</div>';
@@ -1749,16 +1776,19 @@
                 integrantesPreview = '<div><strong>Integrantes:</strong> ';
                 const seleccionados = [];
 
-                document.querySelectorAll('.chk-pasajero:checked').forEach(chk => {
-                    const id = chk.dataset.id;
-                    const nombre = chk.closest('li').innerText.trim().split("\n")[0];
-                    const comentario = document.querySelector(`.comentario-pasajero[data-id="${id}"]`).value;
+                // 🔹 CORRECCIÓN: Usar JavaScript puro, no sintaxis Blade
+                document.querySelectorAll(`.chk-pasajero-${indexUsado}:checked`).forEach(chk => {
+                    const pasajeroId = chk.value;
+                    const nombrePasajero = chk.closest('li').innerText.trim().split("\n")[0];
+                    const comentarioInput = document.querySelector(`.comentario-pasajero-${indexUsado}[name="comentarios[${indexUsado}][${pasajeroId}]"]`);
+                    const comentario = comentarioInput ? comentarioInput.value : '';
 
-                    seleccionados.push(nombre);
+                    seleccionados.push(nombrePasajero);
 
+                    // 🔹 CORRECCIÓN: Usar variables JavaScript, no Blade
                     integrantesInputs += `
-                        <input type="hidden" name="tours[${indexUsado}][pasajeros][${id}][incluido]" value="1">
-                        <input type="hidden" name="tours[${indexUsado}][pasajeros][${id}][comentario]" value="${comentario}">
+                        <input type="hidden" name="tours[${indexUsado}][pasajeros][${pasajeroId}][incluido]" value="1">
+                        <input type="hidden" name="tours[${indexUsado}][pasajeros][${pasajeroId}][comentario]" value="${comentario}">
                     `;
                 });
 
@@ -1766,11 +1796,9 @@
                 integrantesInputs += `<input type="hidden" name="tours[${indexUsado}][integrantes_tipo]" value="personalizado">`;
             }
 
-
             const nombreNormalizado = nombre.toLowerCase().trim();
             let extras = '';
             let extrasPreview = '';
-            
 
             // ---- MACHUPICCHU ----
             const especialesNormalizados = especiales.map(e => e.toLowerCase().trim());
@@ -1811,14 +1839,13 @@
                     <input type="hidden" name="tours[${indexUsado}][detalles_machu][comentario_trans_ret]" value="${safeValue('comentario_trans_ret')}">
                 `;
                 extrasPreview = `
-                        <strong>Entrada: </strong>${safeValue('tipo_entrada') || '-'}<br>
-                        <strong>Horario entrada: </strong>${safeValue('horario_entrada') || '-'}<br>
-                        <strong>Tren: </strong>${safeValue('tipo_tren') || '-'} (${safeValue('empresa_tren') || '-'})<br>
-                        <strong>Transporte ida: </strong>${safeValue('transp_ida') || '-'} (${safeValue('horario_recojo_ida') || '-'})<br>
-                        <strong>Transporte retorno: </strong>${safeValue('transp_ret') || '-'} (${safeValue('horario_recojo_ret') || '-'})<br>
-                        <strong>Consetur: </strong>${safeValue('tipo_servicio') || '-'} (${safeValue('tipo_consetur') || '-'})<br>
+                    <strong>Entrada: </strong>${safeValue('tipo_entrada') || '-'}<br>
+                    <strong>Horario entrada: </strong>${safeValue('horario_entrada') || '-'}<br>
+                    <strong>Tren: </strong>${safeValue('tipo_tren') || '-'} (${safeValue('empresa_tren') || '-'})<br>
+                    <strong>Transporte ida: </strong>${safeValue('transp_ida') || '-'} (${safeValue('horario_recojo_ida') || '-'})<br>
+                    <strong>Transporte retorno: </strong>${safeValue('transp_ret') || '-'} (${safeValue('horario_recojo_ret') || '-'})<br>
+                    <strong>Consetur: </strong>${safeValue('tipo_servicio') || '-'} (${safeValue('tipo_consetur') || '-'})<br>
                 `;
-
             }
 
             if (toursBoleto.includes(nombreBoleto)) {
@@ -1826,17 +1853,14 @@
                     <input type="hidden" name="tours[${indexUsado}][detalles_boleto][tipo_boleto]" value="${safeValue('tipo_boleto')}">
                     <input type="hidden" name="tours[${indexUsado}][detalles_boleto][requiere_compra]" value="${safeValue('requiere_compra')}">
                     <input type="hidden" name="tours[${indexUsado}][detalles_boleto][tipo_compra]" value="${safeValue('tipo_compra')}">
-                    <input type="hidden" name="tours[${indexUsado}][detalles_boleto][incluye_entrada_propiedad_priv]"
-                        value="${safeValue('incluye_entrada_propiedad_priv')}">
-                    <input type="hidden" name="tours[${indexUsado}][detalles_boleto][quien_compra_propiedad_priv]"
-                        value="${safeValue('quien_compra_propiedad_priv')}">
-                    <input type="hidden" name="tours[${indexUsado}][detalles_boleto][comentario_entrada_propiedad_priv]"
-                        value="${safeValue('comentario_entrada_propiedad_priv')}">
+                    <input type="hidden" name="tours[${indexUsado}][detalles_boleto][incluye_entrada_propiedad_priv]" value="${safeValue('incluye_entrada_propiedad_priv')}">
+                    <input type="hidden" name="tours[${indexUsado}][detalles_boleto][quien_compra_propiedad_priv]" value="${safeValue('quien_compra_propiedad_priv')}">
+                    <input type="hidden" name="tours[${indexUsado}][detalles_boleto][comentario_entrada_propiedad_priv]" value="${safeValue('comentario_entrada_propiedad_priv')}">
                 `;
                 extrasPreview = `
-                        <strong>Boleto turistico: </strong> ${safeValue('tipo_boleto') || '-'}<br>
-                        <strong>Requiere compra? </strong> ${safeValue('requiere_compra') || '-'}(${safeValue('tipo_compra') || '-'})<br>
-                        <strong>Incluye entrada a prop. priv?: </strong> ${safeValue('incluye_entrada_propiedad_priv') || '-'} (${safeValue('quien_compra_propiedad_priv') || '-'})<br>
+                    <strong>Boleto turistico: </strong> ${safeValue('tipo_boleto') || '-'}<br>
+                    <strong>Requiere compra? </strong> ${safeValue('requiere_compra') || '-'}(${safeValue('tipo_compra') || '-'})<br>
+                    <strong>Incluye entrada a prop. priv?: </strong> ${safeValue('incluye_entrada_propiedad_priv') || '-'} (${safeValue('quien_compra_propiedad_priv') || '-'})<br>
                 `;
             }
 
@@ -1874,11 +1898,9 @@
                     </div>
                 `;
 
-                // resetear estado
                 editandoTour = null;
                 document.getElementById('btn-agregar-tour').innerText = "Agregar Tour";
-
-            }else{
+            } else {
                 const li = document.createElement('li');
                 li.classList.add('list-group-item');
                 li.dataset.index = tourIndex;
@@ -1925,6 +1947,8 @@
             actualizarCantidadTours();
             resetFieldsTour();
         }
+
+        // ... el resto de las funciones (eliminarTour, actualizarCantidadTours, editarTour, resetFieldsTour) se mantienen igual
 
         function eliminarTour(btn) {
             btn.closest('li').remove();
@@ -2329,6 +2353,28 @@
             saldoInput.value = (total - adelanto).toFixed(2);
         }
 
+        function renderDepositoHTML(nombre, monto, fecha, tipo_deposito, observaciones, index) {
+            return `
+                <div><strong>Nombre:</strong> ${nombre}</div>
+                <div><strong>Monto:</strong> ${monto}</div>
+                <div><strong>Fecha:</strong> ${fecha}</div>
+                <div><strong>Tipo:</strong> ${tipo_deposito}</div>
+                <div><strong>Observaciones:</strong> ${observaciones || '-'}</div>
+
+                <!-- Hidden inputs -->
+                <input type="hidden" name="depositos[${index}][nombre_depositante]" value="${nombre}">
+                <input type="hidden" name="depositos[${index}][monto]" value="${monto}">
+                <input type="hidden" name="depositos[${index}][fecha]" value="${fecha}">
+                <input type="hidden" name="depositos[${index}][tipo_deposito]" value="${tipo_deposito}">
+                <input type="hidden" name="depositos[${index}][observaciones]" value="${observaciones}">
+
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-warning" onclick="editarDeposito(this)">Editar</button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this)">Eliminar</button>
+                </div>
+            `;
+        }
+
         totalInput.addEventListener('input', recalcularFinanzas);
         window.addEventListener('load', recalcularFinanzas);
 
@@ -2341,4 +2387,7 @@
                 actualizarCantidadIntegrantes();
             });
         });
-    </script>
+
+    }
+    
+        </script>

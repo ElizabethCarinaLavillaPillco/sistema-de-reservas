@@ -9,20 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('tarifas', function (Blueprint $table) {
             $table->id();
-            $table->string('grupo'); // Ej: Peruano Nacional, CAN, Extranjero, Cusqueño
-            $table->string('categoria'); // Ej: Niño, Estudiante, Adulto
-            $table->string('servicio'); // Ej: Machupicchu, Consetur, BTC, TrenTuristico
+            $table->string('grupo'); // Peruano Nacional, CAN, Extranjero
+            $table->string('categoria'); // Niño, Estudiante, Adulto
+            $table->string('servicio'); // Machupicchu, Consetur, BTC
             $table->decimal('precio', 8, 2)->nullable();
             $table->timestamps();
         });
-
-
     }
-
 
     /**
      * Reverse the migrations.

@@ -1,38 +1,29 @@
 <?php
 
+// =============================================================================
+// 🎮 CONTROLADOR: PasajeroController.php (SIMPLIFICADO)
+// =============================================================================
 namespace App\Http\Controllers;
 
 use App\Models\Pasajero;
-use App\Models\Reserva;
-use App\Models\Tour;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class PasajeroController extends Controller
 {
     public function index()
     {
-        $pasajeros = Pasajero::with('reserva')->paginate(10);
-        
+        $pasajeros = Pasajero::with('reservas')->paginate(20);
         return view('admin.pasajeros.index', compact('pasajeros'));
     }
 
     public function create()
     {
-        $reservas = Reserva::all();
-        return view('admin.pasajeros.create', compact('reservas'));
-    }
-
-    public function show($id)
-    {
-        $pasajero = Pasajero::with('reserva')->findOrFail($id);
-        return view('admin.pasajeros.show', compact('pasajero'));
+        return view('admin.pasajeros.create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'reserva_id' => 'nullable|exists:reservas,id',
             'documento' => 'required|string|max:50',
             'nombre' => 'required|string|max:100',
             'apellido' => 'required|string|max:100',
@@ -41,30 +32,33 @@ class PasajeroController extends Controller
             'ciudad' => 'nullable|string|max:100',
             'fecha_nacimiento' => 'required|date',
             'telefono' => 'nullable|string|max:20',
-            'tipo_pasajero'   => 'required|string|max:50', // 👈 sin espacio
-            'tipo_documento'  => 'required|string|max:50'
+            'tipo_pasajero' => 'required|in:Peruano,Extranjero,CAN',
+            'tipo_documento' => 'required|in:DNI,CE,Pasaporte'
         ]);
 
-        $pasajero = new Pasajero($validated);
+        Pasajero::create($validated);
 
-        // Asignar tarifa automáticamente
-        //$pasajero->tarifa = $this->asignarTarifa($request);
-
-        $pasajero->save();
-
-        return redirect()->route('admin.pasajeros.index')->with('success', 'Pasajero registrado correctamente.');
+        return redirect()->route('admin.pasajeros.index')
+            ->with('success', 'Pasajero registrado correctamente.');
     }
 
-    public function edit(Pasajero $pasajero)
+    public function show($id)
     {
-        $reservas = Reserva::all();
-        return view('admin.pasajeros.edit', compact('pasajero', 'reservas'));
+        $pasajero = Pasajero::with('reservas')->findOrFail($id);
+        return view('admin.pasajeros.show', compact('pasajero'));
     }
 
-    public function update(Request $request, Pasajero $pasajero)
+    public function edit($id)
     {
+        $pasajero = Pasajero::findOrFail($id);
+        return view('admin.pasajeros.edit', compact('pasajero'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $pasajero = Pasajero::findOrFail($id);
+
         $validated = $request->validate([
-            'reserva_id' => 'nullable|exists:reservas,id',
             'documento' => 'required|string|max:50',
             'nombre' => 'required|string|max:100',
             'apellido' => 'required|string|max:100',
@@ -73,24 +67,28 @@ class PasajeroController extends Controller
             'ciudad' => 'nullable|string|max:100',
             'fecha_nacimiento' => 'required|date',
             'telefono' => 'nullable|string|max:20',
-            'tipo_pasajero'   => 'required|string|max:50', // 👈 sin espacio
-            'tipo_documento'  => 'required|string|max:50'
+            'tipo_pasajero' => 'required|in:Peruano,Extranjero,CAN',
+            'tipo_documento' => 'required|in:DNI,CE,Pasaporte'
         ]);
 
-        $pasajero->fill($validated);
+        $pasajero->update($validated);
 
-        // Reasignar tarifa si cambió algo
-        //$pasajero->tarifa = $this->asignarTarifa($request);
-
-        $pasajero->save();
-
-        return redirect()->route('admin.pasajeros.index')->with('success', 'Pasajero actualizado correctamente.');
+        return redirect()->route('admin.pasajeros.index')
+            ->with('success', 'Pasajero actualizado correctamente.');
     }
 
-    public function destroy(Pasajero $pasajero)
+    public function destroy($id)
     {
-        $pasajero->delete();
-        return redirect()->route('admin.pasajeros.index')->with('success', 'Pasajero eliminado correctamente.');
-    }
+        $pasajero = Pasajero::findOrFail($id);
+        
+        // Verificar si es titular de alguna reserva
+        if ($pasajero->reservasComoTitular()->exists()) {
+            return back()->withErrors('No se puede eliminar: es titular de una reserva activa.');
+        }
 
+        $pasajero->delete();
+
+        return redirect()->route('admin.pasajeros.index')
+            ->with('success', 'Pasajero eliminado correctamente.');
+    }
 }

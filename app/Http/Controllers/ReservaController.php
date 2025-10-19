@@ -1,33 +1,40 @@
 <?php
-
+// =============================================================================
+// 🎮 CONTROLADOR: ReservaController.php
+// =============================================================================
 namespace App\Http\Controllers;
 
 use App\Models\Reserva;
 use App\Models\Pasajero;
-use App\Models\DetalleTourBoletoTuristico;
 use App\Models\Proveedor;
 use App\Models\Tour;
 use App\Models\ToursReserva;
-use App\Models\ToursInclude;
-use App\Models\Facturacion;
-use App\Models\DetalleTourMachupicchu;
 use App\Models\Estadia;
+use App\Models\Deposito;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ReservaController extends Controller
 {
+    /**
+     * Lista de reservas con filtros
+     */
     public function index(Request $request)
     {
         $hoy = Carbon::today();
 
-        $proximasReservas = Reserva::whereDate('fecha_llegada', '>=', $hoy)
+        // Próximas reservas para el sidebar
+        $proximasReservas = Reserva::with('titular')
+            ->whereDate('fecha_llegada', '>=', $hoy)
             ->orderBy('fecha_llegada', 'asc')
+            ->take(5)
             ->get();
 
-        $reservas = Reserva::with(['proveedor', 'pasajeros', 'toursReserva']);
+        // Query principal con filtros
+        $reservas = Reserva::with(['proveedor', 'titular', 'pasajeros', 'toursReservas']);
 
+        // 🔍 Filtro por búsqueda (nombre del titular)
         if ($request->filled('search')) {
             $busqueda = $request->search;
             $reservas->whereHas('titular', function ($q) use ($busqueda) {
@@ -35,163 +42,125 @@ class ReservaController extends Controller
             });
         }
 
-        if ($request->filled('estado_pago')) {
-            $reservas->where('estado_pago', $request->estado_pago);
+        // 🔍 Filtro por estado
+        if ($request->filled('estado')) {
+            $reservas->where('estado', $request->estado);
         }
 
+        // 🔍 Filtro por rango de fechas
         if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
             $inicio = Carbon::parse($request->fecha_inicio)->startOfDay();
             $fin = Carbon::parse($request->fecha_fin)->endOfDay();
 
             $reservas->where(function ($q) use ($inicio, $fin) {
                 $q->whereBetween('fecha_llegada', [$inicio, $fin])
-                  ->orWhereBetween('fecha_salida', [$inicio, $fin])
-                  ->orWhereHas('toursReserva', function ($q2) use ($inicio, $fin) {
-                      $q2->whereBetween('fecha', [$inicio, $fin]);
-                  });
+                  ->orWhereBetween('fecha_salida', [$inicio, $fin]);
             });
         }
 
+        // 🔍 Filtro de entrantes
         if ($request->get('entrantes') == 1) {
             $reservas->whereDate('fecha_llegada', '>=', $hoy);
         }
 
-        $reservas = $reservas->orderBy('fecha_llegada', 'asc')->paginate(10);
+        $reservas = $reservas->orderBy('created_at', 'desc')->paginate(15);
 
         return view('admin.reservas.index', compact('reservas', 'proximasReservas'));
     }
 
+    /**
+     * Formulario de creación
+     */
     public function create()
     {
-        $proveedores = Proveedor::all();
-        $pasajeros   = Pasajero::all();
-        $tours       = Tour::all();
-        
-        $pasajerosSinReserva = Pasajero::whereNull('reserva_id')->get();
-        return view('admin.reservas.create', compact('proveedores', 'pasajeros', 'tours','pasajerosSinReserva'));
+        $reserva = new Reserva();
+        $proveedores = Proveedor::where('estado', 'activo')->get();
+        $pasajeros = Pasajero::orderBy('nombre')->get();
+        $tours = Tour::orderBy('nombreTour')->get();
+
+        return view('admin.reservas.create', compact('reserva', 'proveedores', 'pasajeros', 'tours'));
     }
 
-    private function generarCodigoReserva()
-    {
-        $ultimo = Reserva::orderBy('id', 'desc')->first();
-        if (!$ultimo) {
-            return 'R00001';
-        }
-        $numero = intval(substr($ultimo->id, 1)) + 1;
-        return 'R' . str_pad($numero, 5, '0', STR_PAD_LEFT);
-    }
-
+    /**
+     * Almacenar nueva reserva
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'tipo_reserva'       => 'required|in:Directo,Recomendacion,Publicidad,Agencia',
-            'proveedor_id'       => 'nullable|exists:proveedores,id',
-            'titular_id'         => 'required|exists:pasajeros,id',
-            'fecha_llegada'      => 'nullable|date',
-            'hora_llegada'       => 'nullable|string',
-            'nro_vuelo_llegada'  => 'nullable|string',
-            'fecha_salida'       => 'nullable|date',
-            'hora_salida'        => 'nullable|string',
-            'nro_vuelo_retorno'  => 'nullable|string',
-            'cantidad_pasajeros' => 'required|integer|min:1',
-            'cantidad_tours'     => 'required|integer|min:0',
-            'cantidad_estadias'  => 'required|integer|min:0',
-            'total'              => 'required|numeric|min:0',
-            'adelanto'           => 'nullable|numeric|min:0',
-            'cantidad_depositos'  => 'nullable|integer|min:0',
+        $validated = $request->validate([
+            'tipo_reserva' => 'required|in:Directo,Recomendacion,Publicidad,Agencia',
+            'proveedor_id' => 'nullable|exists:proveedores,id',
+            'titular_id' => 'required|exists:pasajeros,id',
+            'fecha_llegada' => 'nullable|date',
+            'hora_llegada' => 'nullable|string',
+            'nro_vuelo_llegada' => 'nullable|string',
+            'fecha_salida' => 'nullable|date',
+            'hora_salida' => 'nullable|string',
+            'nro_vuelo_retorno' => 'nullable|string',
+            'total' => 'required|numeric|min:0',
+            'estado' => 'nullable|in:En espera,Activa,Finalizada,Cancelada',
         ]);
 
-        DB::transaction(function () use ($request) {
-            $data       = $request->all();
-            $data['id'] = $this->generarCodigoReserva();
-            $reserva    = Reserva::create($data);
+        DB::beginTransaction();
+        try {
+            // 1️⃣ Crear reserva
+            $reserva = Reserva::create($validated);
 
+            // 2️⃣ Asociar pasajeros
             if ($request->filled('pasajeros')) {
-                Pasajero::whereIn('id', $request->pasajeros)
-                    ->update(['reserva_id' => $reserva->id]);
+                $reserva->pasajeros()->sync($request->pasajeros);
             }
 
-            if ($request->has('tours')) {
-                $this->syncTours($reserva, $request->tours, $request);
+            // 3️⃣ Agregar tours
+            if ($request->has('tours') && is_array($request->tours)) {
+                $this->procesarTours($reserva, $request->tours);
             }
-            
+
+            // 4️⃣ Agregar estadías
             if ($request->has('estadias') && is_array($request->estadias)) {
                 foreach ($request->estadias as $estadiaData) {
-                    Estadia::create([
-                        'reserva_id'     => $reserva->id,
-                        'tipo_estadia'   => $estadiaData['tipo_estadia'] ?? 'Hostal',
-                        'nombre_estadia' => $estadiaData['nombre_estadia'] ?? '',
-                        'ubicacion'      => $estadiaData['ubicacion'] ?? null,
-                        'fecha'          => $estadiaData['fecha'] ?? null,
-                        'habitacion'     => $estadiaData['habitacion'] ?? null,
-                    ]);
-                }
-            }
-
-            if ($request->has('depositos') && is_array($request->depositos)) {
-                foreach ($request->depositos as $depositoData) {
-                    // Solo crear si hay algún dato importante
-                    if (!empty($depositoData['monto']) || !empty($depositoData['nombre_depositante'])) {
-                        $reserva->depositos()->create([
-                            'nombre_depositante' => $depositoData['nombre_depositante'] ?? null,
-                            'monto'              => $depositoData['monto'] ?? 0,
-                            'fecha'              => $depositoData['fecha'] ?? null,
-                            'tipo_deposito'      => $depositoData['tipo_deposito'] ?? null,
-                            'observaciones'      => $depositoData['observaciones'] ?? null,
-                        ]);
+                    if (!empty($estadiaData['nombre_estadia'])) {
+                        $reserva->estadias()->create($estadiaData);
                     }
                 }
             }
 
-            // Actualizar resumen de pagos
-            $adelanto = $reserva->depositos()->sum('monto');
-            $reserva->adelanto = $adelanto;
-            $reserva->cantidad_depositos = $reserva->depositos()->count();
-            $reserva->save();
+            // 5️⃣ Agregar depósitos
+            if ($request->has('depositos') && is_array($request->depositos)) {
+                foreach ($request->depositos as $depositoData) {
+                    if (!empty($depositoData['monto'])) {
+                        $reserva->depositos()->create($depositoData);
+                    }
+                }
+            }
 
+            // 6️⃣ Actualizar contadores
+            $reserva->actualizarContadores();
 
-        });
+            DB::commit();
 
-        return redirect()->route('admin.reservas.index')
-            ->with('success', 'Reserva creada correctamente.');
+            return redirect()->route('admin.reservas.index')
+                ->with('success', 'Reserva creada correctamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors('Error al crear la reserva: ' . $e->getMessage())->withInput();
+        }
     }
 
-    private function esMachupicchuEspecial($tourId)
-    {
-        $especiales = [
-            'Machupicchu Full Day',
-            'Machupicchu Conexión',
-            'Machupicchu 2D/1N',
-            'Machupicchu By car'
-        ];
-
-        $tour = Tour::find($tourId);
-        return $tour && in_array($tour->nombreTour, $especiales);
-    }
-
-    private function esBoletoTuristico($tourId)
-    {
-        $especialesBoleto = [
-            'Valle Sagrado',
-            'City Tour',
-            'Valle Sur',
-            'Maras Moray',
-            'Valle Sagrado VIP',
-        ];
-
-        $tour = Tour::find($tourId);
-        return $tour && in_array($tour->nombreTour, $especialesBoleto);
-    }
-
+    /**
+     * Ver detalles de una reserva
+     */
     public function show($id)
     {
         $reserva = Reserva::with([
             'proveedor',
+            'titular',
             'pasajeros',
-            'toursReserva.detalleMachupicchu',
-            'toursReserva.detalleBoletoTuristico',
-            'toursReserva.pasajeros',
-            'toursReserva.includes',
+            'toursReservas.tour',
+            'toursReservas.detalleMachupicchu',
+            'toursReservas.detalleBoletoTuristico',
+            'toursReservas.pasajeros',
+            'toursReservas.includes',
             'estadias',
             'depositos',
             'facturaciones'
@@ -200,184 +169,222 @@ class ReservaController extends Controller
         return view('admin.reservas.show', compact('reserva'));
     }
 
+    /**
+     * Formulario de edición
+     */
     public function edit($id)
     {
-        $reserva= Reserva::with([
-            'toursReserva.detalleMachupicchu',
-            'toursReserva.detalleBoletoTuristico',
-            'toursReserva.pasajeros',
-            'toursReserva.includes',
+        $reserva = Reserva::with([
+            'pasajeros',
+            'toursReservas.tour',
+            'toursReservas.detalleMachupicchu',
+            'toursReservas.detalleBoletoTuristico',
+            'toursReservas.pasajeros',
+            'toursReservas.includes',
             'estadias',
             'depositos'
         ])->findOrFail($id);
 
-        $proveedores = Proveedor::all();
-        $pasajeros   = Pasajero::all();
-        $tours       = Tour::all();
+        $proveedores = Proveedor::where('estado', 'activo')->get();
+        $pasajeros = Pasajero::orderBy('nombre')->get();
+        $tours = Tour::orderBy('nombreTour')->get();
 
         return view('admin.reservas.edit', compact('reserva', 'proveedores', 'pasajeros', 'tours'));
     }
 
+    /**
+     * Actualizar reserva existente
+     */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'tipo_reserva'       => 'required|in:Directo,Recomendacion,Publicidad,Agencia',
-            'proveedor_id'       => 'nullable|exists:proveedores,id',
-            'titular_id'         => 'required|exists:pasajeros,id',
-            'fecha_llegada'      => 'nullable|date',
-            'hora_llegada'       => 'nullable|string',
-            'nro_vuelo_llegada'  => 'nullable|string',
-            'fecha_salida'       => 'nullable|date',
-            'hora_salida'        => 'nullable|string',
-            'nro_vuelo_retorno'  => 'nullable|string',
-            'cantidad_pasajeros' => 'required|integer|min:1',
-            'cantidad_tours'     => 'required|integer|min:0',
-            'cantidad_estadias'  => 'required|integer|min:0',
-            'total'              => 'required|numeric|min:0',
-            'adelanto'           => 'nullable|numeric|min:0',
-            'cantidad_depositos' => 'nullable|integer|min:0',
+        $validated = $request->validate([
+            'tipo_reserva' => 'required|in:Directo,Recomendacion,Publicidad,Agencia',
+            'proveedor_id' => 'nullable|exists:proveedores,id',
+            'titular_id' => 'required|exists:pasajeros,id',
+            'fecha_llegada' => 'nullable|date',
+            'hora_llegada' => 'nullable|string',
+            'nro_vuelo_llegada' => 'nullable|string',
+            'fecha_salida' => 'nullable|date',
+            'hora_salida' => 'nullable|string',
+            'nro_vuelo_retorno' => 'nullable|string',
+            'total' => 'required|numeric|min:0',
+            'estado' => 'nullable|in:En espera,Activa,Finalizada,Cancelada',
         ]);
 
-        DB::transaction(function () use ($request, $id) {
+        DB::beginTransaction();
+        try {
             $reserva = Reserva::findOrFail($id);
-            $reserva->update($request->all());
+            $reserva->update($validated);
 
-            // 🔹 Limpiar datos relacionados que se recrean
-            //ToursReserva::where('reserva_id', $reserva->id)->delete();
-            Estadia::where('reserva_id', $reserva->id)->delete();
-            $reserva->depositos()->delete(); // ✅ evita duplicados
-
-            // 🔹 Actualizar pasajeros
+            // 1️⃣ Actualizar pasajeros
             if ($request->filled('pasajeros')) {
-                Pasajero::whereIn('id', $request->pasajeros)
-                    ->update(['reserva_id' => $reserva->id]);
+                $reserva->pasajeros()->sync($request->pasajeros);
             }
 
-            // 🔹 Guardar tours
-            if ($request->has('tours')) {
-                $this->syncTours($reserva, $request->tours, $request);
+            // 2️⃣ Eliminar datos anteriores que se recrean
+            $reserva->estadias()->delete();
+            $reserva->depositos()->delete();
+
+            // 3️⃣ Procesar tours (actualizar o crear)
+            if ($request->has('tours') && is_array($request->tours)) {
+                $this->procesarTours($reserva, $request->tours);
             }
 
-            // 🔹 Guardar estadías
+            // 4️⃣ Recrear estadías
             if ($request->has('estadias') && is_array($request->estadias)) {
                 foreach ($request->estadias as $estadiaData) {
-                    Estadia::create([
-                        'reserva_id'     => $reserva->id,
-                        'tipo_estadia'   => $estadiaData['tipo_estadia'] ?? 'Hostal',
-                        'nombre_estadia' => $estadiaData['nombre_estadia'] ?? '',
-                        'ubicacion'      => $estadiaData['ubicacion'] ?? null,
-                        'fecha'          => $estadiaData['fecha'] ?? null,
-                        'habitacion'     => $estadiaData['habitacion'] ?? null,
-                    ]);
-                }
-            }
-
-            // 🔹 Guardar depósitos
-            if ($request->has('depositos') && is_array($request->depositos)) {
-                foreach ($request->depositos as $depositoData) {
-                    if (!empty($depositoData['monto']) || !empty($depositoData['nombre_depositante'])) {
-                        $reserva->depositos()->create([
-                            'nombre_depositante' => $depositoData['nombre_depositante'] ?? null,
-                            'monto'              => $depositoData['monto'] ?? 0,
-                            'fecha'              => $depositoData['fecha'] ?? null,
-                            'tipo_deposito'      => $depositoData['tipo_deposito'] ?? null,
-                            'observaciones'      => $depositoData['observaciones'] ?? null,
-                        ]);
+                    if (!empty($estadiaData['nombre_estadia'])) {
+                        $reserva->estadias()->create($estadiaData);
                     }
                 }
             }
 
-            // 🔹 Actualizar resumen de pagos
-            $reserva->adelanto = $reserva->depositos()->sum('monto');
-            $reserva->cantidad_depositos = $reserva->depositos()->count();
-            $reserva->save();
-        });
-
-        return redirect()->route('admin.reservas.index')
-            ->with('success', 'Reserva actualizada correctamente.');
-    }
-
-
-    public function destroy($id)
-    {
-        $reserva = Reserva::findOrFail($id);
-        $reserva->delete();
-
-        return redirect()->route('admin.reservas.index')
-            ->with('success', 'Reserva eliminada correctamente.');
-    }
-
-    private function syncTours(Reserva $reserva, array $toursData, Request $request)
-    {
-        foreach ($toursData as $tourData) {
-            if (empty($tourData['tour_id'])) continue;
-
-            $toursReserva = ToursReserva::updateOrCreate(
-                ['id' => $tourData['id'] ?? null],
-                [
-                    'reserva_id'      => $reserva->id,
-                    'tour_id'         => $tourData['tour_id'] ?? null,
-                    'fecha'           => $tourData['fecha'] ?? null,
-                    'empresa'         => $tourData['empresa'] ?? null,
-                    'tipo_tour'       => $tourData['tipo_tour'] ?? 'Grupal',
-                    'idioma'          => $tourData['idioma'] ?? null,
-                    'lugar_recojo'    => $tourData['lugar_recojo'] ?? null,
-                    'hora_recojo'     => $tourData['hora_recojo'] ?? null,
-                    'precio_unitario' => $tourData['precio_unitario'] ?? 0,
-                    'cantidad'        => $tourData['cantidad'] ?? 1,
-                    'observaciones'   => $tourData['observaciones'] ?? null,
-                    'incluye_entrada' => !empty($tourData['incluye_entrada']),
-                    'incluye_tren'    => !empty($tourData['incluye_tren']),
-                ]
-            );
-
-            // 🔹 Machupicchu / Boleto turístico
-            if ($this->esMachupicchuEspecial($tourData['tour_id'] ?? null) && isset($tourData['detalles_machu'])) {
-                $toursReserva->detalleMachupicchu()
-                    ->updateOrCreate([], $tourData['detalles_machu']);
-            }
-            if (!empty($tourData['detalles_boleto']) && $this->esBoletoTuristico($tourData['tour_id'])) {
-                $toursReserva->detalleBoletoTuristico()
-                    ->updateOrCreate([], $tourData['detalles_boleto']);
-            }
-
-            $modo = $request->modo[$toursReserva->id] ?? 'todos';
-            $syncData = [];
-
-            if ($modo === 'todos') {
-                foreach ($reserva->pasajeros as $p) {
-                    $syncData[$p->id] = [
-                        'incluido'   => true,
-                        'comentario' => null
-                    ];
-                }
-            } else {
-                $pasajerosSeleccionados = $request->pasajeros[$toursReserva->id] ?? [];
-                $comentarios            = $request->comentarios[$toursReserva->id] ?? [];
-
-                foreach ($pasajerosSeleccionados as $idPasajero) {
-                    $syncData[$idPasajero] = [
-                        'incluido'   => true,
-                        'comentario' => $comentarios[$idPasajero] ?? null
-                    ];
+            // 5️⃣ Recrear depósitos
+            if ($request->has('depositos') && is_array($request->depositos)) {
+                foreach ($request->depositos as $depositoData) {
+                    if (!empty($depositoData['monto'])) {
+                        $reserva->depositos()->create($depositoData);
+                    }
                 }
             }
 
-            $toursReserva->pasajeros()->sync($syncData);
+            // 6️⃣ Actualizar contadores
+            $reserva->actualizarContadores();
 
-            // ========================================
-            // 🔹 Guardar includes del tour
-            // ========================================
-            $incluye = $request->includes[$toursReserva->id] ?? [];
-            $toursReserva->includes()->delete();
-            foreach ($incluye as $concepto) {
-                $toursReserva->includes()->create([
-                    'concepto' => $concepto,
-                    'incluido' => true
-                ]);
-            }
+            DB::commit();
 
+            return redirect()->route('admin.reservas.index')
+                ->with('success', 'Reserva actualizada correctamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors('Error al actualizar: ' . $e->getMessage())->withInput();
         }
     }
 
+    /**
+     * Eliminar reserva
+     */
+    public function destroy($id)
+    {
+        try {
+            $reserva = Reserva::findOrFail($id);
+            $reserva->delete();
+
+            return redirect()->route('admin.reservas.index')
+                ->with('success', 'Reserva eliminada correctamente.');
+        } catch (\Exception $e) {
+            return back()->withErrors('Error al eliminar: ' . $e->getMessage());
+        }
+    }
+
+    // =============================================================================
+    // 🛠️ MÉTODOS PRIVADOS AUXILIARES
+    // =============================================================================
+
+    /**
+     * Procesa los tours de una reserva (crear o actualizar)
+     */
+    private function procesarTours(Reserva $reserva, array $toursData)
+    {
+        foreach ($toursData as $tourData) {
+            if (empty($tourData['tour_id'])) {
+                continue;
+            }
+
+            // Si tiene ID, actualizar; si no, crear
+            $toursReserva = ToursReserva::updateOrCreate(
+                ['id' => $tourData['id'] ?? null],
+                [
+                    'reserva_id' => $reserva->id,
+                    'tour_id' => $tourData['tour_id'],
+                    'fecha' => $tourData['fecha'] ?? null,
+                    'empresa' => $tourData['empresa'] ?? null,
+                    'tipo_tour' => $tourData['tipo_tour'] ?? 'Grupal',
+                    'idioma' => $tourData['idioma'] ?? null,
+                    'lugar_recojo' => $tourData['lugar_recojo'] ?? null,
+                    'hora_recojo' => $tourData['hora_recojo'] ?? null,
+                    'precio_unitario' => $tourData['precio_unitario'] ?? 0,
+                    'cantidad' => $tourData['cantidad'] ?? 1,
+                    'observaciones' => $tourData['observaciones'] ?? null,
+                    'incluye_entrada' => !empty($tourData['incluye_entrada']),
+                    'incluye_tren' => !empty($tourData['incluye_tren']),
+                    'estado' => $tourData['estado'] ?? 'Programado',
+                ]
+            );
+
+            // ✅ Detalles Machupicchu
+            if (isset($tourData['detalles_machu'])) {
+                $toursReserva->detalleMachupicchu()->updateOrCreate(
+                    ['tours_reserva_id' => $toursReserva->id],
+                    $this->limpiarNulos($tourData['detalles_machu'])
+                );
+            }
+
+            // ✅ Detalles Boleto Turístico
+            if (isset($tourData['detalles_boleto'])) {
+                $toursReserva->detalleBoletoTuristico()->updateOrCreate(
+                    ['tours_reserva_id' => $toursReserva->id],
+                    $this->limpiarNulos($tourData['detalles_boleto'])
+                );
+            }
+
+            // ✅ Pasajeros del tour
+            $this->procesarPasajerosTour($toursReserva, $tourData);
+
+            // ✅ Includes del tour
+            if (isset($tourData['includes']) && is_array($tourData['includes'])) {
+                $toursReserva->includes()->delete();
+                foreach ($tourData['includes'] as $concepto) {
+                    $toursReserva->includes()->create([
+                        'concepto' => $concepto,
+                        'incluido' => true
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Procesa los pasajeros de un tour específico
+     */
+    private function procesarPasajerosTour(ToursReserva $toursReserva, array $tourData)
+    {
+        $reserva = $toursReserva->reserva;
+        $syncData = [];
+
+        // Modo: todos los pasajeros van
+        if (($tourData['modo'] ?? 'todos') === 'todos') {
+            foreach ($reserva->pasajeros as $pasajero) {
+                $syncData[$pasajero->id] = [
+                    'incluido' => true,
+                    'comentario' => null
+                ];
+            }
+        } 
+        // Modo: personalizado (solo algunos van)
+        else {
+            $pasajerosSeleccionados = $tourData['pasajeros'] ?? [];
+            $comentarios = $tourData['comentarios'] ?? [];
+
+            foreach ($pasajerosSeleccionados as $pasajeroId) {
+                $syncData[$pasajeroId] = [
+                    'incluido' => true,
+                    'comentario' => $comentarios[$pasajeroId] ?? null
+                ];
+            }
+        }
+
+        $toursReserva->pasajeros()->sync($syncData);
+    }
+
+    /**
+     * Limpia valores nulos de un array para evitar errores de BD
+     */
+    private function limpiarNulos(array $data): array
+    {
+        return array_filter($data, function ($value) {
+            return !is_null($value) && $value !== '';
+        });
+    }
 }

@@ -11,19 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('estadias', function (Blueprint $table) {
+        Schema::create('reserva_pasajero', function (Blueprint $table) {
             $table->id();
+            
             $table->string('reserva_id');
             $table->foreign('reserva_id')->references('id')->on('reservas')->onDelete('cascade');
-
-            $table->enum('tipo_estadia', ['Hostal', 'Hospedaje','Airbnb'])->default('Hostal');
-            $table->string('nombre_estadia'); // ejemplo: "Hostal Chakana"
-            $table->string('ubicacion')->nullable();
-            $table->date('fecha')->nullable();   // fecha de inicio o check-in
-            $table->string('habitacion')->nullable(); 
+            
+            $table->foreignId('pasajero_id')->constrained('pasajeros')->onDelete('cascade');
+            
+            // Evitar duplicados
+            $table->unique(['reserva_id', 'pasajero_id']);
+            
             $table->timestamps();
         });
-
     }
 
     /**
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('estadias');
+        Schema::dropIfExists('reserva_pasajero');
     }
 };

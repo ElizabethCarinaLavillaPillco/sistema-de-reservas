@@ -1,14 +1,19 @@
 <?php
 
+// =============================================================================
+// 🔟 app/Models/DetalleTourBoletoTuristico.php
+// =============================================================================
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DetalleTourBoletoTuristico extends Model
 {
     use HasFactory;
+
     protected $table = 'detalles_tour_boletoturistico';
+
     protected $fillable = [
         'tours_reserva_id',
         'tipo_boleto',
@@ -19,20 +24,14 @@ class DetalleTourBoletoTuristico extends Model
         'comentario_entrada_propiedad_priv',
     ];
 
+    protected $casts = [
+        'requiere_compra' => 'boolean',
+        'incluye_entrada_propiedad_priv' => 'boolean',
+    ];
+
     public function toursReserva()
     {
-        return $this->belongsTo(ToursReserva::class,'tours_reserva_id');
-    }
-
-    public function reserva()
-    {
-        return $this->hasOneThrough(
-            Reserva::class,         // Modelo final
-            ToursReserva::class,     // Modelo intermedio
-            'id',                   // Clave primaria en ToursReserva
-            'id',                   // Clave primaria en Reserva
-            'tours_reserva_id',     // FK en DetalleTourMachupicchu → ToursReserva
-            'reserva_id'            // FK en ToursReserva → Reserva
-        );
+        return $this->belongsTo(ToursReserva::class, 'tours_reserva_id');
     }
 }
+

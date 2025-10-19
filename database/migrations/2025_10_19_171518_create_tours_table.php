@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('reservas', function (Blueprint $table) {
-            $table->decimal('cantidad_depositos', 10, 2)->default(0);
+        Schema::create('tours', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombreTour');
+            $table->text('descripcion')->nullable();
+            $table->timestamps();
         });
-
     }
 
     /**
@@ -22,10 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('reservas', function (Blueprint $table) {
-            $table->dropColumn('cantidad_depositos');
-        });
-
-        
+        Schema::dropIfExists('tours');
     }
 };

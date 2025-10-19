@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tours', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombreTour');
+        Schema::create('facturas', function (Blueprint $table) {
+            $table->id(); // Número de factura
+            $table->string('titular');
+            $table->string('ruc');
+            $table->date('fecha');
+            $table->decimal('monto', 10, 2);
             $table->text('descripcion')->nullable();
+
             $table->timestamps();
         });
-
     }
 
     /**
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tours');
+        Schema::dropIfExists('facturas');
     }
 };

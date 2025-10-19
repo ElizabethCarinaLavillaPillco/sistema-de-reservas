@@ -13,24 +13,17 @@ return new class extends Migration
     {
         Schema::create('detalles_tour_boletoturistico', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('tours_reserva_id')->constrained('tours_reserva')->onDelete('cascade');
-
-            // 'Integral' o 'Parcial'
-            $table->enum('tipo_boleto', ['Integral','Parcial'])->nullable();
-
-            // true = hay que comprar / false = ya tiene
+            $table->foreignId('tours_reserva_id')->constrained('tours_reservas')->onDelete('cascade');
+            
+            $table->enum('tipo_boleto', ['Integral', 'Parcial'])->nullable();
             $table->boolean('requiere_compra')->nullable();
-
-            // 'Personal' | 'Guia'
-            $table->enum('tipo_compra', ['Personal','Guia'])->nullable();
-
-
-            //boletos para lugares privados
+            $table->enum('tipo_compra', ['Personal', 'Guia'])->nullable();
+            
+            // Propiedades privadas
             $table->boolean('incluye_entrada_propiedad_priv')->nullable();
-            $table->enum('quien_compra_propiedad_priv', ['guia','pasajero'])->nullable();
+            $table->enum('quien_compra_propiedad_priv', ['guia', 'pasajero'])->nullable();
             $table->string('comentario_entrada_propiedad_priv')->nullable();
-
+            
             $table->timestamps();
         });
     }

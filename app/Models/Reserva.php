@@ -1,5 +1,8 @@
 <?php
 
+// =============================================================================
+// 5️⃣ app/Models/Reserva.php
+// =============================================================================
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +13,7 @@ class Reserva extends Model
     use HasFactory;
 
     protected $table = 'reservas';
-    public $incrementing = false; // ID es tipo string (ej: R0001)
+    public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -27,92 +30,153 @@ class Reserva extends Model
         'cantidad_pasajeros',
         'cantidad_tours',
         'cantidad_estadias',
+        'cantidad_depositos',
         'total',
         'adelanto',
-        'cantidad_depositos'
+        'estado'
     ];
 
-    // Generar ID personalizado incremental con prefijo "R"
+    protected $casts = [
+        'fecha_llegada' => 'date',
+        'fecha_salida' => 'date',
+        'total' => 'decimal:2',
+        'adelanto' => 'decimal:2',
+    ];
+
+    protected $appends = ['saldo'];
+
+    // ========== BOOT ==========
+    
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($model) {
-            // Buscar la última reserva
-            $lastReserva = self::orderBy('id', 'desc')->first();
-
-            if ($lastReserva) {
-                // Obtener número eliminando la letra R
-                $lastNumber = intval(substr($lastReserva->id, 1));
-                $nextNumber = $lastNumber + 1;
-            } else {
-                $nextNumber = 1;
+            if (empty($model->id)) {
+                $model->id = self::generarCodigoReserva();
             }
+        });
 
-            // Formatear con ceros a la izquierda
-            $model->id = 'R' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        // Actualizar contadores automáticamente
+        static::saved(function ($model) {
+            $model->actualizarContadores();
         });
     }
 
-    // Titular de la reserva
+    /**
+     * Genera código incremental: R00001, R00002, etc.
+     */
+    public static function generarCodigoReserva(): string
+    {
+        $ultimaReserva = self::orderBy('id', 'desc')->first();
+
+        if (!$ultimaReserva) {
+            return 'R00001';
+        }
+
+        $numero = intval(substr($ultimaReserva->id, 1)) + 1;
+        return 'R' . str_pad($numero, 5, '0', STR_PAD_LEFT);
+    }
+
+    // ========== ACCESSORS ==========
+    
+    public function getSaldoAttribute(): float
+    {
+        return $this->total - $this->adelanto;
+    }
+
+    // ========== MÉTODOS HELPER ==========
+    
+    /**
+     * Actualiza los contadores de la reserva
+     */
+    public function actualizarContadores(): void
+    {
+        $this->cantidad_pasajeros = $this->pasajeros()->count();
+        $this->cantidad_tours = $this->toursReservas()->count();
+        $this->cantidad_estadias = $this->estadias()->count();
+        $this->cantidad_depositos = $this->depositos()->count();
+        $this->adelanto = $this->depositos()->sum('monto');
+
+        $this->saveQuietly(); // Evita loop infinito
+    }
+
+    // ========== RELACIONES ==========
+    
+    /**
+     * Titular de la reserva
+     */
     public function titular()
     {
         return $this->belongsTo(Pasajero::class, 'titular_id');
     }
 
-    // Pasajeros asociados a esta reserva (N:N)
+    /**
+     * Todos los pasajeros de la reserva (N:N)
+     */
     public function pasajeros()
     {
-        return $this->hasMany(Pasajero::class, 'reserva_id', 'id');
+        return $this->belongsToMany(Pasajero::class, 'reserva_pasajero')
+                    ->withTimestamps();
     }
 
-    // Proveedor (solo si es una agencia)
+    /**
+     * Proveedor (solo si tipo = Agencia)
+     */
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
 
-    // Tours reservados (relación intermedia)
-    public function toursReserva()
+    /**
+     * Tours de la reserva
+     */
+    public function toursReservas()
     {
         return $this->hasMany(ToursReserva::class, 'reserva_id', 'id');
     }
 
-    // Tours asociados a la reserva (a través de ToursReserva)
-    public function tours()
-    {
-        return $this->hasManyThrough(
-            Tour::class,
-            ToursReserva::class,
-            'reserva_id', // Foreign key en tour_reservas
-            'id',         // Foreign key en tours
-            'id',         // Local key en reservas
-            'tour_id'     // Local key en tour_reservas
-        );
-    }
-
-
-    // Estadías asociadas
+    /**
+     * Estadías
+     */
     public function estadias()
     {
         return $this->hasMany(Estadia::class, 'reserva_id', 'id');
     }
 
-    // Depósitos de pago
+    /**
+     * Depósitos/pagos
+     */
     public function depositos()
     {
         return $this->hasMany(Deposito::class, 'reserva_id', 'id');
     }
 
-    // Facturaciones asociadas
+    /**
+     * Facturaciones
+     */
     public function facturaciones()
     {
         return $this->hasMany(Facturacion::class, 'reserva_id', 'id');
     }
 
-    // Facturas asociadas
-    public function facturas()
+    // ========== SCOPES ==========
+    
+    public function scopeEnEspera($query)
     {
-        return $this->hasMany(Factura::class, 'reserva_id', 'id');
+        return $query->where('estado', 'En espera');
+    }
+
+    public function scopeActivas($query)
+    {
+        return $query->where('estado', 'Activa');
+    }
+
+    public function scopeProximasLlegadas($query, $dias = 30)
+    {
+        return $query->whereBetween('fecha_llegada', [
+            now(),
+            now()->addDays($dias)
+        ])->orderBy('fecha_llegada', 'asc');
     }
 }

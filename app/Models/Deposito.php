@@ -1,9 +1,12 @@
 <?php
 
+// =============================================================================
+// 8️⃣ app/Models/Deposito.php
+// =============================================================================
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Deposito extends Model
 {
@@ -12,8 +15,8 @@ class Deposito extends Model
     protected $table = 'depositos';
 
     protected $fillable = [
-        'nombre_depositante',
         'reserva_id',
+        'nombre_depositante',
         'monto',
         'fecha',
         'tipo_deposito',
@@ -25,9 +28,6 @@ class Deposito extends Model
         'monto' => 'decimal:2',
     ];
 
-    /**
-     * Tipos válidos de depósito (útil para select / validaciones en vistas).
-     */
     public const TIPOS = [
         'Deposito WU',
         'Transferencia BCP',
@@ -37,9 +37,6 @@ class Deposito extends Model
         'Otro',
     ];
 
-    /**
-     * Relación con Reserva
-     */
     public function reserva()
     {
         return $this->belongsTo(Reserva::class, 'reserva_id', 'id');

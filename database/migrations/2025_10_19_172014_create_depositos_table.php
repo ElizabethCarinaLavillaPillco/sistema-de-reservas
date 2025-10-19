@@ -6,16 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('depositos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre_depositante');
+            
             $table->string('reserva_id');
             $table->foreign('reserva_id')->references('id')->on('reservas')->onDelete('cascade');
-
+            
+            $table->string('nombre_depositante');
             $table->decimal('monto', 10, 2);
             $table->date('fecha');
+            
             $table->enum('tipo_deposito', [
                 'Deposito WU',
                 'Transferencia BCP',
@@ -24,12 +29,13 @@ return new class extends Migration
                 'Plin',
                 'Otro'
             ]);
+            
             $table->text('observaciones')->nullable();
-
+            
             $table->timestamps();
         });
-    }
 
+    }
 
     /**
      * Reverse the migrations.

@@ -1,11 +1,14 @@
 <?php
+// =============================================================================
+// 1️⃣ app/Models/Usuario.php
+// =============================================================================
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable; // 👈 cambia esto
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class Usuario extends Authenticatable // 👈 cambia Model por Authenticatable
+class Usuario extends Authenticatable
 {
     use Notifiable;
 
@@ -13,7 +16,6 @@ class Usuario extends Authenticatable // 👈 cambia Model por Authenticatable
     protected $primaryKey = 'idUsuario';
     public $incrementing = false;
     protected $keyType = 'string';
-    public $timestamps = true; // ya que tienes created_at y updated_at
 
     protected $fillable = [
         'idUsuario',
@@ -21,6 +23,7 @@ class Usuario extends Authenticatable // 👈 cambia Model por Authenticatable
         'correo',
         'password',
         'activo',
+        'reestablecer'
     ];
 
     protected $hidden = [
@@ -30,12 +33,10 @@ class Usuario extends Authenticatable // 👈 cambia Model por Authenticatable
     protected $casts = [
         'activo' => 'boolean',
         'reestablecer' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function getAuthIdentifierName()
     {
-        return 'correo'; // para que Laravel busque por el campo correcto
+        return 'correo';
     }
 }

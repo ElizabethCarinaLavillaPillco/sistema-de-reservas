@@ -1,5 +1,8 @@
 <?php
 
+// =============================================================================
+// 4️⃣ app/Models/Pasajero.php
+// =============================================================================
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +16,6 @@ class Pasajero extends Model
     protected $table = 'pasajeros';
 
     protected $fillable = [
-        'reserva_id',
         'documento',
         'nombre',
         'apellido',
@@ -21,30 +23,38 @@ class Pasajero extends Model
         'pais_residencia',
         'ciudad',
         'fecha_nacimiento',
-        'tarifa',
         'telefono',
-        'tipo_pasajero',   
-        'tipo_documento',  
+        'tipo_pasajero',
+        'tipo_documento',
     ];
 
-    public function getEdadAttribute()
+    protected $casts = [
+        'fecha_nacimiento' => 'date',
+    ];
+
+    // ========== ACCESSORS ==========
+    
+    public function getEdadAttribute(): ?int
     {
         return $this->fecha_nacimiento 
             ? Carbon::parse($this->fecha_nacimiento)->age 
             : null;
     }
 
-    public function reserva()
+    public function getNombreCompletoAttribute(): string
     {
-        return $this->belongsTo(Reserva::class);
+        return "{$this->nombre} {$this->apellido}";
     }
 
-    public function getTarifasDetalleAttribute()
+    /**
+     * Calcula las tarifas aplicables según edad y ubicación
+     */
+    public function getTarifasDetalleAttribute(): array
     {
         $edad = $this->edad;
         $residencia = strtolower($this->pais_residencia);
         $nacimiento = strtolower($this->pais_nacimiento);
-        $ciudad = strtolower($this->ciudad);
+        $ciudad = strtolower($this->ciudad ?? '');
 
         // === Determinar grupo base ===
         if ($residencia === 'peru') {
@@ -55,6 +65,7 @@ class Pasajero extends Model
             $grupo = 'Extranjero';
         }
 
+        // Ajustes especiales
         if ($nacimiento === 'peru' && $grupo !== 'Peruano Nacional') {
             $grupo .= ' Nacido en Peru';
         }
@@ -80,7 +91,6 @@ class Pasajero extends Model
             $categoria = 'Adulto';
         }
 
-        // 🚀 Retornamos todas las tarifas diferenciadas en un array
         return [
             'Machupicchu' => "$grupo - $categoria",
             'Consetur'    => "$grupo - $categoria",
@@ -89,11 +99,32 @@ class Pasajero extends Model
         ];
     }
 
-    public function toursReservas()
+    // ========== RELACIONES ==========
+    
+    /**
+     * Reservas donde este pasajero participa (muchos a muchos)
+     */
+    public function reservas()
     {
-        return $this->belongsToMany(ToursReserva::class, 'tours_reserva_pasajero')
-                    ->withPivot('incluido', 'comentario') 
+        return $this->belongsToMany(Reserva::class, 'reserva_pasajero')
                     ->withTimestamps();
     }
 
+    /**
+     * Reservas donde este pasajero es el titular
+     */
+    public function reservasComoTitular()
+    {
+        return $this->hasMany(Reserva::class, 'titular_id');
+    }
+
+    /**
+     * Tours en los que participa este pasajero
+     */
+    public function toursReservas()
+    {
+        return $this->belongsToMany(ToursReserva::class, 'tours_reserva_pasajero')
+                    ->withPivot('incluido', 'comentario')
+                    ->withTimestamps();
+    }
 }

@@ -1,43 +1,39 @@
 <?php
 
+// =============================================================================
+// 🎮 CONTROLADOR: DepositosController.php (SIMPLIFICADO)
+// =============================================================================
 namespace App\Http\Controllers;
 
 use App\Models\Deposito;
 use App\Models\Reserva;
-use App\Models\Pasajero;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
 
 class DepositosController extends Controller
 {
     public function index()
     {
-        $depositos = Deposito::orderBy('created_at', 'desc')->paginate(10); // <--- paginar
+        $depositos = Deposito::with('reserva.titular')
+            ->orderBy('fecha', 'desc')
+            ->paginate(20);
+            
         return view('admin.depositos.index', compact('depositos'));
     }
 
-    /**
-     * Formulario de creación.
-     */
     public function create()
     {
-        // Para autocompletar, traemos id + titular
         $reservas = Reserva::with('titular')->get();
-        $tipos    = Deposito::TIPOS;
-
+        $tipos = Deposito::TIPOS;
+        
         return view('admin.depositos.create', compact('reservas', 'tipos'));
     }
 
-
-    /**
-     * Almacenar nuevo depósito.
-     */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre_depositante' => 'required|string|max:255',
-            'reserva_id' => 'required|string|exists:reservas,id',
+            'reserva_id' => 'required|exists:reservas,id',
             'monto' => 'required|numeric|min:0',
             'fecha' => 'required|date',
             'tipo_deposito' => 'required|in:' . implode(',', Deposito::TIPOS),
@@ -46,43 +42,38 @@ class DepositosController extends Controller
 
         DB::beginTransaction();
         try {
-            Deposito::create($request->only([
-                'nombre_depositante',
-                'reserva_id',
-                'monto',
-                'fecha',
-                'tipo_deposito',
-                'observaciones',
-            ]));
+            $deposito = Deposito::create($validated);
+            
+            // Actualizar adelanto de la reserva
+            $deposito->reserva->actualizarContadores();
 
             DB::commit();
-            return redirect()->route('admin.depositos.index')->with('success', 'Depósito registrado correctamente.');
-        } catch (\Throwable $e) {
+            
+            return redirect()->route('admin.depositos.index')
+                ->with('success', 'Depósito registrado correctamente.');
+                
+        } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors('Error al guardar el depósito: ' . $e->getMessage())->withInput();
+            return back()->withErrors('Error: ' . $e->getMessage())->withInput();
         }
     }
 
-    /**
-     * Mostrar formulario de edición.
-     */
     public function edit($id)
     {
-        $depositos = Deposito::findOrFail($id);
+        $deposito = Deposito::findOrFail($id);
         $reservas = Reserva::with('titular')->get();
         $tipos = Deposito::TIPOS;
-        return view('admin.depositos.edit', compact('depositos', 'reservas', 'tipos'));
-
+        
+        return view('admin.depositos.edit', compact('deposito', 'reservas', 'tipos'));
     }
 
-    
     public function update(Request $request, $id)
     {
-        $depositos = Deposito::findOrFail($id);
+        $deposito = Deposito::findOrFail($id);
 
-        $request->validate([
+        $validated = $request->validate([
             'nombre_depositante' => 'required|string|max:255',
-            'reserva_id' => 'required|string|exists:reservas,id',
+            'reserva_id' => 'required|exists:reservas,id',
             'monto' => 'required|numeric|min:0',
             'fecha' => 'required|date',
             'tipo_deposito' => 'required|in:' . implode(',', Deposito::TIPOS),
@@ -91,35 +82,38 @@ class DepositosController extends Controller
 
         DB::beginTransaction();
         try {
-            $depositos->update($request->only([
-                'nombre_depositante',
-                'reserva_id',
-                'monto',
-                'fecha',
-                'tipo_deposito',
-                'observaciones',
-            ]));
+            $deposito->update($validated);
+            
+            // Actualizar adelanto
+            $deposito->reserva->actualizarContadores();
 
             DB::commit();
-            return redirect()->route('admin.depositos.index')->with('success', 'Depósito actualizado correctamente.');
-        } catch (\Throwable $e) {
+            
+            return redirect()->route('admin.depositos.index')
+                ->with('success', 'Depósito actualizado correctamente.');
+                
+        } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors('Error al actualizar el depósito: ' . $e->getMessage())->withInput();
+            return back()->withErrors('Error: ' . $e->getMessage())->withInput();
         }
-    }
-
-    public function show($id)
-    {
-        $depositos = Deposito::with('reserva')->findOrFail($id);
-        return view('admin.depositos.show', compact('depositos'));
-        
     }
 
     public function destroy($id)
     {
-        $depositos = Deposito::findOrFail($id);
-        $depositos->delete();
+        try {
+            $deposito = Deposito::findOrFail($id);
+            $reserva = $deposito->reserva;
+            
+            $deposito->delete();
+            
+            // Actualizar adelanto
+            $reserva->actualizarContadores();
 
-        return redirect()->route('admin.depositos.index')->with('success', 'Depósito eliminado correctamente.');
+            return redirect()->route('admin.depositos.index')
+                ->with('success', 'Depósito eliminado correctamente.');
+                
+        } catch (\Exception $e) {
+            return back()->withErrors('Error: ' . $e->getMessage());
+        }
     }
 }
