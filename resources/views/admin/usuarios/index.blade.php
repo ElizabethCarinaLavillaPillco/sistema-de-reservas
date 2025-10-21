@@ -1,14 +1,14 @@
-@extends('layouts.template')
+    @extends('layouts.template')
 
-@section('content')
-<h1 class="mt-4">Usuarios</h1>
+    @section('content')
+    <h1 class="mt-4">Usuarios</h1>
 
-<a href="{{ route('admin.usuarios.create') }}" class="btn btn-primary mb-3">Nuevo Usuario</a>
+    <a href="{{ route('admin.usuarios.create') }}" class="btn btn-primary mb-3">Nuevo Usuario</a>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID</th>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
             <th>Nombre</th>
             <th>Email</th>
             <th>Estado</th>
