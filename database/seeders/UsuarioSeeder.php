@@ -1,23 +1,48 @@
 <?php
-
+// =============================================================================
+// 2️⃣ database/seeders/UsuarioSeeder.php
+// =============================================================================
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use App\Models\User;
 
 class UsuarioSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'idUsuario'     => 'ADM001',
-            'usuario'       => 'admin',
-            'correo'        => 'admin@allinkay.com',
-            'password'      => Hash::make('admin123'), // Contraseña segura
-            'reestablecer'  => false,
-            'activo'        => true,
-        ]);
+        $usuarios = [
+            [
+                'idUsuario' => 'U001',
+                'usuario' => 'admin',
+                'correo' => 'admin@allinkay.com',
+                'password' => Hash::make('admin123'),
+                'activo' => true,
+                'reestablecer' => false,
+            ],
+            [
+                'idUsuario' => 'U002',
+                'usuario' => 'operador1',
+                'correo' => 'operador@allinkay.com',
+                'password' => Hash::make('operador123'),
+                'activo' => true,
+                'reestablecer' => false,
+            ],
+            [
+                'idUsuario' => 'U003',
+                'usuario' => 'vendedor',
+                'correo' => 'ventas@allinkay.com',
+                'password' => Hash::make('ventas123'),
+                'activo' => true,
+                'reestablecer' => false,
+            ],
+        ];
+
+        foreach ($usuarios as $usuario) {
+            Usuario::create($usuario);
+        }
+
+        $this->command->info('✅ Usuarios creados: admin, operador, vendedor');
     }
 }
