@@ -1,606 +1,535 @@
-<?php
-// =============================================================================
-// 1️⃣ ARREGLAR RESERVA INDEX - resources/views/admin/reservas/index.blade.php
-// =============================================================================
-?>
 @extends('layouts.template')
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-    <div class="container mx-auto px-4">
+@section('title', 'Reservas - Expediciones Allinkay')
+    
+        <style>
         
-        {{-- HEADER --}}
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 class="text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-                        📋 Gestión de Reservas
-                    </h1>
-                    <p class="text-gray-600 mt-1">Administra todas las reservas del sistema</p>
-                </div>
-                <a href="{{ route('admin.reservas.create') }}" 
-                   class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2">
-                    <i class="fas fa-plus-circle"></i>
-                    Nueva Reserva
-                </a>
-            </div>
-        </div>
+            .stats-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
 
-        {{-- FILTROS --}}
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <form method="GET" action="{{ route('admin.reservas.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
-                    <input type="text" name="search" value="{{ request('search') }}" 
-                           placeholder="Nombre del titular..."
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                </div>
+            .stat-card {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem;
+                background: #fff;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow);
+                transition: .3s;
+            }
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                    <select name="estado" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
-                        <option value="">Todos</option>
-                        <option value="En espera" {{ request('estado') == 'En espera' ? 'selected' : '' }}>En espera</option>
-                        <option value="Activa" {{ request('estado') == 'Activa' ? 'selected' : '' }}>Activa</option>
-                        <option value="Finalizada" {{ request('estado') == 'Finalizada' ? 'selected' : '' }}>Finalizada</option>
-                        <option value="Cancelada" {{ request('estado') == 'Cancelada' ? 'selected' : '' }}>Cancelada</option>
-                    </select>
-                </div>
+            .stat-card:hover {
+                transform: translateY(-2px); 
+                box-shadow: var(--shadow-hover);
+            }
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
-                    <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
-                </div>
+            .stat-icon {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                color: #fff;
+            }
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
-                    <input type="date" name="fecha_fin" value="{{ request('fecha_fin') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
-                </div>
+            .stat-primary {
+                background: var(--primary);
+            }
 
-                <div class="md:col-span-4 flex gap-3">
-                    <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                        <i class="fas fa-search mr-2"></i>Buscar
-                    </button>
-                    <a href="{{ route('admin.reservas.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors">
-                        <i class="fas fa-times mr-2"></i>Limpiar
-                    </a>
-                </div>
-            </form>
-        </div>
+            .stat-content {
+                flex: 1;
+            }
 
-        {{-- ESTADÍSTICAS RÁPIDAS --}}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-blue-100 text-sm font-medium">Total Reservas</p>
-                        <p class="text-3xl font-bold mt-2">{{ $reservas->total() }}</p>
-                    </div>
-                    <div class="bg-white bg-opacity-20 rounded-full p-4">
-                        <i class="fas fa-clipboard-list text-3xl"></i>
-                    </div>
-                </div>
-            </div>
+            .stat-value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+            }
 
-            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-green-100 text-sm font-medium">Activas</p>
-                        <p class="text-3xl font-bold mt-2">{{ \App\Models\Reserva::where('estado', 'Activa')->count() }}</p>
-                    </div>
-                    <div class="bg-white bg-opacity-20 rounded-full p-4">
-                        <i class="fas fa-check-circle text-3xl"></i>
-                    </div>
-                </div>
-            </div>
+            .stat-label {
+                font-size: .9rem; 
+                color: #6c757d;
+            }
 
-            <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-6 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-yellow-100 text-sm font-medium">En Espera</p>
-                        <p class="text-3xl font-bold mt-2">{{ \App\Models\Reserva::where('estado', 'En espera')->count() }}</p>
-                    </div>
-                    <div class="bg-white bg-opacity-20 rounded-full p-4">
-                        <i class="fas fa-clock text-3xl"></i>
-                    </div>
-                </div>
-            </div>
+            .filters-container {
+                background: #fff;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow);
+                padding: 1rem 1.5rem;
+            }
 
-            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-purple-100 text-sm font-medium">Este Mes</p>
-                        <p class="text-3xl font-bold mt-2">{{ \App\Models\Reserva::whereMonth('created_at', now()->month)->count() }}</p>
-                    </div>
-                    <div class="bg-white bg-opacity-20 rounded-full p-4">
-                        <i class="fas fa-calendar-alt text-3xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+            .filter-title {
+                margin-bottom: .75rem;
+                font-size: 1.1rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: .5rem;
+            }
 
-        {{-- TABLA DE RESERVAS --}}
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gradient-to-r from-primary-500 to-primary-600 text-white">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Código</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Titular</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Llegada</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Pasajeros</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Total</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Estado</th>
-                            <th class="px-6 py-4 text-center text-sm font-semibold">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @forelse($reservas as $reserva)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4">
-                                    <span class="font-bold text-primary-600">{{ $reserva->id }}</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold">
-                                            {{ strtoupper(substr($reserva->titular->nombre ?? 'S/N', 0, 1)) }}
-                                        </div>
-                                        <div>
-                                            <p class="font-semibold text-gray-900">{{ $reserva->titular->nombre_completo ?? 'Sin titular' }}</p>
-                                            <p class="text-sm text-gray-500">{{ $reserva->titular->documento ?? '-' }}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    @if($reserva->fecha_llegada)
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-calendar text-primary-500"></i>
-                                            <span class="text-sm">{{ $reserva->fecha_llegada->format('d/m/Y') }}</span>
-                                        </div>
-                                    @else
-                                        <span class="text-gray-400">-</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                                        <i class="fas fa-users mr-1"></i>{{ $reserva->cantidad_pasajeros ?? 0 }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <p class="font-bold text-gray-900">${{ number_format($reserva->total, 2) }}</p>
-                                        <p class="text-xs text-gray-500">Saldo: ${{ number_format($reserva->saldo, 2) }}</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    @php
-                                        $badgeClass = match($reserva->estado) {
-                                            'Activa' => 'bg-green-100 text-green-700',
-                                            'En espera' => 'bg-yellow-100 text-yellow-700',
-                                            'Finalizada' => 'bg-gray-100 text-gray-700',
-                                            'Cancelada' => 'bg-red-100 text-red-700',
-                                            default => 'bg-gray-100 text-gray-700'
-                                        };
-                                    @endphp
-                                    <span class="{{ $badgeClass }} px-3 py-1 rounded-full text-sm font-medium">
-                                        {{ $reserva->estado }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <a href="{{ route('admin.reservas.show', $reserva->id) }}" 
-                                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition-colors"
-                                           title="Ver detalles">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('admin.reservas.edit', $reserva->id) }}" 
-                                           class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg transition-colors"
-                                           title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="{{ route('admin.reservas.destroy', $reserva->id) }}" 
-                                              method="POST" 
-                                              onsubmit="return confirm('¿Eliminar esta reserva?')"
-                                              class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" 
-                                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors"
-                                                    title="Eliminar">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
-                                        <p class="text-gray-500 text-lg">No hay reservas disponibles</p>
-                                        <a href="{{ route('admin.reservas.create') }}" class="mt-4 text-primary-600 hover:text-primary-700 font-semibold">
-                                            Crear primera reserva →
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+            .form-label { 
+                margin-bottom: .25rem; 
+                font-size: .85rem; 
+            }
 
-            {{-- PAGINACIÓN --}}
-            @if($reservas->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $reservas->links() }}
-                </div>
-            @endif
-        </div>
 
-    </div>
-</div>
-@endsection
+            .badge-warning {
+                background-color: #ffc107 !important;
+                color: #000 !important;
+            }
 
-<?php
-// =============================================================================
-// 2️⃣ CORREGIR CONTROLADOR - ReservaController.php (método index)
-// =============================================================================
-?>
+            .badge-danger {
+                background-color: #dc3545 !important;
+                color: #fff !important;
+            }
 
-public function index(Request $request)
-{
-    $hoy = Carbon::today();
+            .badge-success {
+                background-color: #28a745 !important;
+                color: #fff !important;
+            }
 
-    // Query principal con filtros
-    $reservas = Reserva::with(['proveedor', 'titular', 'pasajeros', 'toursReservas']);
+            .bg-secondary{
+                background-color: var(--primary) !important;
+                color: #fff !important;
+            }
 
-    // 🔍 Filtro por búsqueda (nombre del titular)
-    if ($request->filled('search')) {
-        $busqueda = $request->search;
-        $reservas->whereHas('titular', function ($q) use ($busqueda) {
-            $q->where(DB::raw("CONCAT(nombre,' ',apellido)"), 'LIKE', "%{$busqueda}%");
-        });
-    }
+            .badge-cant{
+                background-color: var(--primary-dark) !important;
+                margin-right: 0.5rem;
+                color: #fff !important;
+            }
 
-    // 🔍 Filtro por estado
-    if ($request->filled('estado')) {
-        $reservas->where('estado', $request->estado);
-    }
+            .empty-state {
+                text-align: center;
+                padding: 3rem;
+                color: #097ee3ff;
+            }
 
-    // 🔍 Filtro por rango de fechas
-    if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
-        $inicio = Carbon::parse($request->fecha_inicio)->startOfDay();
-        $fin = Carbon::parse($request->fecha_fin)->endOfDay();
+            .empty-state i {
+                font-size: 4rem;
+                margin-bottom: 1rem;
+                color: #dee2e6;
+            }
 
-        $reservas->where(function ($q) use ($inicio, $fin) {
-            $q->whereBetween('fecha_llegada', [$inicio, $fin])
-              ->orWhereBetween('fecha_salida', [$inicio, $fin]);
-        });
-    }
+            .progress {
+                height: 8px;
+                border-radius: 4px;
+                background-color: #e9ecef;
+                overflow: hidden;
+            }
 
-    // 🔍 Filtro de entrantes
-    if ($request->get('entrantes') == 1) {
-        $reservas->whereDate('fecha_llegada', '>=', $hoy);
-    }
+            .progress-bar {
+                border-radius: 4px;
+            }
 
-    $reservas = $reservas->orderBy('created_at', 'desc')->paginate(15);
-
-    return view('admin.reservas.index', compact('reservas'));
-}
-
-<?php
-// =============================================================================
-// 3️⃣ VISTA SHOW MEJORADA - resources/views/admin/reservas/show.blade.php
-// =============================================================================
-?>
-@extends('layouts.template')
-
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-    <div class="container mx-auto px-4">
-        
-        {{-- HEADER CON BREADCRUMB --}}
-        <div class="mb-6">
-            <nav class="text-sm mb-4">
-                <ol class="flex items-center space-x-2 text-gray-600">
-                    <li><a href="{{ route('dashboard') }}" class="hover:text-primary-600">Dashboard</a></li>
-                    <li><i class="fas fa-chevron-right text-xs"></i></li>
-                    <li><a href="{{ route('admin.reservas.index') }}" class="hover:text-primary-600">Reservas</a></li>
-                    <li><i class="fas fa-chevron-right text-xs"></i></li>
-                    <li class="text-primary-600 font-semibold">{{ $reserva->id }}</li>
-                </ol>
-            </nav>
-
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Reserva {{ $reserva->id }}</h1>
-                    <p class="text-gray-600 mt-1">Detalles completos de la reserva</p>
-                </div>
-                <div class="flex gap-3">
-                    @php
-                        $estadoBadge = match($reserva->estado) {
-                            'Activa' => 'bg-green-500',
-                            'En espera' => 'bg-yellow-500',
-                            'Finalizada' => 'bg-gray-500',
-                            'Cancelada' => 'bg-red-500',
-                            default => 'bg-gray-500'
-                        };
-                    @endphp
-                    <span class="{{ $estadoBadge }} text-white px-6 py-2 rounded-full font-semibold text-lg">
-                        {{ $reserva->estado }}
-                    </span>
-                    <a href="{{ route('admin.reservas.edit', $reserva->id) }}" 
-                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-full font-semibold transition-all">
-                        <i class="fas fa-edit mr-2"></i>Editar
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {{-- COLUMNA PRINCIPAL --}}
-            <div class="lg:col-span-2 space-y-6">
+            
+            /* Botón compacto dentro de la tarjeta de estadísticas */
+            .arrival-button-desktop {
+                margin-top: auto; /* se pega al fondo */
+            }
+
+            .btn-reserva {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.45rem 0.9rem;
+                font-size: 0.8rem;
+                font-weight: 600;
+                border: none;
+                border-radius: 20px;
+                background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+                color: #fff;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                box-shadow: var(--shadow);
+            }
+
+            .btn-reserva:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-hover);
+                background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            }
+
+            /* Pulso */
+            .btn-reserva.pulse {
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0%   { box-shadow: 0 0 0 0 rgba(20, 165, 181, 0.4); }
+                70%  { box-shadow: 0 0 0 8px rgba(20, 165, 181, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(20, 165, 181, 0); }
+            }
+
+            /* RESPONSIVE */
+            @media (max-width: 992px) {
+                .dashboard-top-section {
+                    grid-template-columns: 1fr;
+                }
                 
-                {{-- INFORMACIÓN GENERAL --}}
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fas fa-info-circle text-primary-500"></i>
-                        Información General
-                    </h2>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-sm text-gray-500">Tipo de Reserva</p>
-                            <p class="font-semibold text-gray-900">{{ $reserva->tipo_reserva }}</p>
-                        </div>
-                        @if($reserva->proveedor)
-                            <div>
-                                <p class="text-sm text-gray-500">Proveedor</p>
-                                <p class="font-semibold text-gray-900">{{ $reserva->proveedor->nombreAgencia }}</p>
-                            </div>
-                        @endif
-                        <div>
-                            <p class="text-sm text-gray-500">Fecha Creación</p>
-                            <p class="font-semibold text-gray-900">{{ $reserva->created_at->format('d/m/Y H:i') }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Última Actualización</p>
-                            <p class="font-semibold text-gray-900">{{ $reserva->updated_at->format('d/m/Y H:i') }}</p>
-                        </div>
-                    </div>
-                </div>
+                .stats-container {
+                    flex-direction: row;
+                    overflow-x: auto;
+                    padding-bottom: 1rem;
+                }
+                
+                .stat-card {
+                    min-width: 250px;
+                }
+            }
 
-                {{-- VUELOS --}}
-                @if($reserva->fecha_llegada || $reserva->fecha_salida)
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <i class="fas fa-plane text-blue-500"></i>
-                            Información de Vuelos
-                        </h2>
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="border-l-4 border-green-500 pl-4">
-                                <p class="text-sm text-gray-500 mb-2">Llegada</p>
-                                <p class="font-bold text-lg">{{ $reserva->fecha_llegada?->format('d/m/Y') }}</p>
-                                <p class="text-sm text-gray-600">{{ $reserva->hora_llegada }}</p>
-                                <p class="text-xs text-gray-500">Vuelo: {{ $reserva->nro_vuelo_llegada ?? '-' }}</p>
-                            </div>
-                            <div class="border-l-4 border-red-500 pl-4">
-                                <p class="text-sm text-gray-500 mb-2">Salida</p>
-                                <p class="font-bold text-lg">{{ $reserva->fecha_salida?->format('d/m/Y') }}</p>
-                                <p class="text-sm text-gray-600">{{ $reserva->hora_salida }}</p>
-                                <p class="text-xs text-gray-500">Vuelo: {{ $reserva->nro_vuelo_retorno ?? '-' }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
+            
 
-                {{-- PASAJEROS --}}
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fas fa-users text-purple-500"></i>
-                        Pasajeros ({{ $reserva->pasajeros->count() }})
-                    </h2>
-                    <div class="space-y-3">
-                        @foreach($reserva->pasajeros as $pasajero)
-                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-lg">
-                                    {{ strtoupper(substr($pasajero->nombre, 0, 1)) }}
-                                </div>
-                                <div class="flex-1">
-                                    <p class="font-semibold text-gray-900">
-                                        {{ $pasajero->nombre_completo }}
-                                        @if($pasajero->id == $reserva->titular_id)
-                                            <span class="ml-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">Titular</span>
-                                        @endif
-                                    </p>
-                                    <p class="text-sm text-gray-500">{{ $pasajero->documento }} • {{ $pasajero->pais_residencia }}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-medium text-gray-700">{{ $pasajero->edad }} años</p>
-                                    <p class="text-xs text-gray-500">{{ $pasajero->tipo_pasajero }}</p>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+            /* Estilos para el rango de fechas */
+            .date-range-container {
+                display: flex;
+                gap: .5rem;
+                align-items: center;
+            }
 
-                {{-- TOURS --}}
-                @if($reserva->toursReservas->count() > 0)
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <i class="fas fa-route text-red-500"></i>
-                            Tours Contratados ({{ $reserva->toursReservas->count() }})
-                        </h2>
-                        <div class="space-y-4">
-                            @foreach($reserva->toursReservas as $tr)
-                                <div class="border border-gray-200 rounded-xl p-4 hover:border-primary-300 transition-colors">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <div>
-                                            <h3 class="font-bold text-lg text-gray-900">{{ $tr->tour->nombreTour }}</h3>
-                                            <p class="text-sm text-gray-500 mt-1">
-                                                <i class="far fa-calendar mr-1"></i>{{ $tr->fecha?->format('d/m/Y') }}
-                                                @if($tr->hora_recojo)
-                                                    • <i class="far fa-clock mr-1"></i>{{ $tr->hora_recojo->format('H:i') }}
-                                                @endif
-                                            </p>
-                                        </div>
-                                        @php
-                                            $estadoTourBadge = match($tr->estado) {
-                                                'Confirmado' => 'bg-green-100 text-green-700',
-                                                'Programado' => 'bg-blue-100 text-blue-700',
-                                                'Cancelado' => 'bg-red-100 text-red-700',
-                                                'Completado' => 'bg-gray-100 text-gray-700',
-                                                default => 'bg-gray-100 text-gray-700'
-                                            };
-                                        @endphp
-                                        <span class="{{ $estadoTourBadge }} px-3 py-1 rounded-full text-sm font-medium">
-                                            {{ $tr->estado }}
-                                        </span>
-                                    </div>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                        <div>
-                                            <p class="text-gray-500">Tipo</p>
-                                            <p class="font-semibold">{{ $tr->tipo_tour }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500">Precio Unit.</p>
-                                            <p class="font-semibold">${{ number_format($tr->precio_unitario, 2) }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500">Cantidad</p>
-                                            <p class="font-semibold">{{ $tr->cantidad }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500">Subtotal</p>
-                                            <p class="font-bold text-primary-600">${{ number_format($tr->precio_unitario * $tr->cantidad, 2) }}</p>
-                                        </div>
-                                    </div>
-                                    @if($tr->lugar_recojo)
-                                        <p class="mt-3 text-sm text-gray-600">
-                                            <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
-                                            Recojo: {{ $tr->lugar_recojo }}
-                                        </p>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+            .date-range-container .w-100 { flex: 1; }
+            .date-range-separator { font-size: .75rem; color: #6c757d; }
 
-                {{-- ESTADÍAS --}}
-                @if($reserva->estadias->count() > 0)
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <i class="fas fa-hotel text-indigo-500"></i>
-                            Estadías ({{ $reserva->estadias->count() }})
-                        </h2>
-                        <div class="space-y-3">
-                            @foreach($reserva->estadias as $estadia)
-                                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                                    <i class="fas fa-bed text-2xl text-indigo-500"></i>
-                                    <div class="flex-1">
-                                        <p class="font-semibold text-gray-900">{{ $estadia->nombre_estadia }}</p>
-                                        <p class="text-sm text-gray-500">{{ $estadia->ubicacion }} • {{ $estadia->fecha?->format('d/m/Y') }}</p>
-                                    </div>
-                                    <span class="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-full">{{ $estadia->tipo_estadia }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+            .date-range-separator {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding-top: 1.8rem;
+                font-weight: bold;
+            }
+            /* CONTENEDOR PRINCIPAL DE ESTADÍSTICAS Y FILTROS */
+            .dashboard-top-section {
+                display: grid;
+                grid-template-columns: 1fr 2fr; /* 1/3 - 2/3 */
+                gap: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            @media (max-width: 768px) {
+                .dashboard-top-section {
+                    grid-template-columns: 1fr; /* Un solo contenedor en móvil */
+                }
+            }
 
+            @media (max-width: 576px) {
+                .date-range-container {
+                    padding-bottom: 0.6rem;
+                }
+                
+                .date-range-separator {
+                    padding-top: 0;
+                    padding-bottom: 0.5rem;
+                }
+            }
+            /* Mejoras para los botones de filtro */
+            .filter-buttons {
+                display: flex;
+                gap: .5rem;
+            }
+
+            .btn-filter, .btn-reset {
+                flex: 1;
+                padding: .5rem 1rem;
+                font-size: .85rem;
+                border-radius: var(--border-radius);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: .4rem;
+                transition: .3s;
+            }
+
+            @media (min-width: 769px) {
+                .filter-buttons {
+                    flex-direction: column;
+                }
+                
+                .btn-filter, .btn-reset {
+                    width: 100%;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .filter-buttons { flex-direction: column; }
+            }
+        </style>
+    @section('styles')    
+    @endsection
+
+    @section('content')
+        <div class="container-fluid py-4">
+            <div class="page-header">
+                
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Reservas</li>
+                    </ol>
+                </nav>
             </div>
-
-            {{-- COLUMNA LATERAL --}}
-            <div class="space-y-6">
-                
-                {{-- RESUMEN FINANCIERO --}}
-                <div class="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-lg p-6 text-white">
-                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                        <i class="fas fa-dollar-sign"></i>
-                        Resumen Financiero
-                    </h2>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center pb-4 border-b border-white border-opacity-20">
-                            <span class="text-sm opacity-90">Total</span>
-                            <span class="text-2xl font-bold">${{ number_format($reserva->total, 2) }}</span>
-                        </div>
-                        <div class="flex justify-between items-center pb-4 border-b border-white border-opacity-20">
-                            <span class="text-sm opacity-90">Adelanto</span>
-                            <span class="text-xl font-semibold">${{ number_format($reserva->adelanto, 2) }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm opacity-90">Saldo Pendiente</span>
-                            <span class="text-2xl font-bold">${{ number_format($reserva->saldo, 2) }}</span>
-                        </div>
-                    </div>
-                    
-                    @if($reserva->saldo > 0)
-                        <div class="mt-6 bg-white bg-opacity-20 rounded-xl p-4">
-                            <p class="text-sm text-center">
-                                <i class="fas fa-info-circle mr-2"></i>
-                                Saldo pendiente de pago
-                            </p>
-                        </div>
-                    @else
-                        <div class="mt-6 bg-green-500 bg-opacity-50 rounded-xl p-4">
-                            <p class="text-sm text-center font-semibold">
-                                <i class="fas fa-check-circle mr-2"></i>
-                                Pago completado
-                            </p>
-                        </div>
-                    @endif
-                </div>
-
-                {{-- DEPÓSITOS --}}
-                @if($reserva->depositos->count() > 0)
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <i class="fas fa-money-bill-wave text-green-500"></i>
-                            Depósitos ({{ $reserva->depositos->count() }})
-                        </h2>
-                        <div class="space-y-3">
-                            @foreach($reserva->depositos as $deposito)
-                                <div class="border-l-4 border-green-500 pl-3 py-2">
-                                    <p class="font-semibold text-gray-900">${{ number_format($deposito->monto, 2) }}</p>
-                                    <p class="text-xs text-gray-500">{{ $deposito->nombre_depositante }}</p>
-                                    <p class="text-xs text-gray-500">{{ $deposito->fecha->format('d/m/Y') }} • {{ $deposito->tipo_deposito }}</p>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
-                {{-- ACCIONES RÁPIDAS --}}
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                    <h2 class="text-lg font-bold text-gray-900 mb-4">Acciones Rápidas</h2>
-                    <div class="space-y-3">
-                        <a href="{{ route('admin.reservas.edit', $reserva->id) }}" 
-                           class="w-full bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
-                            <i class="fas fa-edit"></i>
-                            Editar Reserva
-                        </a>
-                        <button onclick="window.print()" 
-                                class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
-                            <i class="fas fa-print"></i>
-                            Imprimir
-                        </button>
-                        <a href="mailto:{{ $reserva->titular->email ?? '' }}" 
-                           class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
-                            <i class="fas fa-envelope"></i>
-                            Enviar Email
+            
+                <!-- CONTENIDO -->
+                <div class="container">
+                    <!-- Header de página -->
+                    <div class="page-header">
+                        <h1 class="page-title"><i class="fas fa-calendar-check me-2" style="color: var(--primary);"></i>Gestión de Reservas</h1>
+                        <a href="{{ route('admin.reservas.create') }}" class="btn btn-primary-custom">
+                            <i class="fa fa-plus"></i> Nueva Reserva
                         </a>
                     </div>
+
+                    <!-- Contenedor principal para estadísticas y filtros -->
+                    <div class="dashboard-top-section">
+                        <!-- Estadísticas -->
+                        <div class="stats-container">
+                            <div class="stat-card">
+                                <div class="stat-icon stat-primary">
+                                    <i class="fas fa-calendar"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-value">{{ $proximasReservas->count() }}</div>
+                                    <div class="stat-label">Total de Reservas Entrantes</div>
+                                </div>
+
+                                <!-- Botón Mostrar Reservas Entrantes -->
+                                <div class="arrival-button-desktop">
+                                    <a href="{{ route('admin.reservas.index', ['entrantes' => 1]) }}" class="btn-reserva pulse">
+                                        <i class="fas fa-eye"></i> Mostrar Reservas
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filtros -->
+                        <div class="filters-container">
+                            <h3 class="filter-title"><i class="fas fa-filter"></i> Filtros</h3>
+                            <form method="GET" action="{{ route('admin.reservas.index') }}">
+                                <div class="row">
+                                    <!-- Buscar por nombre -->
+                                    <div class="col-md-12 mb-3">
+                                        <label for="searchInput" class="form-label">Búsqueda por nombre:</label>
+                                        <input type="text" name="search" id="searchInput"
+                                            class="form-control"
+                                            placeholder="Nombre o apellido..."
+                                            value="{{ request('search') }}">
+                                    </div>
+
+                                    <!-- Estado de pago -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="statusFilter" class="form-label">Estado de pago</label>
+                                        <select name="estado_pago" class="form-select" id="statusFilter">
+                                            <option value="">Todos</option>
+                                            <option value="paid" {{ request('estado_pago') == 'paid' ? 'selected' : '' }}>Pagado</option>
+                                            <option value="partial" {{ request('estado_pago') == 'partial' ? 'selected' : '' }}>Pago parcial</option>
+                                            <option value="pending" {{ request('estado_pago') == 'pending' ? 'selected' : '' }}>Pendiente</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Rango de fechas -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Rango de fechas</label>
+                                        <div class="date-range-container">
+                                            <div class="w-100">
+                                                <input type="date" name="fecha_inicio" class="form-control"
+                                                    value="{{ request('fecha_inicio') }}">
+                                            </div>
+                                            <div class="date-range-separator">a</div>
+                                            <div class="w-100">
+                                                <input type="date" name="fecha_fin" class="form-control"
+                                                    value="{{ request('fecha_fin') }}">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botones -->
+                                    <div class="col-md-12 mb-0">
+                                        <div class="filter-buttons">
+                                            <button type="submit" class="btn-filter">
+                                                <i class="fas fa-search"></i> Aplicar Filtros
+                                            </button>
+                                            <a href="{{ route('admin.reservas.index') }}" class="btn-reset">
+                                                <i class="fas fa-sync-alt"></i> Limpiar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+
+                    <!-- Lista de reservas -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-list me-2"   style="color: var(--light);"></i> Lista de Reservas</span>
+                            <span class="badge bg-light text-dark">{{ $reservas->count() }} registros</span>
+                        </div>
+                        <div class="card-body p-0">
+                            @if($reservas)
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="reservasTable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Titular</th>
+                                                <th>PAX</th>
+                                                <th>Llegada</th>
+                                                <th>Vuelo</th>
+                                                <th>Tours</th>
+                                                <th>Estadía</th>
+                                                <th>Total</th>
+                                                <th>Adelanto</th>
+                                                <th>Saldo</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($reservas as $reserva)
+                                                @php
+                                                    $totalDepositos = $reserva->depositos->sum('monto'); // suma de todos los depósitos
+                                                    $saldo = $reserva->total - $totalDepositos;
+
+                                                    if ($saldo <= 0) {
+                                                        $estado = 'Pagado';
+                                                        $badgeClass = 'badge-success';
+                                                    } elseif ($totalDepositos > 0) {
+                                                        $estado = 'Pago parcial';
+                                                        $badgeClass = 'badge-warning';
+                                                    } else {
+                                                        $estado = 'Pendiente';
+                                                        $badgeClass = 'badge-danger';
+                                                    }
+
+                                                    $porcentaje = $reserva->total > 0 ? ($totalDepositos / $reserva->total) * 100 : 0;
+                                                @endphp
+
+                                                <tr class="reserva-item">
+                                                    <td>
+                                                        <small>#{{ $reserva->id }}</small>
+                                                    </td>
+                                                    <td>
+                                                        <div class="fw-bold">{{ $reserva->titular->nombre ?? '-' }} {{ $reserva->titular->apellido ?? '' }}</div>
+                                                        <small class="badge {{ $badgeClass }}">{{ $estado }}</small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge badge-primary">{{ $reserva->cantidad_pasajeros }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="fw-medium">{{ $reserva->fecha_llegada ? \Carbon\Carbon::parse($reserva->fecha_llegada)->format('d/m/Y') : 'N/A' }}</div>
+                                                        @if($reserva->hora_llegada)
+                                                            <small class="text-muted"><i class="fa-regular fa-clock"></i> {{ $reserva->hora_llegada }}</small>
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $reserva->nro_vuelo_llegada ?? '-' }}</td>
+                                                    <td>
+                                                        @if($reserva->toursReservas->count() > 0)
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge badge-cant"> {{ $reserva->cantidad_tours }}</span>
+                                                                
+                                                                <div>
+                                                                    @foreach($reserva->toursReservas->take(1) as $t)
+                                                                        <div class="small">{{ $t->tour->nombreTour }}</div>
+                                                                    @endforeach
+                                                                    @if($reserva->toursReservas->count() > 1)
+                                                                        <em class="small">+{{ $reserva->toursReservas->count() - 1 }} más</em>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted small">Sin tours</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if($reserva->estadias->count() > 0)
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="small">{{ $reserva->estadias->first()->nombre_estadia ?? '-' }}</div>
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted small">Sin estadía</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="fw-bold">${{ number_format($reserva->total, 2) }}</td>
+                                                    <td>${{ number_format($totalDepositos, 2) }}</td>
+                                                    <td>
+                                                        <strong class="{{ $saldo <= 0 ? 'text-success' : 'text-danger' }}">
+                                                            ${{ number_format($saldo, 2) }}
+                                                        </strong>
+                                                        
+                                                        @if($saldo > 0)
+                                                            <div class="progress mt-1" style="height: 5px; width: 60px;">
+                                                                <div class="progress-bar bg-{{ $saldo <= 0 ? 'success' : 'warning' }}" 
+                                                                    role="progressbar" 
+                                                                    style="width: {{ $porcentaje }}%" 
+                                                                    aria-valuenow="{{ $porcentaje }}" aria-valuemin="0" aria-valuemax="100">
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $badgeClass }}">{{ $estado }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex gap-2">
+                                                            <a href="{{ route('admin.reservas.show', $reserva->id) }}" 
+                                                            class="btn-action btn-view" 
+                                                            data-bs-toggle="tooltip" title="Ver detalles">
+                                                                <i class="fa fa-eye"></i>
+                                                            </a>
+                                                            <a href="{{ route('admin.reservas.edit', $reserva->id) }}" 
+                                                            class="btn-action btn-edit" 
+                                                            data-bs-toggle="tooltip" title="Editar">
+                                                                <i class="fa fa-edit"></i>
+                                                            </a>
+                                                            <form action="{{ route('admin.reservas.destroy', $reserva->id) }}" method="POST" class="d-inline">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button class="btn-action btn-delete" 
+                                                                        onclick="return confirm('¿Estás seguro de eliminar esta reserva?')"
+                                                                        data-bs-toggle="tooltip" title="Eliminar">
+                                                                    <i class="fa fa-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Paginación -->
+                                @if($reservas->hasPages())
+                                <div class="card-footer">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-muted">
+                                            Mostrando {{ $reservas->firstItem() }} - {{ $reservas->lastItem() }} de {{ $reservas->total() }} registros
+                                        </div>
+                                        <div>
+                                            {{ $reservas->links() }}
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                                
+                            @else
+                                <div class="empty-state">
+                                    <i class="fas fa-calendar-times"></i>
+                                    <h4>No hay reservas registradas</h4>
+                                    <p>Comienza creando tu primera reserva</p>
+                                    <a href="{{ route('admin.reservas.create') }}" class="btn btn-primary-custom mt-2">
+                                        <i class="fa fa-plus"></i> Crear Reserva
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
-
-            </div>
-
         </div>
-
-    </div>
-</div>
-@endsection
+    @endsection
