@@ -20,6 +20,52 @@ use App\Http\Controllers\{
     ContabilidadController
 };
 
+
+Route::middleware(['auth'])->group(function () {
+    
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Rutas ADMIN (acceso total)
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('usuarios', UsuarioController::class);
+        Route::resource('tours', ToursController::class);
+        Route::resource('proveedores', ProveedorController::class);
+        Route::resource('facturacion', FacturacionController::class);
+        Route::resource('contabilidad', ContabilidadController::class);
+        
+        // Asignar reservas a operadores
+        Route::post('reservas/{reserva}/asignar', [ReservaController::class, 'asignarOperador'])
+             ->name('reservas.asignar');
+    });
+    
+    // Rutas ADMIN + OPERADOR
+    Route::middleware(['role:admin,operador'])->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('reservas', ReservaController::class);
+        Route::resource('pasajeros', PasajeroController::class);
+        Route::resource('depositos', DepositosController::class);
+        Route::resource('estadias', EstadiaController::class);
+    });
+    
+    // Rutas DEMO (solo lectura)
+    Route::middleware(['role:demo'])->prefix('demo')->name('demo.')->group(function () {
+        Route::get('reservas', [DemoController::class, 'reservas'])->name('reservas');
+        Route::get('dashboard', [DemoController::class, 'dashboard'])->name('dashboard');
+    });
+});
+
+// Rutas CLIENTE (portal del cliente)
+Route::prefix('cliente')->name('cliente.')->group(function () {
+    Route::get('login', [ClienteAuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [ClienteAuthController::class, 'login']);
+    
+    Route::middleware(['auth:pasajero'])->group(function () {
+        Route::get('dashboard', [ClienteController::class, 'dashboard'])->name('dashboard');
+        Route::get('reserva/{id}', [ClienteController::class, 'verReserva'])->name('reserva.show');
+        Route::post('logout', [ClienteAuthController::class, 'logout'])->name('logout');
+    });
+});
+
 // ==================== RUTAS PÚBLICAS (React/Inertia) ====================
 
 // Ruta principal - Página web pública

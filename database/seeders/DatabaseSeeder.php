@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ProveedorSeeder::class,
             PasajeroSeeder::class,
             TarifaSeeder::class,
+            ReservaSeeder::class
     ]);
     }
 }

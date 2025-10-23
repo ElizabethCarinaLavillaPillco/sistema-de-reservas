@@ -16,6 +16,7 @@ class UsuarioSeeder extends Seeder
             [
                 'idUsuario' => 'U001',
                 'usuario' => 'admin',
+                'rol' => 'admin',
                 'correo' => 'admin@allinkay.com',
                 'password' => Hash::make('admin123'),
                 'activo' => true,
@@ -24,6 +25,7 @@ class UsuarioSeeder extends Seeder
             [
                 'idUsuario' => 'U002',
                 'usuario' => 'operador1',
+                'rol' => 'operador',
                 'correo' => 'operador@allinkay.com',
                 'password' => Hash::make('operador123'),
                 'activo' => true,
@@ -32,8 +34,18 @@ class UsuarioSeeder extends Seeder
             [
                 'idUsuario' => 'U003',
                 'usuario' => 'vendedor',
+                'rol' => 'demo',
                 'correo' => 'ventas@allinkay.com',
                 'password' => Hash::make('ventas123'),
+                'activo' => true,
+                'reestablecer' => false,
+            ],
+            [
+                'idUsuario' => 'U004',
+                'usuario' => 'cliente',
+                'rol' => 'cliente',
+                'correo' => 'cliente@allinkay.com',
+                'password' => Hash::make('cliente123'),
                 'activo' => true,
                 'reestablecer' => false,
             ],
@@ -43,6 +55,6 @@ class UsuarioSeeder extends Seeder
             Usuario::create($usuario);
         }
 
-        $this->command->info('✅ Usuarios creados: admin, operador, vendedor');
+        $this->command->info('✅ Usuarios creados: admin, operador, vendedor, cliente');
     }
 }
