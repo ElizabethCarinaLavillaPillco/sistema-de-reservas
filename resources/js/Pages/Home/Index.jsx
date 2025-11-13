@@ -379,43 +379,45 @@ export default function Home() {
     const testimonials = [
         {
             name: "María García",
-            location: "España",
-            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b642?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            location: "México",
+            avatar: "https://i.postimg.cc/C130MxbX/image.png",
             video: "/images/videos/videoRecomendado2.mp4",
-            comment: "La experiencia del Camino Inca fue increíble. Los guías son muy profesionales y conocedores de la historia. Sin duda, una aventura inolvidable."
+            comment: "Todas las atenciones fabulosas, la coordinacion magistral, super. Excelentes contactos. Nosotros nos vamos muy contentos por toda su atencion y logistica, el servicio genial."
         },
         {
-            name: "Carlos Rodríguez",
-            location: "México",
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            name: "Carla Rodríguez",
+            location: "Ecuador",
+            avatar: "https://i.postimg.cc/28PWpQqK/image.png",
             video: "/images/videos/videoRecomendado1.mp4",
-            comment: "El tour a Machu Picchu superó todas mis expectativas. La organización fue perfecta y la atención al cliente excepcional."
+            comment: "Encantada de conocer Cusco, Peru. El trato fue excelente, todo muy lindo. Muy agradecida con el servicio brindado por Expediciones Allinkay."
         },
         {
             name: "Ana Silva",
-            location: "Brasil",
-            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+            location: "Perú",
+            avatar: "https://i.postimg.cc/mZm3n1NX/image.png",
             video: "/images/videos/videoRecomendado3.mp4",
-            comment: "Viajar con Expediciones Allinkay fue la mejor decisión. Me cuidaron en cada detalle y me hicieron sentir como en familia."
+            comment: "... Les recomiendo viajar con la Sra. Ines, excelente el tour a Machupicchu..."
         }
     ];
     // Datos de mensajes de WhatsApp
     const whatsappMessages = [
         {
             name: "Juan Pérez",
-            text: "¡Gracias por el increíble tour a Machu Picchu! La experiencia fue inolvidable y los guías fueron excelentes. Definitivamente los recomendaré.",
+            text: "¡Gracias por el increíble tour a Machu Picchu! Desde el primer contacto todo fue muy profesional. Me ayudaron con la reserva, las entradas, los boletos de tren y cada detalle del viaje. Los guías fueron excelentes, muy amables y conocedores de la historia inca, lo que hizo que cada explicación fuera fascinante. El transporte fue puntual y cómodo, y el itinerario muy bien organizado, sin contratiempos. Realmente sentí que todo estaba pensado para disfrutar al máximo. La atención al cliente fue impecable y siempre estuvieron disponibles para resolver mis dudas. Una experiencia inolvidable que recomendaré a todos los que deseen conocer Cusco y Machu Picchu de la mejor manera. ¡Muchas gracias por todo!",
             date: "15/05/2023"
         },
         {
             name: "Laura Fernández",
-            text: "El tour al Valle Sagrado estuvo perfecto. Todo muy bien organizado y los paisajes espectaculares. Volveré a viajar con ustedes.",
+            text: "El tour al Valle Sagrado fue una experiencia maravillosa de principio a fin. Desde que llegamos, el equipo de la agencia nos recibió con una sonrisa y se encargó de todo: transporte, entradas, almuerzos y visitas guiadas. El recorrido por Pisac, Ollantaytambo y Chinchero fue simplemente espectacular, con paisajes que te dejan sin aliento y una riqueza cultural impresionante. El guía fue muy atento y explicó cada detalle con pasión y conocimiento. Además, los hoteles recomendados fueron muy cómodos y acogedores. Me sentí segura, bien cuidada y con total confianza. Sin duda volveré a viajar con ustedes para seguir descubriendo más destinos del Cusco. ¡Gracias por hacer todo tan especial!",
             date: "22/05/2023"
         },
         {
             name: "Roberto Gómez",
-            text: "Quiero agradecer por la atención personalizada durante mi viaje. El Salkantay Trek fue un desafío, pero valió cada paso. ¡Gracias!",
+            text: "Quiero agradecer profundamente por la atención personalizada durante todo mi viaje. El Salkantay Trek fue una experiencia única, exigente pero completamente gratificante. El equipo de la agencia estuvo pendiente en cada momento: desde la preparación previa hasta el último día del recorrido. El guía fue excepcional, siempre motivándonos y compartiendo datos interesantes sobre la naturaleza y la cultura local. La comida durante el trekking superó mis expectativas: nutritiva, variada y deliciosa. Los campamentos estuvieron muy bien organizados, con carpas cómodas y un ambiente muy agradable. También quiero destacar la puntualidad del transporte y la excelente coordinación en Machu Picchu. Sin duda, uno de los mejores viajes de mi vida. ¡Gracias por hacerlo posible y por su dedicación en cada detalle!",
             date: "30/05/2023"
         }
+
+
     ];
     const { 
         currentIndex: videoIndex,
@@ -461,7 +463,7 @@ export default function Home() {
             id: 3,
             title: "Lago Titicaca Full Day",
             description: "Explora las islas flotantes de los Uros y la isla de Taquile en el lago navegable más alto del mundo.",
-            image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/76K567Kz/image.png",
             category: "Cultural",
             duration: "1 día",
             location: "Puno",
@@ -472,56 +474,56 @@ export default function Home() {
             id: 4,
             title: "Montaña 7 Colores",
             description: "Descubre la espectacular montaña de Vinicunca con sus impresionantes colores naturales y paisajes andinos.",
-            image: "https://images.unsplash.com/photo-1558979158-65a1eaa08691?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/nhx93H9s/image.png",
             category: "Trekking",
             duration: "1 día",
             location: "Cusco",
-            price: "$65",
+            price: "$50",
             bookingLink: "https://wa.me/51995669380?text=Hola,%20me%20interesa%20el%20tour%20Montaña%207%20Colores"
         },
         {
             id: 5,
             title: "Valle Sagrado Completo",
             description: "Recorre los sitios más importantes del Valle Sagrado de los Incas: Pisac, Ollantaytambo y Chinchero.",
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/yY4DNVPD/image.png",
             category: "Cultural",
             duration: "1 día",
             location: "Cusco",
-            price: "$75",
+            price: "$55",
             bookingLink: "https://wa.me/51995669380?text=Hola,%20me%20interesa%20el%20tour%20Valle%20Sagrado%20Completo"
         },
         {
             id: 6,
-            title: "Límites de Ica y Paracas",
-            description: "Disfruta de las hermosas playas de Paracas, las Líneas de Nazca y la bodega de Pisco en un tour completo.",
-            image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            title: "Tour Ica y Paracas",
+            description: "Disfruta de las hermosas islas Ballestas, las Líneas de Nazca y la laguna Huacachina.",
+            image: "https://i.postimg.cc/T2czK0jz/image.png",
             category: "Costa",
             duration: "2 días",
             location: "Ica",
             price: "$150",
-            bookingLink: "https://wa.me/51995669380?text=Hola,%20me%20interesa%20el%20tour%20Límites%20de%20Ica%20y%20Paracas"
+            bookingLink: "https://wa.me/51995669380?text=Hola,%20me%20interesa%20el%20tour%20de%20Ica%20y%20Paracas"
         },
         {
             id: 7,
-            title: "Cañón del Colca",
-            description: "Admira el vuelo de los cóndores en uno de los cañones más profundos del mundo, cerca de Arequipa.",
-            image: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            category: "Naturaleza",
-            duration: "2 días",
-            location: "Arequipa",
-            price: "$120",
-            bookingLink: "https://wa.me/51995669380?text=Hola,%20me%20interesa%20el%20tour%20Cañón%20del%20Colca"
+            title: "Valle Sur del Cusco",
+            description: "Visita los impresionantes sitios arqueológicos de Tipón, Pikillaqta y la hermosa inglesia chapada en oro.",
+            image: "https://i.postimg.cc/2SL977vf/image.png",
+            category: "Cultural",
+            duration: "1 día",
+            location: "Cusco",
+            price: "$20",
+            bookingLink: "https://wa.me/51995669380?text=Hola,%20me%20interesa%20el%20tour%20Valle%20Sur%20Cusco"
         },
         {
             id: 8,
-            title: "City Tour Lima",
-            description: "Descubre la capital del Perú visitando el Centro Histórico, Larcomar y los mejores restaurantes de la ciudad.",
-            image: "https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            title: "City Tour Cusco",
+            description: "Descubre la antigua capital inca del Perú visitando el Centro Histórico, Sacsayhuamán, Qenqo, Puka Pukara y Tambomachay.",
+            image: "https://i.postimg.cc/FHvG0X9g/image.png",
             category: "Urbano",
             duration: "1 día",
-            location: "Lima",
-            price: "$55",
-            bookingLink: "https://wa.me/51995669380?text=Hola,%20me%20interesa%20el%20City%20Tour%20Lima"
+            location: "Cusco",
+            price: "$15",
+            bookingLink: "https://wa.me/51995669380?text=Hola,%20me%20interesa%20el%20City%20Tour%20Cusco"
         }
     ];
     // Datos de los trekking tours a Machu Picchu
@@ -530,7 +532,7 @@ export default function Home() {
             id: 1,
             title: "Camino Inca Clásico 4D/3N",
             description: "La ruta más famosa hacia Machu Picchu, recorriendo antiguos caminos incas con paisajes espectaculares y campamentos en la montaña.",
-            image: "https://images.unsplash.com/photo-1526392060635-9d6019884377?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/RCbj1F8S/image.png",
             difficulty: "Difícil",
             duration: "4 días / 3 noches",
             distance: "45 km",
@@ -542,7 +544,7 @@ export default function Home() {
             id: 2,
             title: "Salkantay Trek 5D/4N",
             description: "Alternativa espectacular al Camino Inca, con vistas impresionantes del nevado Salkantay y paisajes diversos de la selva alta.",
-            image: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/m2KW4DN5/image.png",
             difficulty: "Difícil",
             duration: "5 días / 4 noches",
             distance: "74 km",
@@ -554,7 +556,7 @@ export default function Home() {
             id: 3,
             title: "Inca Jungle 4D/3N",
             description: "Aventura única que combina trekking con mountain bike y zip line, descendiendo desde la montaña hasta la selva alta.",
-            image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/KvMsn5tb/image.png",
             difficulty: "Moderado",
             duration: "4 días / 3 noches",
             distance: "50 km",
@@ -566,7 +568,7 @@ export default function Home() {
             id: 4,
             title: "Camino Inca Corto 2D/1N",
             description: "Opción perfecta para quienes tienen poco tiempo, recorriendo el último tramo del Camino Inca y llegando a Machu Picchu por la Puerta del Sol.",
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/N0Mnrv4d/image.png",
             difficulty: "Moderado",
             duration: "2 días / 1 noche",
             distance: "12 km",
@@ -578,7 +580,7 @@ export default function Home() {
             id: 5,
             title: "Huchuy Qosqo 3D/2N",
             description: "Trekking poco conocido pero espectacular, que combina paisajes andinos con el lago Piuray y el sitio arqueológico de Huchuy Qosqo.",
-            image: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/FK8Tddzn/image.png",
             difficulty: "Fácil",
             duration: "3 días / 2 noches",
             distance: "20 km",
@@ -590,7 +592,7 @@ export default function Home() {
             id: 6,
             title: "Choquequirao Trek 5D/4N",
             description: "Aventura exigente hacia la 'hermana sagrada' de Machu Picchu, con impresionantes vistas del cañón del Apurímac.",
-            image: "https://images.unsplash.com/photo-1558979158-65a1eaa08691?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+            image: "https://i.postimg.cc/wBCkxCbT/image.png",
             difficulty: "Muy Difícil",
             duration: "5 días / 4 noches",
             distance: "64 km",
@@ -606,7 +608,7 @@ export default function Home() {
             title: "Puno",
             region: "Sur Andino",
             description: "Descubre el lago navegable más alto del mundo y las culturas vivientes que habitan sus islas.",
-            image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            image: "https://i.postimg.cc/Kv3vBC9K/image.png",
             icon: LocationIcon,
             tours: "12+",
             days: "2-4",
@@ -618,7 +620,7 @@ export default function Home() {
             title: "Lima",
             region: "Costa Central",
             description: "La capital del Perú te espera con su gastronomía mundialmente reconocida y su rico patrimonio histórico.",
-            image: "https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            image: "https://i.postimg.cc/Y2Ztrbt5/image.png",
             icon: CityIcon,
             tours: "15+",
             days: "1-3",
@@ -630,7 +632,7 @@ export default function Home() {
             title: "Ica-Paracas",
             region: "Desierto Costa",
             description: "Disfruta del desierto, las Líneas de Nazca y las hermosas playas de la costa sur del Perú.",
-            image: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            image: "https://i.postimg.cc/BbK9PfJk/image.png",
             icon: SunIcon,
             tours: "8+",
             days: "2-3",
@@ -642,7 +644,7 @@ export default function Home() {
             title: "Arequipa",
             region: "Sur Peruano",
             description: "La 'Ciudad Blanca' te sorprenderá con su arquitectura colonial, el volcán Misti y el Cañón del Colca.",
-            image: "https://images.unsplash.com/photo-1558979158-65a1eaa08691?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            image: "https://i.postimg.cc/Bv7nxsfr/image.png",
             icon: MountainIcon,
             tours: "10+",
             days: "2-4",
@@ -657,7 +659,7 @@ export default function Home() {
             title: "Aventura y Trekking",
             category: "Para los intrépidos",
             description: "Rutas desafiantes, caminos ancestrales y paisajes de montaña que pondrán a prueba tus límites.",
-            image: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            image: "https://i.postimg.cc/7hm7zdXW/image.png",
             link: "/tours/aventura"
         },
         {
@@ -665,7 +667,7 @@ export default function Home() {
             title: "Tours Culturales",
             category: "Para los curiosos",
             description: "Sumérgete en la rica historia y cultura del Perú, visitando sitios arqueológicos y comunidades tradicionales.",
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            image: "https://i.postimg.cc/WbzqK9X0/image.png",
             link: "/tours/culturales"
         },
         {
@@ -673,7 +675,7 @@ export default function Home() {
             title: "Experiencias Únicas",
             category: "Para los soñadores",
             description: "Vivencias especiales que van más allá del turismo convencional, conectando con la esencia del Perú.",
-            image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            image: "https://i.postimg.cc/fW2JxcDc/image.png",
             link: "/tours/experiencias"
         }
     ];
@@ -786,29 +788,128 @@ export default function Home() {
             comments: "41"
         }
     ];
+
+    // Datos de videos para el carrusel de fondo
+    const heroVideos = [
+        {
+            id: 1,
+            src: "videos/hero1.mp4",  // Reemplaza con la URL de tu video
+            poster: "/images/posters/hero1.jpg"  // Imagen de portada opcional
+        },
+        {
+            id: 2,
+            src: "/videos/hero2.mp4",  // Reemplaza con la URL de tu video
+            poster: "/images/posters/hero2.jpg"  // Imagen de portada opcional
+        },
+        {
+            id: 3,
+            src: "/videos/hero3.mp4",  // Reemplaza con la URL de tu video
+            poster: "/images/posters/hero3.jpg"  // Imagen de portada opcional
+        },
+        {
+            id: 4,
+            src: "/videos/hero4.mp4",  // Reemplaza con la URL de tu video
+            poster: "/images/posters/hero4.jpg"  // Imagen de portada opcional
+        },
+        {
+            id: 5,
+            src: "/videos/hero5.mp4",  // Reemplaza con la URL de tu video
+            poster: "/images/posters/hero5.jpg"  // Imagen de portada opcional
+        },
+        {
+            id: 6,
+            src: "/videos/hero6.mp4",  // Reemplaza con la URL de tu video
+            poster: "/images/posters/hero6.jpg"  // Imagen de portada opcional
+        }
+    ];
+
+     // Estado para controlar el carrusel de videos
+    const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+    
+    // Efecto para cambiar automáticamente el video cada 5 segundos
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentVideoIndex((prevIndex) => 
+                prevIndex === heroVideos.length - 1 ? 0 : prevIndex + 1
+            );
+        }, 5000); // Cambiar cada 5 segundos
+        
+        return () => clearInterval(interval);
+    }, [heroVideos.length]);
     
     return (
         <Layout>
             <Head title="Inicio - Expediciones Allinkay" />
             
             {/* Hero Section */}
-            <section className="bg-gradient-to-r from-primary-500 to-primary-700 text-white py-20">
-                <div className="container mx-auto px-4 text-center">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-                        Descubre la Magia del Perú
-                    </h1>
-                    <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto animate-fade-in animation-delay-200">
-                        Experiencias únicas que quedarán para siempre en tu memoria
-                    </p>
-                    <div className="animate-fade-in animation-delay-400">
-                        <a 
-                            href="https://wa.me/51995669380?text=Hola,%20me%20interesa%20reservar%20un%20tour" 
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-secondary-500 hover:bg-secondary-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition shadow-2xl hover:shadow-3xl inline-block"
+            <section className="relative h-screen overflow-hidden">
+                {/* Carrusel de videos de fondo */}
+                <div className="absolute inset-0 z-0">
+                    {heroVideos.map((video, index) => (
+                        <div 
+                            key={video.id}
+                            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentVideoIndex ? 'opacity-100' : 'opacity-0'}`}
                         >
-                            🎯 Reserva Tu Aventura Ahora
-                        </a>
+                            <video
+                                className="w-full h-full object-cover"
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                poster={video.poster}
+                                onLoadedData={() => {
+                                    // Preparar el siguiente video
+                                    if (index < heroVideos.length - 1) {
+                                        const nextVideo = document.getElementById(`hero-video-${index + 1}`);
+                                        if (nextVideo) nextVideo.load();
+                                    }
+                                }}
+                            >
+                                <source src={video.src} type="video/mp4" />
+                                Tu navegador no soporta el elemento de video.
+                            </video>
+                        </div>
+                    ))}
+                </div>
+                
+                {/* Capa superpuesta con color turquesa semitransparente */}
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-600/50 to-cyan-600/50 z-10"></div>
+                
+                {/* Contenido del Hero */}
+                <div className="relative z-20 h-full flex items-center justify-center">
+                    <div className="container mx-auto px-4 text-center">
+                        <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white animate-fade-in">
+                            Descubre la Magia del Perú
+                        </h1>
+                        <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white animate-fade-in animation-delay-200">
+                            Experiencias únicas que quedarán para siempre en tu memoria
+                        </p>
+                        <div className="animate-fade-in animation-delay-400">
+                            <a 
+                                href="https://wa.me/51995669380?text=Hola,%20me%20interesa%20reservar%20un%20tour" 
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-secondary-500 hover:bg-secondary-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition shadow-2xl hover:shadow-3xl inline-block"
+                            >
+                                🎯 Reserva Tu Aventura Ahora
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Controles del carrusel */}
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+                    <div className="flex space-x-2">
+                        {heroVideos.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentVideoIndex(index)}
+                                className={`w-3 h-3 rounded-full transition-colors ${
+                                    index === currentVideoIndex ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
+                                }`}
+                                aria-label={`Ir al video ${index + 1}`}
+                            ></button>
+                        ))}
                     </div>
                 </div>
             </section>
@@ -848,7 +949,7 @@ export default function Home() {
                                 </div>
                             </div>
                             <h3 className="text-3xl font-bold text-primary-800 mb-2">
-                                <Counter end={5000} suffix="+" />
+                                <Counter end={10000} suffix="+" />
                             </h3>
                             <p className="text-gray-600">Clientes atendidos</p>
                         </div>
@@ -943,254 +1044,6 @@ export default function Home() {
                             </svg>
                             <div className="absolute inset-0 bg-gradient-to-r from-secondary-500 to-secondary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </Link>
-                    </div>
-                </div>
-            </section>
-
-            {/* Sección 3: Top trekking tours a Machupicchu*/}
-            <section className="py-16 bg-gradient-to-b from-white to-primary-50 relative overflow-hidden">
-                {/* Elementos decorativos de fondo */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                    <div className="absolute top-1/3 right-0 w-64 h-64 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-                    <div className="absolute bottom-1/3 left-0 w-64 h-64 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-                </div>
-                
-                <div className="container mx-auto px-4 relative z-10">
-                    {/* Título de la sección */}
-                    <div className="text-center mb-12 animate-fade-in">
-                        <h2 className="text-3xl md:text-4xl font-bold text-primary-800 mb-4">
-                            Top Trekking Tours a <span className="text-primary-500">Machu Picchu</span>
-                        </h2>
-                        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                            Vive la experiencia inolvidable de llegar a la ciudadela inca por las rutas más espectaculares. 
-                            Cada trekking ofrece paisajes únicos y una conexión profunda con la naturaleza y la historia.
-                        </p>
-                    </div>
-                    
-                    {/* Grid de trekking tours */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {trekkingTours.map((tour, index) => (
-                            <TrekkingCard key={tour.id} tour={tour} index={index} />
-                        ))}
-                    </div>
-                    
-                    {/* Botón para ver todos los trekking tours */}
-                    <div className="text-center mt-12 animate-fade-in animation-delay-800">
-                        <Link 
-                            href="/trekking" 
-                            className="inline-flex items-center bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-medium transition transform hover:scale-105 hover:shadow-lg relative overflow-hidden group"
-                        >
-                            <span className="relative z-10">Ver Todos los Trekking Tours</span>
-                            <svg className="w-5 h-5 ml-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                            <div className="absolute inset-0 bg-gradient-to-r from-secondary-500 to-secondary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </Link>
-                    </div>
-                </div>
-            </section>
-
-            {/* Sección 4: Elige tu propia experiencia*/}
-            <section className="py-16 bg-gradient-to-br from-primary-900 to-primary-700 text-white relative overflow-hidden">
-                {/* Elementos decorativos de fondo */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                    <div className="absolute top-20 left-10 w-32 h-32 bg-secondary-400/20 rounded-full mix-blend-multiply filter blur-xl"></div>
-                    <div className="absolute bottom-20 right-10 w-40 h-40 bg-accent-400/20 rounded-full mix-blend-multiply filter blur-xl"></div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary-500/20 rounded-full mix-blend-multiply filter blur-xl"></div>
-                </div>
-                
-                <div className="container mx-auto px-4 relative z-10">
-                    {/* Título de la sección */}
-                    <div className="text-center mb-12 animate-fade-in">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                            Elige tu Propia <span className="text-secondary-300">Experiencia</span>
-                        </h2>
-                        <p className="text-lg text-primary-100 max-w-3xl mx-auto">
-                            Cada viaje es único. Descubre diferentes tipos de experiencias adaptadas a tus intereses y estilo de aventura.
-                        </p>
-                    </div>
-                    
-                    {/* Grid de experiencias */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {experiences.map((experience, index) => (
-                            <ExperienceCard key={experience.id} experience={experience} index={index} />
-                        ))}
-                    </div>
-                    
-                    {/* Texto adicional */}
-                    <div className="text-center mt-12 animate-fade-in animation-delay-600">
-                        <p className="text-primary-200 max-w-2xl mx-auto">
-                            ¿No encuentras lo que buscas? <Link href="/contact" className="text-secondary-300 hover:text-white underline transition">Contáctanos</Link> y crearemos una experiencia personalizada para ti.
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            {/*  Sección 5: Descubre otros destinos*/}
-            <section className="py-16 bg-gradient-to-b from-primary-50 to-white relative overflow-hidden">
-                {/* Elementos decorativos animados */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                    {/* Círculos animados */}
-                    <div className="absolute top-20 left-10 w-32 h-32 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob"></div>
-                    <div className="absolute bottom-20 right-10 w-40 h-40 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
-                    
-                    {/* Líneas decorativas */}
-                    <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-primary-300 to-transparent opacity-20"></div>
-                    <div className="absolute top-0 left-2/4 w-px h-full bg-gradient-to-b from-transparent via-secondary-300 to-transparent opacity-20"></div>
-                    <div className="absolute top-0 left-3/4 w-px h-full bg-gradient-to-b from-transparent via-accent-300 to-transparent opacity-20"></div>
-                </div>
-                
-                <div className="container mx-auto px-4 relative z-10">
-                    {/* Título de la sección con animación */}
-                    <div className="text-center mb-12 animate-fade-in">
-                        <div className="inline-block relative mb-4">
-                            <h2 className="text-3xl md:text-4xl font-bold text-primary-800 relative">
-                                Descubre Otros <span className="text-primary-500">Destinos</span>
-                                <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full"></div>
-                            </h2>
-                        </div>
-                        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                            El Perú tiene mucho más que ofrecer. Explora nuestras experiencias en los destinos más fascinantes del país.
-                        </p>
-                    </div>
-                    
-                    {/* Grid de destinos con animación */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {destinations.map((destination, index) => (
-                            <DestinationCard key={destination.id} destination={destination} index={index} />
-                        ))}
-                    </div>
-                    
-                    {/* Texto adicional con efecto de aparición */}
-                    <div className="text-center mt-12 animate-fade-in animation-delay-800">
-                        <p className="text-gray-600 mb-4 max-w-2xl mx-auto">
-                            ¿Quieres visitar varios destinos? <span className="font-semibold text-primary-600">Creamos itinerarios personalizados</span> que combinan los mejores lugares del Perú.
-                        </p>
-                        <Link 
-                            href="/contact" 
-                            className="inline-flex items-center bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-medium transition transform hover:scale-105 hover:shadow-lg relative overflow-hidden group"
-                        >
-                            <span className="relative z-10">Planificar Mi Viaje</span>
-                            <svg className="w-5 h-5 ml-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                            <div className="absolute inset-0 bg-gradient-to-r from-secondary-500 to-secondary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </Link>
-                    </div>
-                </div>
-            </section>
-
-            {/*  Sección 6: Por qué viajar con Expediciones Allinkay*/}
-            <section className="py-16 bg-gradient-to-br from-primary-50 to-white relative overflow-hidden">
-                {/* Elementos decorativos animados */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                    {/* Patrón de puntos animado */}
-                    <div className="absolute inset-0 opacity-20">
-                        <div className="absolute top-0 left-0 w-full h-full" style={{
-                            backgroundImage: `radial-gradient(circle, ${getComputedStyle(document.documentElement).getPropertyValue('--tw-primary-500')} 1px, transparent 1px)`,
-                            backgroundSize: '40px 40px'
-                        }}></div>
-                    </div>
-                    
-                    {/* Círculos animados */}
-                    <div className="absolute top-20 right-20 w-32 h-32 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-                    <div className="absolute bottom-20 left-20 w-40 h-40 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-                </div>
-                
-                <div className="container mx-auto px-4 relative z-10">
-                    {/* Título de la sección con animación */}
-                    <div className="text-center mb-12 animate-fade-in">
-                        <div className="inline-block relative mb-6">
-                            <h2 className="text-3xl md:text-4xl font-bold text-primary-800 relative">
-                                ¿Qué nos hace <span className="text-primary-500">Diferente</span>?
-                                <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full"></div>
-                            </h2>
-                        </div>
-                        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                            En Expediciones Allinkay, nos esforzamos por ofrecer una experiencia superior. Descubre por qué miles de viajeros confían en nosotros.
-                        </p>
-                    </div>
-                    
-                    {/* Grid de ventajas con animación */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {advantages.map((advantage, index) => (
-                            <AdvantageCard key={advantage.id} advantage={advantage} index={index} />
-                        ))}
-                    </div>
-                    
-                    {/* Sección de garantía con efecto especial */}
-                    <div className="mt-16 bg-gradient-to-r from-primary-600 to-primary-700 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden animate-fade-in animation-delay-600">
-                        {/* Efecto de partículas */}
-                        <div className="absolute inset-0">
-                            {[...Array(20)].map((_, i) => (
-                                <div 
-                                    key={i}
-                                    className="absolute w-1 h-1 bg-white/30 rounded-full animate-pulse"
-                                    style={{
-                                        top: `${Math.random() * 100}%`,
-                                        left: `${Math.random() * 100}%`,
-                                        animationDelay: `${Math.random() * 3}s`,
-                                        animationDuration: `${3 + Math.random() * 2}s`
-                                    }}
-                                ></div>
-                            ))}
-                        </div>
-                        
-                        <div className="relative z-10">
-                            <div className="flex flex-col md:flex-row items-center justify-between">
-                                <div className="mb-6 md:mb-0 md:mr-8">
-                                    <h3 className="text-2xl md:text-3xl font-bold mb-4">
-                                        Nuestra <span className="text-secondary-300">Garantía de Calidad</span>
-                                    </h3>
-                                    <p className="text-primary-100 max-w-2xl">
-                                        Nos comprometemos a ofrecerte la mejor experiencia de viaje. Si algo no cumple tus expectativas, 
-                                        haremos todo lo posible para corregirlo.
-                                    </p>
-                                </div>
-                                
-                                <div className="flex-shrink-0">
-                                    <Link 
-                                        href="/contact" 
-                                        className="inline-flex items-center bg-white text-primary-700 px-6 py-3 rounded-full font-bold transition transform hover:scale-105 hover:shadow-lg relative overflow-hidden group"
-                                    >
-                                        <span className="relative z-10">Habla con un Experto</span>
-                                        <svg className="w-5 h-5 ml-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                        </svg>
-                                        <div className="absolute inset-0 bg-gradient-to-r from-secondary-400 to-secondary-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    </Link>
-                                </div>
-                            </div>
-                            
-                            {/* Sellos de confianza */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                                <div className="flex items-center justify-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
-                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                    </svg>
-                                    <span className="text-sm">Seguridad Garantizada</span>
-                                </div>
-                                <div className="flex items-center justify-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
-                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span className="text-sm">Mejor Precio</span>
-                                </div>
-                                <div className="flex items-center justify-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
-                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25v4.5m0 15.75v-4.5M2.25 12h4.5m15.75 0h-4.5" />
-                                    </svg>
-                                    <span className="text-sm">Soporte 24/7</span>
-                                </div>
-                                <div className="flex items-center justify-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
-                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                    <span className="text-sm">Satisfacción Garantizada</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -1412,12 +1265,8 @@ export default function Home() {
                                                             <p className="text-sm text-primary-200">WhatsApp</p>
                                                         </div>
                                                     </div>
-                                                    <div className="bg-white rounded-2xl p-4 mb-4">
-                                                        <img 
-                                                            src={message.image} 
-                                                            alt={`Captura de WhatsApp de ${message.name}`}
-                                                            className="w-full h-auto object-cover rounded-xl"
-                                                        />
+                                                    <div className="bg-green-100 rounded-2xl p-4 mb-4">
+                                                        <p className="text-gray-800">{message.text}</p>
                                                     </div>
                                                     <div className="text-right text-sm text-primary-200">
                                                         {message.date}
@@ -1496,6 +1345,257 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* Sección 3: Top trekking tours a Machupicchu*/}
+            <section className="py-16 bg-gradient-to-b from-white to-primary-50 relative overflow-hidden">
+                {/* Elementos decorativos de fondo */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+                    <div className="absolute top-1/3 right-0 w-64 h-64 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
+                    <div className="absolute bottom-1/3 left-0 w-64 h-64 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
+                </div>
+                
+                <div className="container mx-auto px-4 relative z-10">
+                    {/* Título de la sección */}
+                    <div className="text-center mb-12 animate-fade-in">
+                        <h2 className="text-3xl md:text-4xl font-bold text-primary-800 mb-4">
+                            Top Trekking Tours a <span className="text-primary-500">Machu Picchu</span>
+                        </h2>
+                        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                            Vive la experiencia inolvidable de llegar a la ciudadela inca por las rutas más espectaculares. 
+                            Cada trekking ofrece paisajes únicos y una conexión profunda con la naturaleza y la historia.
+                        </p>
+                    </div>
+                    
+                    {/* Grid de trekking tours */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {trekkingTours.map((tour, index) => (
+                            <TrekkingCard key={tour.id} tour={tour} index={index} />
+                        ))}
+                    </div>
+                    
+                    {/* Botón para ver todos los trekking tours */}
+                    <div className="text-center mt-12 animate-fade-in animation-delay-800">
+                        <Link 
+                            href="/trekking" 
+                            className="inline-flex items-center bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-medium transition transform hover:scale-105 hover:shadow-lg relative overflow-hidden group"
+                        >
+                            <span className="relative z-10">Ver Todos los Trekking Tours</span>
+                            <svg className="w-5 h-5 ml-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-r from-secondary-500 to-secondary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* Sección 4: Elige tu propia experiencia*/}
+            <section className="py-16 bg-gradient-to-br from-primary-900 to-primary-700 text-white relative overflow-hidden">
+                {/* Elementos decorativos de fondo */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+                    <div className="absolute top-20 left-10 w-32 h-32 bg-secondary-400/20 rounded-full mix-blend-multiply filter blur-xl"></div>
+                    <div className="absolute bottom-20 right-10 w-40 h-40 bg-accent-400/20 rounded-full mix-blend-multiply filter blur-xl"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary-500/20 rounded-full mix-blend-multiply filter blur-xl"></div>
+                </div>
+                
+                <div className="container mx-auto px-4 relative z-10">
+                    {/* Título de la sección */}
+                    <div className="text-center mb-12 animate-fade-in">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                            Elige tu Propia <span className="text-secondary-300">Experiencia</span>
+                        </h2>
+                        <p className="text-lg text-primary-100 max-w-3xl mx-auto">
+                            Cada viaje es único. Descubre diferentes tipos de experiencias adaptadas a tus intereses y estilo de aventura.
+                        </p>
+                    </div>
+                    
+                    {/* Grid de experiencias */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {experiences.map((experience, index) => (
+                            <ExperienceCard key={experience.id} experience={experience} index={index} />
+                        ))}
+                    </div>
+                    
+                    {/* Texto adicional */}
+                    <div className="text-center mt-12 animate-fade-in animation-delay-600">
+                        <p className="text-primary-200 max-w-2xl mx-auto">
+                            ¿No encuentras lo que buscas? <Link href="/contact" className="text-secondary-300 hover:text-white underline transition">Contáctanos</Link> y crearemos una experiencia personalizada para ti.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/*  Sección 5: Descubre otros destinos*/}
+            <section className="py-16 bg-gradient-to-b from-primary-50 to-white relative overflow-hidden">
+                {/* Elementos decorativos animados */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+                    {/* Círculos animados */}
+                    <div className="absolute top-20 left-10 w-32 h-32 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob"></div>
+                    <div className="absolute bottom-20 right-10 w-40 h-40 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+                    
+                    {/* Líneas decorativas */}
+                    <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-primary-300 to-transparent opacity-20"></div>
+                    <div className="absolute top-0 left-2/4 w-px h-full bg-gradient-to-b from-transparent via-secondary-300 to-transparent opacity-20"></div>
+                    <div className="absolute top-0 left-3/4 w-px h-full bg-gradient-to-b from-transparent via-accent-300 to-transparent opacity-20"></div>
+                </div>
+                
+                <div className="container mx-auto px-4 relative z-10">
+                    {/* Título de la sección con animación */}
+                    <div className="text-center mb-12 animate-fade-in">
+                        <div className="inline-block relative mb-4">
+                            <h2 className="text-3xl md:text-4xl font-bold text-primary-800 relative">
+                                Descubre Otros <span className="text-primary-500">Destinos</span>
+                                <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full"></div>
+                            </h2>
+                        </div>
+                        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                            El Perú tiene mucho más que ofrecer. Explora nuestras experiencias en los destinos más fascinantes del país.
+                        </p>
+                    </div>
+                    
+                    {/* Grid de destinos con animación */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {destinations.map((destination, index) => (
+                            <DestinationCard key={destination.id} destination={destination} index={index} />
+                        ))}
+                    </div>
+                    
+                    {/* Texto adicional con efecto de aparición */}
+                    <div className="text-center mt-12 animate-fade-in animation-delay-800">
+                        <p className="text-gray-600 mb-4 max-w-2xl mx-auto">
+                            ¿Quieres visitar varios destinos? <span className="font-semibold text-primary-600">Creamos itinerarios personalizados</span> que combinan los mejores lugares del Perú.
+                        </p>
+                        <Link 
+                            href="/contact" 
+                            className="inline-flex items-center bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-medium transition transform hover:scale-105 hover:shadow-lg relative overflow-hidden group"
+                        >
+                            <span className="relative z-10">Planificar Mi Viaje</span>
+                            <svg className="w-5 h-5 ml-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-r from-secondary-500 to-secondary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/*  Sección 6: Por qué viajar con Expediciones Allinkay*/}
+            <section className="py-16 bg-gradient-to-br from-primary-50 to-white relative overflow-hidden">
+                
+                {/* Elementos decorativos animados */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+                    {/* Patrón de puntos animado */}
+                    <div className="absolute inset-0 opacity-20">
+                        <div className="absolute top-0 left-0 w-full h-full" style={{
+                            backgroundImage: `radial-gradient(circle, ${getComputedStyle(document.documentElement).getPropertyValue('--tw-primary-500')} 1px, transparent 1px)`,
+                            backgroundSize: '40px 40px'
+                        }}></div>
+                    </div>
+                    
+                    {/* Círculos animados */}
+                    <div className="absolute top-20 right-20 w-32 h-32 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+                    <div className="absolute bottom-20 left-20 w-40 h-40 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+                </div>
+                
+                <div className="container mx-auto px-4 relative z-10">
+                    {/* Título de la sección con animación */}
+                    <div className="text-center mb-12 animate-fade-in">
+                        <div className="inline-block relative mb-6">
+                            <h2 className="text-3xl md:text-4xl font-bold text-primary-800 relative">
+                                ¿Qué nos hace <span className="text-primary-500">Diferente</span>?
+                                <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full"></div>
+                            </h2>
+                        </div>
+                        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                            En Expediciones Allinkay, nos esforzamos por ofrecer una experiencia superior. Descubre por qué miles de viajeros confían en nosotros.
+                        </p>
+                    </div>
+                    
+                    {/* Grid de ventajas con animación */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {advantages.map((advantage, index) => (
+                            <AdvantageCard key={advantage.id} advantage={advantage} index={index} />
+                        ))}
+                    </div>
+                    
+                    {/* Sección de garantía con efecto especial */}
+                    <div className="mt-16 bg-gradient-to-r from-primary-600 to-primary-700 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden animate-fade-in animation-delay-600">
+                        {/* Efecto de partículas */}
+                        <div className="absolute inset-0">
+                            {[...Array(20)].map((_, i) => (
+                                <div 
+                                    key={i}
+                                    className="absolute w-1 h-1 bg-white/30 rounded-full animate-pulse"
+                                    style={{
+                                        top: `${Math.random() * 100}%`,
+                                        left: `${Math.random() * 100}%`,
+                                        animationDelay: `${Math.random() * 3}s`,
+                                        animationDuration: `${3 + Math.random() * 2}s`
+                                    }}
+                                ></div>
+                            ))}
+                        </div>
+                        
+                        <div className="relative z-10">
+                            <div className="flex flex-col md:flex-row items-center justify-between">
+                                <div className="mb-6 md:mb-0 md:mr-8">
+                                    <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                                        Nuestra <span className="text-secondary-300">Garantía de Calidad</span>
+                                    </h3>
+                                    <p className="text-primary-100 max-w-2xl">
+                                        Nos comprometemos a ofrecerte la mejor experiencia de viaje. Si algo no cumple tus expectativas, 
+                                        haremos todo lo posible para corregirlo.
+                                    </p>
+                                </div>
+                                
+                                <div className="flex-shrink-0">
+                                    <Link 
+                                        href="/contact" 
+                                        className="inline-flex items-center bg-white text-primary-700 px-6 py-3 rounded-full font-bold transition transform hover:scale-105 hover:shadow-lg relative overflow-hidden group"
+                                    >
+                                        <span className="relative z-10">Habla con un Experto</span>
+                                        <svg className="w-5 h-5 ml-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        <div className="absolute inset-0 bg-gradient-to-r from-secondary-400 to-secondary-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    </Link>
+                                </div>
+                            </div>
+                            
+                            {/* Sellos de confianza */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                                <div className="flex items-center justify-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    <span className="text-sm">Seguridad Garantizada</span>
+                                </div>
+                                <div className="flex items-center justify-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-sm">Mejor Precio</span>
+                                </div>
+                                <div className="flex items-center justify-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25v4.5m0 15.75v-4.5M2.25 12h4.5m15.75 0h-4.5" />
+                                    </svg>
+                                    <span className="text-sm">Soporte 24/7</span>
+                                </div>
+                                <div className="flex items-center justify-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                                    <svg className="w-6 h-6 mr-2 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span className="text-sm">Satisfacción Garantizada</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            
         </Layout>
     );
 }

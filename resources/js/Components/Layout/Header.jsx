@@ -191,8 +191,8 @@ export default function Header() {
 
             {/* Main Navigation - Header estático */}
             <header className={`sticky top-0 z-50 transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-                <div className="relative container mx-auto px-4 pt-2">
-                    {/* Fondo con efecto neón solo en lados y abajo */}
+                <div className="relative w-full px-2 md:px-4 lg:px-6 xl:px-8 pt-2">
+                    {/* Fondo con efecto neón - más ancho */}
                     <div className="neon-border-sides-bottom animate-glow">
                         <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4">
                             <div className="flex justify-between items-center">
@@ -210,8 +210,8 @@ export default function Header() {
                                     </div>
                                 </Link>
 
-                                {/* Desktop Navigation */}
-                                <nav className="hidden lg:flex items-center space-x-6">
+                                {/* Desktop Navigation - con más espacio entre elementos */}
+                                <nav className="hidden lg:flex items-center space-x-8">
                                     <Link href="/" className="menu-item text-gray-800 hover:text-primary-600 font-medium transition transform hover:scale-105 hover:-translate-y-1">Inicio</Link>
                                     <Link href="/about" className="menu-item text-gray-800 hover:text-primary-600 font-medium transition transform hover:scale-105 hover:-translate-y-1">Nosotros</Link>
                                     
@@ -431,6 +431,7 @@ export default function Header() {
                     </div>
                 </div>
             </header>
+
         </>
     );
 }
