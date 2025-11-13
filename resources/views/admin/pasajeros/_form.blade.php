@@ -72,7 +72,7 @@
     <div class="col-md-6 mb-3">
         <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
         <input type="date" name="fecha_nacimiento" id="fecha_nacimiento"
-            value="{{ old('fecha_nacimiento', $pasajero->fecha_nacimiento ?? '') }}"
+            value="{{ old('fecha_nacimiento', $pasajero->fecha_nacimiento ? $pasajero->fecha_nacimiento-> format('Y-m-d') : '') }}"
             class="form-control" required>
     </div>
     <div class="col-md-6 mb-3">
@@ -125,81 +125,81 @@
 </form>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const tipoPasajero = document.getElementById("tipo_pasajero");
-    const tipoDocumento = document.getElementById("tipo_documento");
-    const buscarBtn = document.getElementById("buscar");
-    const ciudadDiv = document.getElementById("ciudadDiv");
+    document.addEventListener("DOMContentLoaded", function () {
+        const tipoPasajero = document.getElementById("tipo_pasajero");
+        const tipoDocumento = document.getElementById("tipo_documento");
+        const buscarBtn = document.getElementById("buscar");
+        const ciudadDiv = document.getElementById("ciudadDiv");
 
-    // Opciones posibles
-    const opciones = {
-        Peruano: ["DNI", "CE"],
-        Extranjero: ["Pasaporte", "DNI"],
-        CAN: ["Pasaporte", "DNI"]
-    };
+        // Opciones posibles
+        const opciones = {
+            Peruano: ["DNI", "CE"],
+            Extranjero: ["Pasaporte", "DNI"],
+            CAN: ["Pasaporte", "DNI"]
+        };
 
-    function actualizarOpciones() {
-        const seleccionado = tipoPasajero.value;
+        function actualizarOpciones() {
+            const seleccionado = tipoPasajero.value;
 
-        // limpiar opciones actuales
-        tipoDocumento.innerHTML = "";
+            // limpiar opciones actuales
+            tipoDocumento.innerHTML = "";
 
-        if (seleccionado && opciones[seleccionado]) {
-            opciones[seleccionado].forEach(doc => {
-                const option = document.createElement("option");
-                option.value = doc;
-                option.textContent = doc;
-                tipoDocumento.appendChild(option);
-            });
+            if (seleccionado && opciones[seleccionado]) {
+                opciones[seleccionado].forEach(doc => {
+                    const option = document.createElement("option");
+                    option.value = doc;
+                    option.textContent = doc;
+                    tipoDocumento.appendChild(option);
+                });
 
-            // habilitar botón buscar solo para Peruanos
-            buscarBtn.disabled = (seleccionado !== "Peruano");
-        } else {
-            buscarBtn.disabled = true;
-        }
-    }
-
-    
-    function actualizarCampos() {
-        const pasajero = tipoPasajero.value;
-        const documento = tipoDocumento.value;
-
-        // Mostrar ciudad solo si es peruano
-        ciudadDiv.style.display = pasajero === "Peruano" ? "block" : "none";
-
-        // Evento inicial
-        tipoPasajero.addEventListener("change", actualizarOpciones);
-
-        // Ejecutar al cargar la página (para que se setee según el valor actual)
-        actualizarOpciones();
-
-        // Habilitar botón buscar solo si es peruano con DNI
-        if (pasajero === "Peruano" && tipoDocumento.value === "DNI") {
-            buscarBtn.disabled = false;
-            buscarBtn.classList.remove("btn-secondary");
-            buscarBtn.classList.add("btn-success");
-        } else {
-            buscarBtn.disabled = true;
-            buscarBtn.classList.remove("btn-success");
-            buscarBtn.classList.add("btn-secondary");
-        }
-    }
-
-    tipoPasajero.addEventListener("change", actualizarOpciones);
-    opciones.addEventListener("change", actualizarOpciones);
-    actualizarCampos(); // inicial
-});
-
-// Lógica de API para el DNI
-document.getElementById("buscar").addEventListener("click", function () {
-    let documento = document.getElementById("documento").value;
-    fetch("https://apiperu.dev/api/dni/" + documento + "?api_token=TU_TOKEN")
-        .then((res) => res.json())
-        .then((datos) => {
-            if (datos.data) {
-                document.getElementById("nombre").value = datos.data.nombres;
-                document.getElementById("apellido").value = datos.data.apellido_paterno + " " + datos.data.apellido_materno;
+                // habilitar botón buscar solo para Peruanos
+                buscarBtn.disabled = (seleccionado !== "Peruano");
+            } else {
+                buscarBtn.disabled = true;
             }
-        });
-});
+        }
+
+        
+        function actualizarCampos() {
+            const pasajero = tipoPasajero.value;
+            const documento = tipoDocumento.value;
+
+            // Mostrar ciudad solo si es peruano
+            ciudadDiv.style.display = pasajero === "Peruano" ? "block" : "none";
+
+            // Evento inicial
+            tipoPasajero.addEventListener("change", actualizarOpciones);
+
+            // Ejecutar al cargar la página (para que se setee según el valor actual)
+            actualizarOpciones();
+
+            // Habilitar botón buscar solo si es peruano con DNI
+            if (pasajero === "Peruano" && tipoDocumento.value === "DNI") {
+                buscarBtn.disabled = false;
+                buscarBtn.classList.remove("btn-secondary");
+                buscarBtn.classList.add("btn-success");
+            } else {
+                buscarBtn.disabled = true;
+                buscarBtn.classList.remove("btn-success");
+                buscarBtn.classList.add("btn-secondary");
+            }
+        }
+
+        tipoPasajero.addEventListener("change", actualizarOpciones);
+        opciones.addEventListener("change", actualizarOpciones);
+        actualizarCampos(); // inicial
+    });
+
+    // Lógica de API para el DNI
+    document.getElementById("buscar").addEventListener("click", function () {
+        let documento = document.getElementById("documento").value;
+        fetch("https://apiperu.dev/api/dni/" + documento + "?api_token=TU_TOKEN")
+            .then((res) => res.json())
+            .then((datos) => {
+                if (datos.data) {
+                    document.getElementById("nombre").value = datos.data.nombres;
+                    document.getElementById("apellido").value = datos.data.apellido_paterno + " " + datos.data.apellido_materno;
+                }
+            });
+    });
 </script>

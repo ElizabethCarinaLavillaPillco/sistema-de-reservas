@@ -6,6 +6,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pasajero;
+use App\Models\Reserva;
 use Illuminate\Http\Request;
 
 class PasajeroController extends Controller
@@ -51,7 +52,8 @@ class PasajeroController extends Controller
     public function edit($id)
     {
         $pasajero = Pasajero::findOrFail($id);
-        return view('admin.pasajeros.edit', compact('pasajero'));
+        $reservas = Reserva::with('titular')->get(); // ← Agrega esto
+        return view('admin.pasajeros.edit', compact('pasajero', 'reservas'));
     }
 
     public function update(Request $request, $id)

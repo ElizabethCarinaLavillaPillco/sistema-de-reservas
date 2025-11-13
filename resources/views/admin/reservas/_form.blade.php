@@ -1,47 +1,1916 @@
-@php
-    $mode = isset($reserva->id) ? 'edit' : 'create';
-    $action = $mode === 'create' 
-        ? route('admin.reservas.store') 
-        : route('admin.reservas.update', $reserva->id);
-@endphp
+{{-- FORMULARIO RESERVA (create & edit) --}}
+@if($mode === 'create')
+    <form action="{{ route('admin.reservas.store') }}" method="POST">
+@else
+    <form action="{{ route('admin.reservas.update', $reserva->id) }}" method="POST">
+        @method('PUT')
+@endif
+@csrf
+
+{{-- ============= SECCIÓN: INFORMACIÓN BÁSICA ============= --}}
+<div class="form-section">
+    <div class="section-header">
+        <i class="fas fa-info-circle"></i>
+        <h3>Información Básica</h3>
+    </div>
+    <div class="section-body">
+        <div class="row">
+            <!-- TIPO DE RESERVA -->
+            <div class="col-md-6 mb-3">
+                <label for="tipo_reserva" class="form-label required">Tipo de Reserva</label>
+                <select name="tipo_reserva" id="tipo_reserva" class="form-select" required>
+                    <option value="">-- Seleccionar tipo --</option>
+                    @foreach(['Directo','Recomendacion','Publicidad','Agencia'] as $tipo)
+                        <option value="{{ $tipo }}" {{ old('tipo_reserva', $reserva->tipo_reserva ?? '') == $tipo ? 'selected' : '' }}>
+                            {{ $tipo }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            @php $tipoActual = old('tipo_reserva', $reserva->tipo_reserva ?? ''); @endphp
+
+            <!-- PROVEEDOR -->
+            <div class="col-md-6 mb-3" id="proveedor_container" style="{{ $tipoActual === 'Agencia' ? '' : 'display:none' }}">
+                <label for="proveedor_id" class="form-label">Proveedor</label>
+                <select name="proveedor_id" id="proveedor_id" class="form-select">
+                    <option value="">-- Seleccionar proveedor --</option>
+                    @foreach($proveedores as $proveedor)
+                        <option value="{{ $proveedor->id }}" {{ (string)old('proveedor_id', $reserva->proveedor_id ?? '') === (string)$proveedor->id ? 'selected' : '' }}>
+                            {{ $proveedor->nombreAgencia ?? $proveedor->nombre }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ============= SECCIÓN: TITULAR Y PASAJEROS ============= --}}
+<div class="form-section">
+    <div class="section-header">
+        <i class="fas fa-users"></i>
+        <h3>Titular y Pasajeros</h3>
+    </div>
+    <div class="section-body">
+        <!-- TITULAR -->
+        <div class="subsection">
+            <h4 class="subsection-title">Titular de la Reserva</h4>
+            <div class="row align-items-end">
+                <div class="col-md-8 mb-3">
+                    <label for="busquedaTitular" class="form-label">Buscar Titular</label>
+                    <input list="listaTitulares" id="busquedaTitular" class="form-control" placeholder="Escribe nombre del pasajero...">
+                    <datalist id="listaTitulares">
+                        @foreach($pasajeros as $p)
+                            <option value="{{ $p->nombre }} {{ $p->apellido }} ({{ $p->documento }})" data-id="{{ $p->id }}"></option>
+                        @endforeach
+                    </datalist>
+                    <input type="hidden" name="titular_id" id="titular_id_hidden" value="{{ old('titular_id', $reserva->titular_id ?? '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button type="button" id="btnSeleccionarTitular" class="btn btn-reserva w-100">
+                        <i class="fas fa-check"></i> Seleccionar
+                    </button>
+                </div>
+            </div>
+
+            <div id="titularSeleccionado">
+                @if(old('titular_id', $reserva->titular_id ?? false))
+                    @php $titSel = $pasajeros->firstWhere('id', old('titular_id', $reserva->titular_id ?? null)); @endphp
+                    @if($titSel)
+                        <div class="selected-item">
+                            <i class="fas fa-user-check"></i>
+                            <strong>{{ $titSel->nombre }} {{ $titSel->apellido }}</strong>
+                            <span class="text-muted">({{ $titSel->documento }})</span>
+                            <button type="button" id="btnLimpiarTitular" class="btn-remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    @endif
+                @endif
+            </div>
+        </div>
+
+        <!-- PASAJEROS -->
+        <div class="subsection mt-4">
+            <h4 class="subsection-title">Pasajeros Adicionales</h4>
+            <div class="row align-items-end">
+                <div class="col-md-8 mb-3">
+                    <label for="busquedaPasajero" class="form-label">Buscar Pasajeros</label>
+                    <input list="listaPasajeros" id="busquedaPasajero" class="form-control" placeholder="Escribe el nombre del pasajero...">
+                    <datalist id="listaPasajeros">
+                        @foreach($pasajeros as $pasajero)
+                            <option value="{{ $pasajero->nombre }} {{ $pasajero->apellido }} ({{ $pasajero->documento }})" data-id="{{ $pasajero->id }}"></option>
+                        @endforeach
+                    </datalist>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button type="button" onclick="agregarPasajero()" class="btn btn-agregar w-100">
+                        <i class="fas fa-plus"></i> Agregar
+                    </button>
+                </div>
+            </div>
+
+            <div id="pasajerosSeleccionados">
+                <ul id="listaPasajerosAgregados" class="selected-list">
+                    @php
+                        $pasajerosOld = old('pasajeros', $mode === 'edit' ? ($reserva->pasajeros->pluck('id')->toArray() ?? []) : []);
+                    @endphp
+                    @foreach($pasajerosOld as $pid)
+                        @php $p = $pasajeros->firstWhere('id', $pid); @endphp
+                        @if($p)
+                            <li class="selected-item" data-id="{{ $p->id }}">
+                                <i class="fas fa-user"></i>
+                                <span>{{ $p->nombre }} {{ $p->apellido }} ({{ $p->documento }})</span>
+                                <input type="hidden" name="pasajeros[]" value="{{ $p->id }}">
+                                <button type="button" class="btn-remove" onclick="eliminarPasajero(this, '{{ $p->id }}')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </li>
+                        @endif
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+
+        <input type="hidden" name="cantidad_pasajeros" id="cantidad_pasajeros" value="{{ count($pasajerosOld) }}">
+    </div>
+</div>
+
+{{-- ============= SECCIÓN: FECHAS Y VUELOS ============= --}}
+<div class="form-section">
+    <div class="section-header">
+        <i class="fas fa-plane"></i>
+        <h3>Fechas y Vuelos</h3>
+    </div>
+    <div class="section-body">
+        <div class="subsection">
+            <h4 class="subsection-title">Llegada</h4>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="fecha_llegada" class="form-label">Fecha</label>
+                    <input type="date" name="fecha_llegada" id="fecha_llegada" class="form-control" 
+                        value="{{ old('fecha_llegada', $reserva->fecha_llegada ? $reserva->fecha_llegada->format('Y-m-d') : '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="hora_llegada" class="form-label">Hora</label>
+                    <input type="time" name="hora_llegada" id="hora_llegada" class="form-control" value="{{ old('hora_llegada', $reserva->hora_llegada ?? '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="nro_vuelo_llegada" class="form-label">N° Vuelo</label>
+                    <input type="text" name="nro_vuelo_llegada" id="nro_vuelo_llegada" class="form-control" value="{{ old('nro_vuelo_llegada', $reserva->nro_vuelo_llegada ?? '') }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="subsection mt-3">
+            <h4 class="subsection-title">Salida</h4>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="fecha_salida" class="form-label">Fecha</label>
+                    <input type="date" name="fecha_salida" id="fecha_salida" class="form-control" 
+                        value="{{ old('fecha_salida', $reserva->fecha_salida ? $reserva->fecha_salida->format('Y-m-d') : '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="hora_salida" class="form-label">Hora</label>
+                    <input type="time" name="hora_salida" id="hora_salida" class="form-control" value="{{ old('hora_salida', $reserva->hora_salida ?? '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="nro_vuelo_salida" class="form-label">N° Vuelo</label>
+                    <input type="text" name="nro_vuelo_salida" id="nro_vuelo_salida" class="form-control" value="{{ old('nro_vuelo_salida', $reserva->nro_vuelo_salida ?? '') }}">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ============= SECCIÓN: PAGOS ============= --}}
+<div class="form-section">
+    <div class="section-header">
+        <i class="fas fa-dollar-sign"></i>
+        <h3>Información de Pago</h3>
+    </div>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="total" class="form-label">Total ($)</label>
+                <input type="number" step="0.01" name="total" id="total" class="form-control" value="{{ old('total', $reserva->total ?? '') }}">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="adelanto" class="form-label">Adelanto ($)</label>
+                <input type="number" step="0.01" name="adelanto" id="adelanto" class="form-control" value="{{ old('adelanto', $reserva->adelanto ?? '') }}">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="saldo" class="form-label">Saldo ($)</label>
+                <input type="number" step="0.01" id="saldo" class="form-control saldo-display" readonly>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ============= SECCIÓN: TOURS ============= --}}
+<div class="form-section">
+    <div class="section-header">
+        <i class="fas fa-map-marked-alt"></i>
+        <h3>Tours Contratados</h3>
+    </div>
+    <div class="section-body">
+        <div id="form-tours" class="edit-card">
+            <div class="row">
+                <!-- BÁSICO DEL TOUR -->
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Tour</label>
+                    <select id="select-tour" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        @foreach($tours as $tour)
+                            <option value="{{ $tour->id }}" data-nombre="{{ $tour->nombreTour }}">{{ $tour->nombreTour }}</option>
+                        @endforeach
+                    </select>
+                    <input type="hidden" id="id_tour">
+                    <input type="hidden" id="nombreTour">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Fecha de Visita</label>
+                    <input type="date" id="fecha" class="form-control" name="fecha">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Servicio</label>
+                    <select name="tipo_tour" id="tipo_tour" class="form-select">
+                        <option value="Grupal">Grupal</option>
+                        <option value="Privado">Privado</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Lugar Recojo</label>
+                    <input type="text" id="lugar_recojo" class="form-control" name="lugar_recojo">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Hora de Recojo</label>
+                    <input type="time" id="hora_recojo" class="form-control" name="hora_recojo">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Idioma</label>
+                    <input type="text" id="idioma" class="form-control" name="idioma">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Precio Unitario</label>
+                    <input type="number" id="precio_unitario" step="0.01" class="form-control" name="precio_unitario">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Cantidad</label>
+                    <input type="number" id="cantidad" min="1" value="1" class="form-control" name="cantidad">
+                </div>
+
+                <div class="col-md-6 mb-3" id="empresa_tour_field" style="display:none;">
+                    <label class="form-label">Empresa</label>
+                    <input type="text" id="empresa" class="form-control" name="empresa">
+                </div>
+
+                <div class="col-md-6 mb-3" id="observaciones_tour_field" style="display:none;">
+                    <label class="form-label">Observaciones</label>
+                    <input type="text" id="observaciones" class="form-control" name="observaciones">
+                </div>
+
+                {{-- DETALLES MACHUPICCHU --}}
+                <div id="machupicchu-details" class="col-12 mt-3 conditional-section" style="display:none;">
+                    <div class="conditional-header">
+                        <i class="fas fa-mountain"></i>
+                        <h5>Detalles Machupicchu</h5>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">¿Hay entrada?</label>
+                            <select name="hay_entrada" id="hay_entrada" class="form-select">
+                                <option value="">-- Seleccione --</option>
+                                <option value="1">Sí</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="entrada-fields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Circuito</label>
+                                <select name="tipo_entrada" id="tipo_entrada" class="form-select">
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="circuito1">Circuito 1</option>
+                                    <option value="circuito2">Circuito 2</option>
+                                    <option value="circuito3">Circuito 3</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3" id="ruta1-field" style="display:none;">
+                                <label class="form-label">Ruta</label>
+                                <select id="ruta1" class="form-select" name="ruta1">
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="ruta1a">Ruta 1-A: Montaña Machupicchu</option>
+                                    <option value="ruta1b">Ruta 1-B: Terraza superior</option>
+                                    <option value="ruta1c">Ruta 1-C: Portada Intipunku</option>
+                                    <option value="ruta1d">Ruta 1-D: Puente Inka</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3" id="ruta2-field" style="display:none;">
+                                <label class="form-label">Ruta</label>
+                                <select id="ruta2" class="form-select" name="ruta2">
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="ruta2a">Ruta 2-A: Clásico diseñada</option>
+                                    <option value="ruta2b">Ruta 2-B: Terraza inferior</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3" id="ruta3-field" style="display:none;">
+                                <label class="form-label">Ruta</label>
+                                <select id="ruta3" class="form-select" name="ruta3">
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="ruta3a">Ruta 3-A: Montaña Waynapicchu</option>
+                                    <option value="ruta3b">Ruta 3-B: Realeza diseñada</option>
+                                    <option value="ruta3c">Ruta 3-C: Gran Caverna</option>
+                                    <option value="ruta3d">Ruta 3-D: Huchuypicchu</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Horario Entrada</label>
+                                <input type="time" id="horario_entrada" class="form-control" name="horario_entrada">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="comentario-entrada-field" class="mb-3" style="display:none;">
+                        <label class="form-label">Observación entrada</label>
+                        <input type="text" name="comentario_entrada" id="comentario_entrada" class="form-control" placeholder="Ej: Tramitar en pueblo">
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo de Tren</label>
+                            <select name="tipo_tren" id="tipo_tren" class="form-select">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Turístico">Tren Turístico</option>
+                                <option value="Local">Tren Local</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="tren-turistico-fields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Empresa de Tren</label>
+                                <select name="empresa_tren" class="form-select" id="empresa_tren">
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="Inca Rail">Inca Rail</option>
+                                    <option value="Peru Rail">Peru Rail</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Código de Tren</label>
+                                <input type="text" name="codigo_tren" class="form-control" id="codigo_tren" placeholder="Ej: 1234AB">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tren-horarios-fields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Horario Ida</label>
+                                <input type="time" name="horario_ida" class="form-control" id="horario_ida_tren">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Horario Retorno</label>
+                                <input type="time" name="horario_retorno" class="form-control" id="horario_retorno_tren">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tren-local-fields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">¿Tiene Ticket?</label>
+                                <select name="tiene_ticket" id="tiene_ticket" class="form-select">
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="ticket-fields" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Horario Ida</label>
+                                    <input type="time" name="horario_ida_ticket" class="form-control" id="horario_ida_ticket">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Horario Retorno</label>
+                                    <input type="time" name="horario_retorno_ticket" class="form-control" id="horario_retorno_ticket">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="comentario-ticket-field" class="mb-3" style="display:none;">
+                            <label class="form-label">Comentario Ticket</label>
+                            <input type="text" name="comentario_ticket" class="form-control" placeholder="Ej: Hacer cola" id="comentario_ticket">
+                        </div>
+                    </div>
+
+                    <div id="tren-fechas-fields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha Tren Ida</label>
+                                <input type="date" name="fecha_tren_ida" class="form-control" id="fecha_tren_ida">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha Tren Retorno</label>
+                                <input type="date" name="fecha_tren_retorno" class="form-control" id="fecha_tren_retorno">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="hospedaje-fields mb-3" style="display:none;">
+                        <label class="form-label">Hospedaje</label>
+                        <input type="text" name="hospedaje" class="form-control" id="hospedaje" placeholder="Ej: Hotel Inka">
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Transporte de ida</label>
+                            <select name="transp_ida" id="transp_ida" class="form-select">
+                                <option value="">-- Seleccione --</option>
+                                <option value="busLucy">Bus Lucy</option>
+                                <option value="Bimodal">Bimodal</option>
+                                <option value="BimodalDoor">Bimodal Door</option>
+                                <option value="Privado">Transporte Privado</option>
+                                <option value="otro">Otro</option>
+                                <option value="porCuentaPropia">Por cuenta propia</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3" id="horario_recojo_ida-field" style="display:none;">
+                            <label class="form-label">Horario de recojo</label>
+                            <input type="time" name="horario_recojo_ida" class="form-control" id="horario_recojo_ida">
+                        </div>
+
+                        <div class="col-md-12 mb-3" id="comentario_trans_ida-field" style="display:none;">
+                            <label class="form-label">Observación</label>
+                            <input type="text" name="comentario_trans_ida" class="form-control" id="comentario_trans_ida">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Transporte de retorno</label>
+                            <select name="transp_ret" id="transp_ret" class="form-select">
+                                <option value="">-- Seleccione --</option>
+                                <option value="busLucy">Bus Lucy</option>
+                                <option value="Bimodal">Bimodal</option>
+                                <option value="BimodalDoor">Bimodal Door</option>
+                                <option value="Privado">Transporte Privado</option>
+                                <option value="otro">Otro</option>
+                                <option value="porCuentaPropia">Por cuenta propia</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3" id="horario_recojo_ret-field" style="display:none;">
+                            <label class="form-label">Horario de recojo</label>
+                            <input type="time" name="horario_recojo_ret" class="form-control" id="horario_recojo_ret">
+                        </div>
+
+                        <div class="col-md-12 mb-3" id="comentario_trans_ret-field" style="display:none;">
+                            <label class="form-label">Observación</label>
+                            <input type="text" name="comentario_trans_ret" class="form-control" id="comentario_trans_ret">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">¿Consetur o irá a pie?</label>
+                            <select name="tipo_servicio" id="tipo_servicio" class="form-select">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Comprar">Comprar</option>
+                                <option value="Caminando">Caminando</option>
+                                <option value="Tiene">Tiene</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3" id="tipo_consetur-field" style="display:none;">
+                            <label class="form-label">Tipo de Consetur</label>
+                            <select name="tipo_consetur" class="form-select" id="tipo_consetur">
+                                <option value="">-- Seleccione --</option>
+                                <option value="ambos">Ida y Retorno</option>
+                                <option value="ida">Ida</option>
+                                <option value="ret">Retorno</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-12 mb-3" id="comentario_consetur-field" style="display:none;">
+                            <label class="form-label">Observación consetur</label>
+                            <input type="text" name="comentario_consetur" class="form-control" placeholder="Ej: Tramitar en pueblo" id="comentario_consetur">
+                        </div>
+                    </div>
+
+                    <div id="bycar-fields" style="display:none;">
+                        <hr class="my-4">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Hospedaje</label>
+                                <input type="text" name="hospedaje" class="form-control" id="hospedaje_bycar" placeholder="Ej: Hotel Inka">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- DETALLES BOLETO TURÍSTICO --}}
+                <div id="boleto-turistico-details" class="col-12 mt-3 conditional-section" style="display:none;">
+                    <div class="conditional-header">
+                        <i class="fas fa-ticket-alt"></i>
+                        <h5>Detalles Boleto Turístico</h5>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo de Boleto</label>
+                            <select class="form-select" id="tipo_boleto" name="tipo_boleto">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Integral">Boleto Integral</option>
+                                <option value="Parcial">Boleto Parcial</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3" id="requiere_compra-field" style="display:none;">
+                            <label class="form-label">¿Se debe comprar?</label>
+                            <select class="form-select" id="requiere_compra" name="requiere_compra">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="0">Ya tiene</option>
+                                <option value="1">Tiene que comprar</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3" id="tipo_compra-field" style="display:none;">
+                            <label class="form-label">Tipo de Compra</label>
+                            <select class="form-select" id="tipo_compra" name="tipo_compra">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Personal">Compra personal</option>
+                                <option value="Guia">Compra por el guía</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="lugares-priv-fields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">¿Incluye entrada a <strong id="nombrePropiedadPrivada"></strong>?</label>
+                                <select class="form-select" id="incluye_entrada_propiedad_priv" name="incluye_entrada_propiedad_priv">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3" id="quien-compra-field" style="display:none;">
+                                <label class="form-label">¿Quién compra la entrada?</label>
+                                <select class="form-select" name="quien_compra_propiedad_priv" id="quien_compra_propiedad_priv">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="guia">Guía</option>
+                                    <option value="pasajero">Pasajero</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-12 mb-3" id="comentario-entrada-priv-field" style="display:none;">
+                                <label class="form-label">Comentario</label>
+                                <input type="text" name="comentario_entrada_propiedad_priv" class="form-control" id="comentario_entrada_propiedad_priv" placeholder="Ej: Tramitar en pueblo">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 text-end mt-4">
+                    <button type="button" class="btn btn-actualizar" id="btn-agregar-tour" onclick="agregarTour()">
+                        <i class="fas fa-plus-circle"></i> Agregar Tour
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <ul id="listaToursAgregados" class="selected-list mt-3">
+            @if($mode === 'edit')
+                @foreach($reserva->toursReservas as $i => $tour)
+                    <li class="tour-item">
+                        <div class="tour-item-header">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <strong>{{ $tour->tour->nombreTour }}</strong>
+                            <span class="badge badge-info">{{ $tour->tipo_tour ?? 'Grupal' }}</span>
+                        </div>
+                        <div class="tour-item-body">
+                            <div class="tour-detail"><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($tour->fecha)->format('d/m/Y') }}</div>
+                            <div class="tour-detail"><strong>Recojo:</strong> {{ $tour->lugar_recojo ?? '-' }} a las {{ $tour->hora_recojo ? \Carbon\Carbon::parse($tour->hora_recojo)->format('H:i') : '-' }}</div>
+                            <div class="tour-detail"><strong>Idioma:</strong> {{ $tour->idioma ?? '-' }}</div>
+                            <div class="tour-detail"><strong>Precio:</strong> S/. {{ number_format($tour->precio_unitario ?? 0, 2) }} x {{ $tour->cantidad ?? 1 }}</div>
+                        </div>
+
+                        {{-- Inputs ocultos --}}
+                        <input type="hidden" name="tours[{{ $i }}][id]" value="{{ $tour->id }}">
+                        <input type="hidden" name="tours[{{ $i }}][tour_id]" value="{{ $tour->tour_id }}">
+                        <input type="hidden" name="tours[{{ $i }}][nombreTour]" value="{{ $tour->tour->nombreTour }}">
+                        <input type="hidden" name="tours[{{ $i }}][fecha]" value="{{ $tour->fecha }}">
+                        <input type="hidden" name="tours[{{ $i }}][tipo_tour]" value="{{ $tour->tipo_tour }}">
+                        <input type="hidden" name="tours[{{ $i }}][lugar_recojo]" value="{{ $tour->lugar_recojo }}">
+                        <input type="hidden" name="tours[{{ $i }}][hora_recojo]" value="{{ $tour->hora_recojo }}">
+                        <input type="hidden" name="tours[{{ $i }}][idioma]" value="{{ $tour->idioma }}">
+                        <input type="hidden" name="tours[{{ $i }}][empresa]" value="{{ $tour->empresa }}">
+                        <input type="hidden" name="tours[{{ $i }}][precio_unitario]" value="{{ $tour->precio_unitario }}">
+                        <input type="hidden" name="tours[{{ $i }}][cantidad]" value="{{ $tour->cantidad }}">
+                        <input type="hidden" name="tours[{{ $i }}][observaciones]" value="{{ $tour->observaciones }}">
+
+                        @if($tour->detalleMachupicchu)
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][tipo_entrada]" value="{{ $tour->detalleMachupicchu->tipo_entrada }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][ruta1]" value="{{ $tour->detalleMachupicchu->ruta1 }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][ruta2]" value="{{ $tour->detalleMachupicchu->ruta2 }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][ruta3]" value="{{ $tour->detalleMachupicchu->ruta3 }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][horario_entrada]" value="{{ $tour->detalleMachupicchu->horario_entrada }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][tipo_tren]" value="{{ $tour->detalleMachupicchu->tipo_tren }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][empresa_tren]" value="{{ $tour->detalleMachupicchu->empresa_tren }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][codigo_tren]" value="{{ $tour->detalleMachupicchu->codigo_tren }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][horario_ida]" value="{{ $tour->detalleMachupicchu->horario_ida }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][horario_retorno]" value="{{ $tour->detalleMachupicchu->horario_retorno }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][fecha_tren_ida]" value="{{ $tour->detalleMachupicchu->fecha_tren_ida }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][fecha_tren_retorno]" value="{{ $tour->detalleMachupicchu->fecha_tren_retorno }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][hay_entrada]" value="{{ $tour->detalleMachupicchu->hay_entrada }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][comentario_entrada]" value="{{ $tour->detalleMachupicchu->comentario_entrada }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][tiene_ticket]" value="{{ $tour->detalleMachupicchu->tiene_ticket }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][comentario_ticket]" value="{{ $tour->detalleMachupicchu->comentario_ticket }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][fecha_ida]" value="{{ $tour->detalleMachupicchu->fecha_ida }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][fecha_retorno]" value="{{ $tour->detalleMachupicchu->fecha_retorno }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][hospedaje]" value="{{ $tour->detalleMachupicchu->hospedaje }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][transp_ida]" value="{{ $tour->detalleMachupicchu->transp_ida }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][horario_recojo_ida]" value="{{ $tour->detalleMachupicchu->horario_recojo_ida }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][comentario_trans_ida]" value="{{ $tour->detalleMachupicchu->comentario_trans_ida }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][transp_ret]" value="{{ $tour->detalleMachupicchu->transp_ret }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][horario_recojo_ret]" value="{{ $tour->detalleMachupicchu->horario_recojo_ret }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][comentario_trans_ret]" value="{{ $tour->detalleMachupicchu->comentario_trans_ret }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][tipo_servicio]" value="{{ $tour->detalleMachupicchu->tipo_servicio }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][tipo_consetur]" value="{{ $tour->detalleMachupicchu->tipo_consetur }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_machu][comentario_consetur]" value="{{ $tour->detalleMachupicchu->comentario_consetur }}">
+                        @endif
+
+                        @if($tour->detalleBoletoTuristico)
+                            <input type="hidden" name="tours[{{ $i }}][detalles_boleto][tipo_boleto]" value="{{ $tour->detalleBoletoTuristico->tipo_boleto }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_boleto][requiere_compra]" value="{{ $tour->detalleBoletoTuristico->requiere_compra }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_boleto][tipo_compra]" value="{{ $tour->detalleBoletoTuristico->tipo_compra }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_boleto][incluye_entrada_propiedad_priv]" value="{{ $tour->detalleBoletoTuristico->incluye_entrada_propiedad_priv }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_boleto][quien_compra_propiedad_priv]" value="{{ $tour->detalleBoletoTuristico->quien_compra_propiedad_priv }}">
+                            <input type="hidden" name="tours[{{ $i }}][detalles_boleto][comentario_entrada_propiedad_priv]" value="{{ $tour->detalleBoletoTuristico->comentario_entrada_propiedad_priv }}">
+                        @endif
+
+                        <div class="tour-item-actions">
+                            <button type="button" class="btn btn-sm btn-edit" onclick="editarTour(this)">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-delete" onclick="eliminarTour(this)">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </li>
+                @endforeach
+            @endif
+        </ul>
+    </div>
+</div>
+
+<input type="hidden" name="cantidad_tours" id="cantidad_tours" value="{{ $mode === 'edit' ? $reserva->toursReservas->count() : 0 }}">
+
+{{-- ============= SECCIÓN: ESTADÍAS ============= --}}
+<div class="form-section">
+    <div class="section-header">
+        <i class="fas fa-hotel"></i>
+        <h3>Estadías</h3>
+    </div>
+    <div class="section-body">
+        <div id="form-estadia" class="edit-card">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Tipo</label>
+                    <select id="tipo_estadia_input" class="form-select" name="tipo_estadia_input">
+                        <option value="Hostal">Hotel</option>
+                        <option value="Hospedaje">Hospedaje</option>
+                        <option value="Airbnb">Airbnb</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" id="nombre_estadia_input" class="form-control" name="nombre_estadia_input">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Ubicación</label>
+                    <input type="text" id="ubicacion_estadia_input" class="form-control" name="ubicacion_estadia_input">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" id="fecha_estadia_input" class="form-control" name="fecha_estadia_input">
+                </div>
+
+                <div class="col-md-9 mb-3">
+                    <label class="form-label">Habitación</label>
+                    <input type="text" id="habitacion_estadia_input" class="form-control" name="habitacion_estadia_input">
+                </div>
+
+                <div class="col-md-3 mb-3 d-flex align-items-end">
+                    <button type="button" class="btn btn-actualizar w-100" id="btn-agregar-estadia" onclick="agregarEstadia()">
+                        <i class="fas fa-plus-circle"></i> Agregar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <ul id="listaEstadiasAgregadas" class="selected-list mt-3">
+            @if($mode === 'edit')
+                @foreach($reserva->estadias as $i => $estadia)
+                    <li class="estadia-item">
+                        <div class="estadia-info">
+                            <i class="fas fa-bed"></i>
+                            <div>
+                                <strong>{{ $estadia->nombre_estadia }}</strong>
+                                <div class="estadia-details">
+                                    <span class="badge badge-secondary">{{ $estadia->tipo_estadia }}</span>
+                                    <span>{{ $estadia->ubicacion }}</span>
+                                    <span>{{ \Carbon\Carbon::parse($estadia->fecha)->format('d/m/Y') }}</span>
+                                    <span>Hab: {{ $estadia->habitacion }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="estadias[{{ $i }}][tipo_estadia]" value="{{ $estadia->tipo_estadia }}">
+                        <input type="hidden" name="estadias[{{ $i }}][nombre_estadia]" value="{{ $estadia->nombre_estadia }}">
+                        <input type="hidden" name="estadias[{{ $i }}][ubicacion]" value="{{ $estadia->ubicacion }}">
+                        <input type="hidden" name="estadias[{{ $i }}][fecha]" value="{{ $estadia->fecha }}">
+                        <input type="hidden" name="estadias[{{ $i }}][habitacion]" value="{{ $estadia->habitacion }}">
+
+                        <div class="estadia-actions">
+                            <button type="button" class="btn btn-sm btn-edit" onclick="editarEstadia(this)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-delete" onclick="eliminarEstadia(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </li>
+                @endforeach
+            @endif
+        </ul>
+    </div>
+</div>
+
+<input type="hidden" name="cantidad_estadias" id="cantidad_estadias" value="{{ $mode === 'edit' ? $reserva->estadias->count() : 0 }}">
+
+{{-- BOTONES FINALES --}}
+<div class="form-actions">
+    <button type="submit" class="btn btn-reserva btn-lg">
+        <i class="fas fa-save"></i>
+        {{ $mode === 'create' ? 'Crear Reserva' : 'Actualizar Reserva' }}
+    </button>
+    <a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary btn-lg">
+        <i class="fas fa-times"></i> Cancelar
+    </a>
+</div>
+
+{{-- ============= SCRIPTS ============= --}}
+<script>
+    // ===== CONFIGURACIÓN =====
+    const tipoReservaSelect = document.getElementById('tipo_reserva');
+    const proveedorContainer = document.getElementById('proveedor_container');
+
+    tipoReservaSelect.addEventListener('change', function() {
+        proveedorContainer.style.display = this.value === 'Agencia' ? 'block' : 'none';
+    });
+
+    // ===== TITULAR =====
+    const inputBusquedaTitular = document.getElementById('busquedaTitular');
+    const listaTitulares = document.querySelectorAll('#listaTitulares option');
+    const titularIdHidden = document.getElementById('titular_id_hidden');
+    const btnSeleccionarTitular = document.getElementById('btnSeleccionarTitular');
+    const titularSeleccionadoDiv = document.getElementById('titularSeleccionado');
+
+    btnSeleccionarTitular.addEventListener('click', function() {
+        const val = inputBusquedaTitular.value.trim();
+        if (!val) {
+            alert('Escribe o selecciona un titular válido.');
+            return;
+        }
+
+        let foundId = null;
+        listaTitulares.forEach(opt => {
+            if (opt.value === val) foundId = opt.dataset.id;
+        });
+
+        if (!foundId) {
+            alert('Selecciona un titular válido de la lista.');
+            return;
+        }
+
+        titularIdHidden.value = foundId;
+        titularSeleccionadoDiv.innerHTML = `
+            <div class="selected-item">
+                <i class="fas fa-user-check"></i>
+                <strong>${val}</strong>
+                <button type="button" id="btnLimpiarTitular" class="btn-remove">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        document.getElementById('btnLimpiarTitular').addEventListener('click', function() {
+            inputBusquedaTitular.value = '';
+            titularIdHidden.value = '';
+            titularSeleccionadoDiv.innerHTML = '';
+        });
+    });
+
+    // ===== PASAJEROS =====
+    const listaPasajerosAgregados = document.getElementById('listaPasajerosAgregados');
+    const inputBusqueda = document.getElementById('busquedaPasajero');
+    const cantidadPasajerosInput = document.getElementById('cantidad_pasajeros');
+    const pasajerosYaAgregados = new Set();
+
+    function agregarPasajero() {
+        const nombreCompleto = inputBusqueda.value.trim();
+        if (!nombreCompleto) return;
+
+        const options = document.querySelectorAll('#listaPasajeros option');
+        let pasajeroId = null;
+        options.forEach(opt => {
+            if (opt.value === nombreCompleto) pasajeroId = opt.dataset.id;
+        });
+
+        if (!pasajeroId) {
+            alert("Selecciona un pasajero válido de la lista.");
+            return;
+        }
+        if (pasajerosYaAgregados.has(pasajeroId)) {
+            alert("Este pasajero ya fue agregado.");
+            return;
+        }
+
+        pasajerosYaAgregados.add(pasajeroId);
+
+        const li = document.createElement('li');
+        li.classList.add('selected-item');
+        li.innerHTML = `
+            <i class="fas fa-user"></i>
+            <span>${nombreCompleto}</span>
+            <input type="hidden" name="pasajeros[]" value="${pasajeroId}">
+            <button type="button" class="btn-remove" onclick="eliminarPasajero(this, '${pasajeroId}')">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        listaPasajerosAgregados.appendChild(li);
+
+        actualizarCantidadPasajeros();
+        inputBusqueda.value = '';
+    }
+
+    function eliminarPasajero(btn, id) {
+        pasajerosYaAgregados.delete(id);
+        btn.closest('li').remove();
+        actualizarCantidadPasajeros();
+    }
+
+    function actualizarCantidadPasajeros() {
+        cantidadPasajerosInput.value = pasajerosYaAgregados.size;
+    }
+
+    // ===== CALCULAR SALDO =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalInput = document.getElementById('total');
+        const adelantoInput = document.getElementById('adelanto');
+        const saldoInput = document.getElementById('saldo');
+
+        function calcularSaldo() {
+            const total = parseFloat(totalInput.value) || 0;
+            const adelanto = parseFloat(adelantoInput.value) || 0;
+            saldoInput.value = (total - adelanto).toFixed(2);
+        }
+
+        totalInput.addEventListener('input', calcularSaldo);
+        adelantoInput.addEventListener('input', calcularSaldo);
+        calcularSaldo();
+    });
+
+    // ===== TOURS =====
+    let tourSeleccionadoNormalizado = '';
+    let estadiaIndex = {{ $mode === 'edit' ? $reserva->estadias->count() : 0 }};
+    let editandoEstadia = null;
+    let tourIndex = {{ $mode === 'edit' ? $reserva->toursReservas->count() : 0 }};
+    let editandoTour = null;
+    let indexUsado;
+
+    const especiales = ['Machupicchu Full Day', 'Machupicchu Conexión', 'Machupicchu 2D/1N', 'Machupicchu By car'];
+    const toursBoleto = ['valle sagrado', 'city tour', 'valle sur', 'maras moray', 'valle sagrado vip'];
+    const lugaresPrivados = {
+        'city tour': 'qoricancha',
+        'valle sagrado': 'salineras',
+        'valle sagrado vip': 'salineras',
+        'maras moray': 'salineras',
+        'valle sur': 'andahuaylillas'
+    };
+
+    document.getElementById('select-tour').addEventListener('change', function() {
+        limpiarCampos();
+        const option = this.options[this.selectedIndex];
+        const id = option.value;
+        const nombre = (option.dataset.nombre || '').trim();
+        const nombreNormalizado = nombre.toLowerCase().trim();
+
+        tourSeleccionadoNormalizado = nombre.toLowerCase().trim();
+
+        document.getElementById('id_tour').value = id;
+        document.getElementById('nombreTour').value = nombre;
+        document.getElementById('empresa_tour_field').style.display = 'block';
+        document.getElementById('observaciones_tour_field').style.display = 'block';
+
+        const especialesNormalizados = especiales.map(e => e.toLowerCase().trim());
+        if (especialesNormalizados.includes(nombreNormalizado)) {
+            document.getElementById('machupicchu-details').style.display = 'block';
+
+            if (nombreNormalizado === 'machupicchu by car') {
+                document.getElementById('bycar-fields').style.display = 'block';
+                document.getElementById('empresa_tour_field').style.display = 'none';
+                document.getElementById('observaciones_tour_field').style.display = 'none';
+            } else {
+                document.getElementById('bycar-fields').style.display = 'none';
+                document.getElementById('empresa_tour_field').style.display = 'none';
+                document.getElementById('observaciones_tour_field').style.display = 'none';
+            }
+        } else {
+            document.getElementById('machupicchu-details').style.display = 'none';
+            document.getElementById('bycar-fields').style.display = 'none';
+        }
+
+        const nombreBoleto = nombreNormalizado;
+        const esBoletoTuristico = toursBoleto.includes(nombreBoleto);
+        const boletoDetails = document.getElementById('boleto-turistico-details');
+        const bloquePrivado = document.getElementById('lugares-priv-fields');
+
+        boletoDetails.style.display = esBoletoTuristico ? 'block' : 'none';
+
+        if (esBoletoTuristico) {
+            const lugarPrivado = lugaresPrivados[nombreBoleto] || null;
+
+            if (lugarPrivado) {
+                bloquePrivado.style.display = 'block';
+                document.getElementById('nombrePropiedadPrivada').innerText = lugarPrivado;
+            } else {
+                bloquePrivado.style.display = 'none';
+                document.getElementById('incluye_entrada_propiedad_priv').value = '';
+                document.getElementById('quien-compra-field').style.display = 'none';
+                document.getElementById('comentario-entrada-priv-field').style.display = 'none';
+            }
+        } else {
+            bloquePrivado.style.display = 'none';
+        }
+    });
+
+    document.getElementById('hay_entrada').addEventListener('change', function() {
+        if (this.value == '1') {
+            document.getElementById('entrada-fields').style.display = 'block';
+            document.getElementById('comentario-entrada-field').style.display = 'none';
+        } else if (this.value == '0') {
+            document.getElementById('entrada-fields').style.display = 'none';
+            document.getElementById('hospedaje-fields').style.display = 'block';
+            document.getElementById('comentario-entrada-field').style.display = 'block';
+        } else {
+            document.getElementById('entrada-fields').style.display = 'none';
+            document.getElementById('comentario-entrada-field').style.display = 'none';
+        }
+    });
+
+    document.getElementById('tipo_entrada').addEventListener('change', function() {
+        document.getElementById('ruta1-field').style.display = (this.value === 'circuito1') ? 'block' : 'none';
+        document.getElementById('ruta2-field').style.display = (this.value === 'circuito2') ? 'block' : 'none';
+        document.getElementById('ruta3-field').style.display = (this.value === 'circuito3') ? 'block' : 'none';
+    });
+
+    document.getElementById('tipo_tren').addEventListener('change', function() {
+        if (this.value === 'Turístico') {
+            document.getElementById('tren-turistico-fields').style.display = 'block';
+            document.getElementById('tren-horarios-fields').style.display = 'block';
+            document.getElementById('tren-local-fields').style.display = 'none';
+
+            if (tourSeleccionadoNormalizado === 'machupicchu full day') {
+                document.getElementById('tren-fechas-fields').style.display = 'none';
+            } else {
+                document.getElementById('tren-fechas-fields').style.display = 'block';
+            }
+        } else if (this.value === 'Local') {
+            document.getElementById('tren-turistico-fields').style.display = 'none';
+            document.getElementById('tren-local-fields').style.display = 'block';
+            document.getElementById('tren-horarios-fields').style.display = 'block';
+
+            if (tourSeleccionadoNormalizado === 'machupicchu full day') {
+                document.getElementById('tren-fechas-fields').style.display = 'none';
+            } else {
+                document.getElementById('tren-fechas-fields').style.display = 'block';
+            }
+        } else {
+            document.getElementById('tren-turistico-fields').style.display = 'none';
+            document.getElementById('tren-local-fields').style.display = 'none';
+            document.getElementById('tren-fechas-fields').style.display = 'none';
+            document.getElementById('tren-horarios-fields').style.display = 'none';
+        }
+    });
+
+    document.getElementById('tiene_ticket').addEventListener('change', function() {
+        const tipoTren = document.getElementById('tipo_tren').value;
+
+        if (this.value == '1') {
+            document.getElementById('comentario-ticket-field').style.display = 'none';
+        } else if (this.value == '0') {
+            document.getElementById('ticket-fields').style.display = 'none';
+
+            if (tourSeleccionadoNormalizado !== 'machupicchu full day') {
+                document.getElementById('tren-fechas-fields').style.display = 'block';
+            } else {
+                document.getElementById('tren-fechas-fields').style.display = 'none';
+            }
+
+            if (tipoTren === 'Local') {
+                document.getElementById('tren-horarios-fields').style.display = 'block';
+            } else {
+                document.getElementById('tren-horarios-fields').style.display = 'block';
+            }
+
+            document.getElementById('comentario-ticket-field').style.display = 'block';
+        } else {
+            document.getElementById('tren-fechas-fields').style.display = 'none';
+            document.getElementById('tren-horarios-fields').style.display = 'none';
+            document.getElementById('ticket-fields').style.display = 'none';
+            document.getElementById('comentario-ticket-field').style.display = 'none';
+        }
+    });
+
+    document.getElementById('tipo_servicio').addEventListener('change', function() {
+        if (this.value === 'Comprar' || this.value === 'Tiene') {
+            document.getElementById('tipo_consetur-field').style.display = 'block';
+            document.getElementById('comentario_consetur-field').style.display = 'block';
+        } else if (this.value === 'Caminando') {
+            document.getElementById('tipo_consetur-field').style.display = 'none';
+            document.getElementById('comentario_consetur-field').style.display = 'none';
+        }
+    });
+
+    document.getElementById('transp_ida').addEventListener('change', () => {
+        document.getElementById('horario_recojo_ida-field').style.display = 'block';
+        document.getElementById('comentario_trans_ida-field').style.display = 'block';
+    });
+
+    document.getElementById('transp_ret').addEventListener('change', () => {
+        document.getElementById('horario_recojo_ret-field').style.display = 'block';
+        document.getElementById('comentario_trans_ret-field').style.display = 'block';
+    });
+
+    document.getElementById('tipo_boleto').addEventListener('change', () => {
+        document.getElementById('requiere_compra-field').style.display = 'block';
+    });
+
+    document.getElementById('requiere_compra').addEventListener('change', function() {
+        document.getElementById('tipo_compra-field').style.display = (this.value == '1') ? 'block' : 'none';
+    });
+
+    document.getElementById('incluye_entrada_propiedad_priv').addEventListener('change', function() {
+        const showCompra = (this.value == '1');
+        document.getElementById('quien-compra-field').style.display = showCompra ? 'block' : 'none';
+        document.getElementById('comentario-entrada-priv-field').style.display = 'block';
+    });
+
+    function limpiarCampos() {
+        const bloques = [
+            'machupicchu-details', 'boleto-turistico-details', 'bycar-fields',
+            'entrada-fields', 'comentario-entrada-field',
+            'ruta1-field', 'ruta2-field', 'ruta3-field',
+            'tren-turistico-fields', 'tren-local-fields', 'tren-fechas-fields', 'tren-horarios-fields',
+            'ticket-fields', 'comentario-ticket-field',
+            'empresa_tour_field', 'observaciones_tour_field',
+            'tipo_consetur-field', 'comentario_consetur-field',
+            'tipo_compra-field', 'requiere_compra-field',
+            'quien-compra-field', 'comentario-entrada-priv-field',
+            'hospedaje-fields',
+            'horario_recojo_ida-field', 'comentario_trans_ida-field',
+            'horario_recojo_ret-field', 'comentario_trans_ret-field',
+        ];
+
+        bloques.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'none';
+                el.querySelectorAll('input, select, textarea').forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
+                });
+            }
+        });
+    }
+
+    // ===== AGREGAR/EDITAR TOUR =====
+    const listaToursAgregados = document.getElementById('listaToursAgregados');
+    const cantidadToursInput = document.getElementById('cantidad_tours');
+
+    function agregarTour() {
+        const id = safeValue('id_tour');
+        const nombre = safeValue('nombreTour');
+        const fecha = safeValue('fecha');
+        const tipo = safeValue('tipo_tour');
+        const lugarRecojo = safeValue('lugar_recojo');
+        const horaRecojo = safeValue('hora_recojo');
+        const idioma = safeValue('idioma');
+        const empresa = safeValue('empresa');
+        const precio = safeValue('precio_unitario');
+        const cantidad = safeValue('cantidad');
+        const observaciones = safeValue('observaciones');
+        const nombreBoleto = nombre.toLowerCase().trim();
+
+        if (!id) {
+            alert("Selecciona un tour válido.");
+            return;
+        }
+
+        let idTourReserva = '';
+        if (editandoTour) {
+            idTourReserva = editandoTour.querySelector('input[name*="[id]"]')?.value || '';
+            indexUsado = editandoTour.dataset.index;
+        } else {
+            indexUsado = tourIndex;
+        }
+
+        const nombreNormalizado = nombre.toLowerCase().trim();
+        let extras = '';
+        let extrasPreview = '';
+
+        const especialesNormalizados = especiales.map(e => e.toLowerCase().trim());
+        if (especialesNormalizados.includes(nombreNormalizado)) {
+            extras += `
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][hay_entrada]" value="${safeValue('hay_entrada')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][tipo_entrada]" value="${safeValue('tipo_entrada')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][ruta1]" value="${safeValue('ruta1')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][ruta2]" value="${safeValue('ruta2')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][ruta3]" value="${safeValue('ruta3')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][horario_entrada]" value="${safeValue('horario_entrada')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][comentario_entrada]" value="${safeValue('comentario_entrada')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][tipo_tren]" value="${safeValue('tipo_tren')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][empresa_tren]" value="${safeValue('empresa_tren')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][codigo_tren]" value="${safeValue('codigo_tren')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][horario_ida]" value="${safeValue('horario_ida_tren')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][horario_retorno]" value="${safeValue('horario_retorno_tren')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][fecha_tren_ida]" value="${safeValue('fecha_tren_ida')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][fecha_tren_retorno]" value="${safeValue('fecha_tren_retorno')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][tiene_ticket]" value="${safeValue('tiene_ticket')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][comentario_ticket]" value="${safeValue('comentario_ticket')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][fecha_ida]" value="${safeValue('fecha_ida')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][fecha_retorno]" value="${safeValue('fecha_retorno')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][hospedaje]" value="${safeValue('hospedaje')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][tipo_servicio]" value="${safeValue('tipo_servicio')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][tipo_consetur]" value="${safeValue('tipo_consetur')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][comentario_consetur]" value="${safeValue('comentario_consetur')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][transp_ida]" value="${safeValue('transp_ida')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][horario_recojo_ida]" value="${safeValue('horario_recojo_ida')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][comentario_trans_ida]" value="${safeValue('comentario_trans_ida')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][transp_ret]" value="${safeValue('transp_ret')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][horario_recojo_ret]" value="${safeValue('horario_recojo_ret')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_machu][comentario_trans_ret]" value="${safeValue('comentario_trans_ret')}">
+            `;
+            extrasPreview = `<div class="tour-extras"><i class="fas fa-mountain"></i> Incluye detalles de Machupicchu</div>`;
+        }
+
+        if (toursBoleto.includes(nombreBoleto)) {
+            extras += `
+                <input type="hidden" name="tours[${indexUsado}][detalles_boleto][tipo_boleto]" value="${safeValue('tipo_boleto')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_boleto][requiere_compra]" value="${safeValue('requiere_compra')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_boleto][tipo_compra]" value="${safeValue('tipo_compra')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_boleto][incluye_entrada_propiedad_priv]" value="${safeValue('incluye_entrada_propiedad_priv')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_boleto][quien_compra_propiedad_priv]" value="${safeValue('quien_compra_propiedad_priv')}">
+                <input type="hidden" name="tours[${indexUsado}][detalles_boleto][comentario_entrada_propiedad_priv]" value="${safeValue('comentario_entrada_propiedad_priv')}">
+            `;
+            extrasPreview += `<div class="tour-extras"><i class="fas fa-ticket-alt"></i> Incluye Boleto Turístico</div>`;
+        }
+
+        if (editandoTour) {
+            editandoTour.innerHTML = `
+                <div class="tour-item-header">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <strong>${nombre}</strong>
+                    <span class="badge badge-info">${tipo || 'Grupal'}</span>
+                </div>
+                <div class="tour-item-body">
+                    <div class="tour-detail"><strong>Fecha:</strong> ${fecha || '-'}</div>
+                    <div class="tour-detail"><strong>Recojo:</strong> ${lugarRecojo || '-'} a las ${horaRecojo || '-'}</div>
+                    <div class="tour-detail"><strong>Idioma:</strong> ${idioma || '-'}</div>
+                    <div class="tour-detail"><strong>Precio:</strong> S/. ${precio || '0.00'} x ${cantidad}</div>
+                    ${extrasPreview}
+                </div>
+
+                <input type="hidden" name="tours[${indexUsado}][id]" value="${idTourReserva}">
+                <input type="hidden" name="tours[${indexUsado}][tour_id]" value="${id}">
+                <input type="hidden" name="tours[${indexUsado}][nombreTour]" value="${nombre}">
+                <input type="hidden" name="tours[${indexUsado}][fecha]" value="${fecha}">
+                <input type="hidden" name="tours[${indexUsado}][tipo_tour]" value="${tipo}">
+                <input type="hidden" name="tours[${indexUsado}][lugar_recojo]" value="${lugarRecojo}">
+                <input type="hidden" name="tours[${indexUsado}][hora_recojo]" value="${horaRecojo}">
+                <input type="hidden" name="tours[${indexUsado}][idioma]" value="${idioma}">
+                <input type="hidden" name="tours[${indexUsado}][empresa]" value="${empresa}">
+                <input type="hidden" name="tours[${indexUsado}][precio_unitario]" value="${precio}">
+                <input type="hidden" name="tours[${indexUsado}][cantidad]" value="${cantidad}">
+                <input type="hidden" name="tours[${indexUsado}][observaciones]" value="${observaciones}">
+                ${extras}
+
+                <div class="tour-item-actions">
+                    <button type="button" class="btn btn-sm btn-edit" onclick="editarTour(this)">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-delete" onclick="eliminarTour(this)">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            `;
+
+            editandoTour = null;
+            document.getElementById('btn-agregar-tour').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Tour';
+        } else {
+            const li = document.createElement('li');
+            li.classList.add('tour-item');
+            li.dataset.index = indexUsado;
+
+            li.innerHTML = `
+                <div class="tour-item-header">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <strong>${nombre}</strong>
+                    <span class="badge badge-info">${tipo || 'Grupal'}</span>
+                </div>
+                <div class="tour-item-body">
+                    <div class="tour-detail"><strong>Fecha:</strong> ${fecha || '-'}</div>
+                    <div class="tour-detail"><strong>Recojo:</strong> ${lugarRecojo || '-'} a las ${horaRecojo || '-'}</div>
+                    <div class="tour-detail"><strong>Idioma:</strong> ${idioma || '-'}</div>
+                    <div class="tour-detail"><strong>Precio:</strong> S/. ${precio || '0.00'} x ${cantidad}</div>
+                    ${extrasPreview}
+                </div>
+
+                <input type="hidden" name="tours[${indexUsado}][tour_id]" value="${id}">
+                <input type="hidden" name="tours[${indexUsado}][nombreTour]" value="${nombre}">
+                <input type="hidden" name="tours[${indexUsado}][fecha]" value="${fecha}">
+                <input type="hidden" name="tours[${indexUsado}][tipo_tour]" value="${tipo}">
+                <input type="hidden" name="tours[${indexUsado}][lugar_recojo]" value="${lugarRecojo}">
+                <input type="hidden" name="tours[${indexUsado}][hora_recojo]" value="${horaRecojo}">
+                <input type="hidden" name="tours[${indexUsado}][idioma]" value="${idioma}">
+                <input type="hidden" name="tours[${indexUsado}][empresa]" value="${empresa}">
+                <input type="hidden" name="tours[${indexUsado}][precio_unitario]" value="${precio}">
+                <input type="hidden" name="tours[${indexUsado}][cantidad]" value="${cantidad}">
+                <input type="hidden" name="tours[${indexUsado}][observaciones]" value="${observaciones}">
+                ${extras}
+
+                <div class="tour-item-actions">
+                    <button type="button" class="btn btn-sm btn-edit" onclick="editarTour(this)">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-delete" onclick="eliminarTour(this)">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            `;
+
+            listaToursAgregados.appendChild(li);
+            tourIndex++;
+        }
+
+        actualizarCantidadTours();
+        resetFieldsTour();
+    }
+
+    function eliminarTour(btn) {
+        btn.closest('li').remove();
+        actualizarCantidadTours();
+    }
+
+    function actualizarCantidadTours() {
+        cantidadToursInput.value = listaToursAgregados.children.length;
+    }
+
+    function editarTour(btn) {
+        const li = btn.closest('li');
+        editandoTour = li;
+
+        const id = li.querySelector('input[name*="[tour_id]"]').value;
+        const fecha = li.querySelector('input[name*="[fecha]"]').value;
+        const tipo = li.querySelector('input[name*="[tipo_tour]"]').value;
+        const lugarRecojo = li.querySelector('input[name*="[lugar_recojo]"]').value;
+        const horaRecojo = li.querySelector('input[name*="[hora_recojo]"]').value;
+        const idioma = li.querySelector('input[name*="[idioma]"]').value;
+        const empresa = li.querySelector('input[name*="[empresa]"]').value;
+        const precio = li.querySelector('input[name*="[precio_unitario]"]').value;
+        const cantidad = li.querySelector('input[name*="[cantidad]"]').value;
+        const observaciones = li.querySelector('input[name*="[observaciones]"]').value;
+
+        const selectTour = document.getElementById('select-tour');
+        selectTour.value = id;
+        selectTour.dispatchEvent(new Event('change'));
+
+        document.getElementById('fecha').value = fecha.split(' ')[0] || '';
+        document.getElementById('tipo_tour').value = tipo;
+        document.getElementById('lugar_recojo').value = lugarRecojo;
+        document.getElementById('hora_recojo').value = horaRecojo ? horaRecojo.substring(0, 5) : '';
+        document.getElementById('idioma').value = idioma;
+        document.getElementById('empresa').value = empresa;
+        document.getElementById('precio_unitario').value = precio;
+        document.getElementById('cantidad').value = cantidad;
+        document.getElementById('observaciones').value = observaciones;
+
+        const specialFields = [
+            'hay_entrada', 'tipo_entrada', 'ruta1', 'ruta2', 'ruta3', 'horario_entrada', 'comentario_entrada',
+            'tipo_tren', 'empresa_tren', 'codigo_tren', 'fecha_tren_ida', 'fecha_tren_retorno',
+            'tiene_ticket', 'comentario_ticket',
+            'fecha_ida', 'fecha_retorno', 'hospedaje',
+            'tipo_servicio', 'tipo_consetur', 'comentario_consetur',
+            'transp_ida', 'horario_recojo_ida', 'comentario_trans_ida', 'transp_ret', 'horario_recojo_ret', 'comentario_trans_ret'
+        ];
+
+        specialFields.forEach(field => {
+            const el = document.getElementById(field === 'horario_ida' ? 'horario_ida_tren' : field === 'horario_retorno' ? 'horario_retorno_tren' : field);
+            if (el) {
+                const hiddenInput = li.querySelector(`input[name*="[detalles_machu][${field}]"]`);
+                el.value = hiddenInput ? hiddenInput.value : '';
+            }
+        });
+
+        const boletoFields = ['tipo_boleto', 'requiere_compra', 'tipo_compra', 'incluye_entrada_propiedad_priv', 'quien_compra_propiedad_priv', 'comentario_entrada_propiedad_priv'];
+
+        boletoFields.forEach(field => {
+            const el = document.getElementById(field);
+            if (el) {
+                const hiddenInput = li.querySelector(`input[name*="[detalles_boleto][${field}]"]`);
+                el.value = hiddenInput ? hiddenInput.value : '';
+            }
+        });
+
+        const btnAdd = document.getElementById('btn-agregar-tour');
+        btnAdd.innerHTML = '<i class="fas fa-sync"></i> Actualizar Tour';
+        btnAdd.classList.add("editing");
+        document.getElementById('form-tours').classList.add("editing");
+
+        document.getElementById('form-tours').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function resetFieldsTour() {
+        document.getElementById('select-tour').value = '';
+        document.getElementById('id_tour').value = '';
+        document.getElementById('nombreTour').value = '';
+        document.getElementById('fecha').value = '';
+        document.getElementById('tipo_tour').value = '';
+        document.getElementById('lugar_recojo').value = '';
+        document.getElementById('hora_recojo').value = '';
+        document.getElementById('empresa').value = '';
+        document.getElementById('idioma').value = '';
+        document.getElementById('precio_unitario').value = '';
+        document.getElementById('cantidad').value = '';
+        document.getElementById('observaciones').value = '';
+
+        limpiarCampos();
+
+        const btnAdd = document.getElementById('btn-agregar-tour');
+        btnAdd.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Tour';
+        btnAdd.classList.remove("editing");
+
+        editandoTour = null;
+        document.getElementById('form-tours').classList.remove("editing");
+    }
+
+    function safeValue(id) {
+        return document.getElementById(id)?.value || '';
+    }
+
+    // ===== ESTADÍAS =====
+    const listaEstadiasAgregadas = document.getElementById('listaEstadiasAgregadas');
+    const cantidadEstadiasInput = document.getElementById('cantidad_estadias');
+
+    function agregarEstadia() {
+        const tipo = document.getElementById('tipo_estadia_input').value;
+        const nombre = document.getElementById('nombre_estadia_input').value.trim();
+        const ubicacion = document.getElementById('ubicacion_estadia_input').value.trim();
+        const fecha = document.getElementById('fecha_estadia_input').value;
+        const habitacion = document.getElementById('habitacion_estadia_input').value.trim();
+
+        if (!nombre) {
+            if (!confirm('Estás agregando una estadía sin nombre. ¿Continuar?')) return;
+        }
+
+        if (editandoEstadia) {
+            editandoEstadia.innerHTML = `
+                <div class="estadia-info">
+                    <i class="fas fa-bed"></i>
+                    <div>
+                        <strong>${nombre || '-'}</strong>
+                        <div class="estadia-details">
+                            <span class="badge badge-secondary">${tipo}</span>
+                            <span>${ubicacion || '-'}</span>
+                            <span>${fecha || '-'}</span>
+                            <span>Hab: ${habitacion || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="estadias[${estadiaIndex}][tipo_estadia]" value="${tipo}">
+                <input type="hidden" name="estadias[${estadiaIndex}][nombre_estadia]" value="${nombre}">
+                <input type="hidden" name="estadias[${estadiaIndex}][ubicacion]" value="${ubicacion}">
+                <input type="hidden" name="estadias[${estadiaIndex}][fecha]" value="${fecha}">
+                <input type="hidden" name="estadias[${estadiaIndex}][habitacion]" value="${habitacion}">
+
+                <div class="estadia-actions">
+                    <button type="button" class="btn btn-sm btn-edit" onclick="editarEstadia(this)">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-delete" onclick="eliminarEstadia(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            editandoEstadia = null;
+            const btnAdd = document.getElementById('btn-agregar-estadia');
+            btnAdd.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar';
+            btnAdd.classList.remove("editing");
+            document.getElementById('form-estadia').classList.remove("editing");
+        } else {
+            const li = document.createElement('li');
+            li.classList.add('estadia-item');
+            li.dataset.index = estadiaIndex;
+
+            li.innerHTML = `
+                <div class="estadia-info">
+                    <i class="fas fa-bed"></i>
+                    <div>
+                        <strong>${nombre || '-'}</strong>
+                        <div class="estadia-details">
+                            <span class="badge badge-secondary">${tipo}</span>
+                            <span>${ubicacion || '-'}</span>
+                            <span>${fecha || '-'}</span>
+                            <span>Hab: ${habitacion || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="estadias[${estadiaIndex}][tipo_estadia]" value="${tipo}">
+                <input type="hidden" name="estadias[${estadiaIndex}][nombre_estadia]" value="${nombre}">
+                <input type="hidden" name="estadias[${estadiaIndex}][ubicacion]" value="${ubicacion}">
+                <input type="hidden" name="estadias[${estadiaIndex}][fecha]" value="${fecha}">
+                <input type="hidden" name="estadias[${estadiaIndex}][habitacion]" value="${habitacion}">
+
+                <div class="estadia-actions">
+                    <button type="button" class="btn btn-sm btn-edit" onclick="editarEstadia(this)">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-delete" onclick="eliminarEstadia(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            listaEstadiasAgregadas.appendChild(li);
+            estadiaIndex++;
+        }
+
+        actualizarCantidadEstadias();
+        limpiarCamposEstadia();
+    }
+
+    function eliminarEstadia(btn) {
+        btn.closest('li').remove();
+        actualizarCantidadEstadias();
+    }
+
+    function actualizarCantidadEstadias() {
+        cantidadEstadiasInput.value = listaEstadiasAgregadas.children.length;
+    }
+
+    function editarEstadia(btn) {
+        const li = btn.closest('li');
+        editandoEstadia = li;
+
+        const tipo = li.querySelector('input[name*="[tipo_estadia]"]').value;
+        const nombre = li.querySelector('input[name*="[nombre_estadia]"]').value;
+        const ubicacion = li.querySelector('input[name*="[ubicacion]"]').value;
+        const fecha = li.querySelector('input[name*="[fecha]"]').value;
+        const habitacion = li.querySelector('input[name*="[habitacion]"]').value;
+
+        document.getElementById('tipo_estadia_input').value = tipo;
+        document.getElementById('nombre_estadia_input').value = nombre;
+        document.getElementById('ubicacion_estadia_input').value = ubicacion;
+        document.getElementById('fecha_estadia_input').value = fecha;
+        document.getElementById('habitacion_estadia_input').value = habitacion;
+
+        const btnAdd = document.getElementById('btn-agregar-estadia');
+        btnAdd.innerHTML = '<i class="fas fa-sync"></i> Actualizar';
+        btnAdd.classList.add("editing");
+        document.getElementById('form-estadia').classList.add("editing");
+
+        document.getElementById('form-estadia').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function limpiarCamposEstadia() {
+        document.getElementById('tipo_estadia_input').value = 'Hostal';
+        document.getElementById('nombre_estadia_input').value = '';
+        document.getElementById('ubicacion_estadia_input').value = '';
+        document.getElementById('fecha_estadia_input').value = '';
+        document.getElementById('habitacion_estadia_input').value = '';
+    }
+</script>
 
 <style>
-    .campo-especial {
-        background: #f8f9fa;
-        border-left: 4px solid #0d6efd;
-        padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 8px;
-        animation: slideIn 0.3s ease;
+    /* ===== ESTILOS MEJORADOS ===== */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .seccion-titulo {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 10px;
+
+    .section-header {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 0.75rem;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--primary);
     }
-    .badge-custom {
+
+    .section-header i {
+        color: var(--primary);
+        font-size: 1.5rem;
+    }
+
+    .section-header h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .section-body {
+        padding: 0;
+    }
+
+    .subsection {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .subsection-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--primary-dark);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .subsection-title::before {
+        content: "";
+        display: inline-block;
+        width: 4px;
+        height: 16px;
+        background: var(--primary);
+        border-radius: 2px;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-label.required::after {
+        content: "*";
+        color: var(--accent);
+        margin-left: 4px;
+    }
+
+    /* ===== ITEMS SELECCIONADOS ===== */
+    .selected-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .selected-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, rgba(20, 165, 181, 0.05) 0%, rgba(20, 165, 181, 0.02) 100%);
+        border-left: 3px solid var(--primary);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s;
+    }
+
+    .selected-item:hover {
+        background: linear-gradient(135deg, rgba(20, 165, 181, 0.1) 0%, rgba(20, 165, 181, 0.05) 100%);
+        transform: translateX(4px);
+    }
+
+    .selected-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .selected-item strong {
+        color: var(--dark);
+        flex: 1;
+    }
+
+    .selected-item .text-muted {
+        font-size: 0.9rem;
+    }
+
+    .btn-remove {
+        background: transparent;
+        border: none;
+        color: var(--accent);
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+
+    .btn-remove:hover {
+        background: rgba(220, 53, 69, 0.1);
+        transform: scale(1.1);
+    }
+
+    /* ===== TARJETAS DE EDICIÓN ===== */
+    .edit-card {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s;
+    }
+
+    .edit-card.editing {
+        background: #fff3cd;
+        border-color: var(--warning);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+    }
+
+    /* ===== SECCIONES CONDICIONALES ===== */
+    .conditional-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .conditional-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .conditional-header i {
+        color: var(--primary-light);
+        font-size: 1.2rem;
+    }
+
+    .conditional-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    /* ===== TOURS Y ESTADÍAS ===== */
+    .tour-item, .estadia-item {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .tour-item:hover, .estadia-item:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .tour-item-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .tour-item-header i {
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+
+    .tour-item-header strong {
+        flex: 1;
+        font-size: 1.05rem;
+        color: var(--dark);
+    }
+
+    .tour-item-body {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .tour-detail {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .tour-detail strong {
+        color: var(--dark);
+    }
+
+    .tour-extras {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: rgba(20, 165, 181, 0.1);
+        border-radius: 6px;
         font-size: 0.85rem;
-        padding: 5px 10px;
-    }
-    .form-switch {
-        padding-left: 2.5em;
-    }
-    .list-group-item {
-        transition: all 0.3s ease;
+        color: var(--primary-dark);
+        margin-top: 0.5rem;
     }
 
-    .list-group-item:hover {
-        background-color: #f8f9fa;
-        transform: translateX(5px);
+    .tour-extras i {
+        color: var(--primary);
     }
 
+    .tour-item-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .estadia-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+    }
+
+    .estadia-info i {
+        color: var(--primary);
+        font-size: 1.5rem;
+    }
+
+    .estadia-info strong {
+        display: block;
+        font-size: 1.05rem;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .estadia-details {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .estadia-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .estadia-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-sm.btn-edit {
+        background: rgba(255, 193, 7, 0.1);
+        color: var(--warning);
+        border: 1px solid transparent;
+    }
+
+    .btn-sm.btn-edit:hover {
+        background: var(--warning);
+        color: white;
+        border-color: var(--warning);
+    }
+
+    .btn-sm.btn-delete {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--accent);
+        border: 1px solid transparent;
+    }
+
+    .btn-sm.btn-delete:hover {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
+
+    /* ===== SALDO DESTACADO ===== */
+    .saldo-display {
+        background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%) !important;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--success);
+        border: 2px solid var(--success) !important;
+    }
+
+    /* ===== ACCIONES DEL FORMULARIO ===== */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-top: 2rem;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .section-header h3 {
+            font-size: 1.1rem;
+        }
+        
+        .tour-item-body {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .form-actions .btn {
+            width: 100%;
+        }
+        
+        .estadia-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .estadia-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+
+    /* ===== ANIMACIONES ===== */
     @keyframes slideIn {
         from {
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(10px);
         }
         to {
             opacity: 1;
@@ -49,1900 +1918,14 @@
         }
     }
 
-    .badge {
-        font-weight: 500;
+    .form-section {
+        animation: slideIn 0.4s ease;
     }
 
-    .btn-group .btn {
-        transition: transform 0.2s ease;
-    }
-
-    .btn-group .btn:hover {
-        transform: scale(1.1);
-    }
-
-    .card {
-        border: 1px solid #dee2e6;
-        transition: box-shadow 0.3s ease;
-    }
-
-    .card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .form-select:focus,
-    .form-control:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-
-    .input-group-text {
-        background-color: #e9ecef;
-        border: 1px solid #ced4da;
-    }
-
-    .alert {
-        border-left: 4px solid;
-    }
-
-    .alert-info {
-        border-left-color: #0dcaf0;
-    }
-
-    .alert-warning {
-        border-left-color: #ffc107;
-    }
-
-    .alert-success {
-        border-left-color: #198754;
-    }
-
-    /* Mejoras visuales para campos especiales */
-    .campo-especial.machu {
-        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
-    }
-
-    .campo-especial.boleto {
-        background: linear-gradient(135deg, #f0fff4 0%, #d1f5dd 100%);
-    }
-
-    .seccion-titulo {
-        padding-bottom: 10px;
-        border-bottom: 2px solid #dee2e6;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .d-flex.gap-3 {
-            flex-direction: column;
-        }
-
-        .btn-lg {
-            width: 100%;
-        }
-    }
+    .form-section:nth-child(1) { animation-delay: 0.1s; }
+    .form-section:nth-child(2) { animation-delay: 0.2s; }
+    .form-section:nth-child(3) { animation-delay: 0.3s; }
+    .form-section:nth-child(4) { animation-delay: 0.4s; }
+    .form-section:nth-child(5) { animation-delay: 0.5s; }
+    .form-section:nth-child(6) { animation-delay: 0.6s; }
 </style>
-
-<form action="{{ $action }}" method="POST" id="form-reserva">
-    @csrf
-    @if($mode === 'edit')
-        @method('PUT')
-    @endif
-
-    {{-- ========================================
-        SECCIÓN 1: INFORMACIÓN BÁSICA
-    ======================================== --}}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información Básica</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="tipo_reserva" class="form-label">Tipo de Reserva *</label>
-                    <select name="tipo_reserva" id="tipo_reserva" class="form-select" required>
-                        <option value="">-- Seleccionar --</option>
-                        @foreach(['Directo','Recomendacion','Publicidad','Agencia'] as $tipo)
-                            <option value="{{ $tipo }}" 
-                                {{ old('tipo_reserva', $reserva->tipo_reserva ?? '') == $tipo ? 'selected' : '' }}>
-                                {{ $tipo }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-4 mb-3" id="proveedor_container" style="display: none;">
-                    <label for="proveedor_id" class="form-label">Proveedor</label>
-                    <select name="proveedor_id" id="proveedor_id" class="form-select">
-                        <option value="">-- Seleccionar --</option>
-                        @foreach($proveedores as $proveedor)
-                            <option value="{{ $proveedor->id }}"
-                                {{ old('proveedor_id', $reserva->proveedor_id ?? '') == $proveedor->id ? 'selected' : '' }}>
-                                {{ $proveedor->nombreAgencia }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label for="estado" class="form-label">Estado de la Reserva</label>
-                    <select name="estado" id="estado" class="form-select">
-                        @foreach(['En espera','Activa','Finalizada','Cancelada'] as $estado)
-                            <option value="{{ $estado }}"
-                                {{ old('estado', $reserva->estado ?? 'En espera') == $estado ? 'selected' : '' }}>
-                                {{ $estado }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ========================================
-        SECCIÓN 2: TITULAR Y PASAJEROS
-    ======================================== --}}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-success text-white">
-            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Titular y Pasajeros</h5>
-        </div>
-        <div class="card-body">
-            
-            {{-- TITULAR --}}
-            <div class="mb-4">
-                <label class="form-label fw-bold">Titular de la Reserva *</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
-                    <input list="listaTitulares" 
-                           id="busquedaTitular" 
-                           class="form-control"
-                           placeholder="Buscar pasajero..."
-                           autocomplete="off">
-                    <datalist id="listaTitulares">
-                        @foreach($pasajeros as $p)
-                            <option value="{{ $p->nombre }} {{ $p->apellido }} ({{ $p->documento }})" 
-                                    data-id="{{ $p->id }}">
-                        @endforeach
-                    </datalist>
-                    <button type="button" class="btn btn-primary" onclick="seleccionarTitular()">
-                        <i class="fas fa-check"></i> Seleccionar
-                    </button>
-                </div>
-
-                <input type="hidden" name="titular_id" id="titular_id" 
-                       value="{{ old('titular_id', $reserva->titular_id ?? '') }}" required>
-
-                <div id="titularSeleccionado" class="mt-2">
-                    @if($mode === 'edit' && $reserva->titular)
-                        <div class="alert alert-success p-2 mb-0">
-                            <i class="fas fa-user-check me-2"></i>
-                            <strong>{{ $reserva->titular->nombre_completo }}</strong> 
-                            ({{ $reserva->titular->documento }})
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            {{-- PASAJEROS --}}
-            <div class="mb-3">
-                <label class="form-label fw-bold">Pasajeros de la Reserva</label>
-                <div class="input-group mb-3">
-                    <span class="input-group-text"><i class="fas fa-users"></i></span>
-                    <input list="listaPasajeros" 
-                           id="busquedaPasajero" 
-                           class="form-control"
-                           placeholder="Buscar y agregar pasajeros..."
-                           autocomplete="off">
-                    <datalist id="listaPasajeros">
-                        @foreach($pasajeros as $p)
-                            <option value="{{ $p->nombre }} {{ $p->apellido }} ({{ $p->documento }})" 
-                                    data-id="{{ $p->id }}">
-                        @endforeach
-                    </datalist>
-                    <button type="button" class="btn btn-success" onclick="agregarPasajero()">
-                        <i class="fas fa-user-plus"></i> Agregar
-                    </button>
-                </div>
-
-                <div id="listaPasajerosAgregados" class="list-group">
-                    @if($mode === 'edit')
-                        @foreach($reserva->pasajeros as $pasajero)
-                            <div class="list-group-item d-flex justify-content-between align-items-center" 
-                                 data-id="{{ $pasajero->id }}">
-                                <div>
-                                    <i class="fas fa-user me-2 text-primary"></i>
-                                    {{ $pasajero->nombre_completo }} ({{ $pasajero->documento }})
-                                </div>
-                                <div>
-                                    <input type="hidden" name="pasajeros[]" value="{{ $pasajero->id }}">
-                                    <button type="button" class="btn btn-sm btn-danger" 
-                                            onclick="eliminarPasajero(this)">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    @endif
-                </div>
-            </div>
-
-            <a href="{{ route('admin.pasajeros.create') }}" class="btn btn-outline-primary" target="_blank">
-                <i class="fas fa-plus-circle me-1"></i> Registrar Nuevo Pasajero
-            </a>
-        </div>
-    </div>
-
-    {{-- ========================================
-        SECCIÓN 3: VUELOS
-    ======================================== --}}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0"><i class="fas fa-plane me-2"></i>Información de Vuelos</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-12 mb-3">
-                    <h6 class="text-muted"><i class="fas fa-plane-arrival me-2"></i>Llegada</h6>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="fecha_llegada" class="form-label">Fecha de Llegada</label>
-                    <input type="date" name="fecha_llegada" id="fecha_llegada" class="form-control"
-                           value="{{ old('fecha_llegada', $reserva->fecha_llegada?->format('Y-m-d') ?? '') }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="hora_llegada" class="form-label">Hora de Llegada</label>
-                    <input type="time" name="hora_llegada" id="hora_llegada" class="form-control"
-                           value="{{ old('hora_llegada', $reserva->hora_llegada ?? '') }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="nro_vuelo_llegada" class="form-label">N° de Vuelo</label>
-                    <input type="text" name="nro_vuelo_llegada" id="nro_vuelo_llegada" class="form-control"
-                           placeholder="Ej: LA2050"
-                           value="{{ old('nro_vuelo_llegada', $reserva->nro_vuelo_llegada ?? '') }}">
-                </div>
-
-                <div class="col-12 mb-3 mt-2">
-                    <h6 class="text-muted"><i class="fas fa-plane-departure me-2"></i>Salida</h6>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="fecha_salida" class="form-label">Fecha de Salida</label>
-                    <input type="date" name="fecha_salida" id="fecha_salida" class="form-control"
-                           value="{{ old('fecha_salida', $reserva->fecha_salida?->format('Y-m-d') ?? '') }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="hora_salida" class="form-label">Hora de Salida</label>
-                    <input type="time" name="hora_salida" id="hora_salida" class="form-control"
-                           value="{{ old('hora_salida', $reserva->hora_salida ?? '') }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="nro_vuelo_retorno" class="form-label">N° de Vuelo Retorno</label>
-                    <input type="text" name="nro_vuelo_retorno" id="nro_vuelo_retorno" class="form-control"
-                           placeholder="Ej: LA2051"
-                           value="{{ old('nro_vuelo_retorno', $reserva->nro_vuelo_retorno ?? '') }}">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ========================================
-        SECCIÓN 4: FINANZAS
-    ======================================== --}}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Finanzas</h5>
-        </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label for="total" class="form-label">Total (USD) *</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        <input type="number" step="0.01" name="total" id="total" 
-                               value="{{ old('total', $reserva->total ?? 0) }}"
-                               class="form-control" required>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Adelanto (USD)</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        <input type="text" id="adelanto_display" class="form-control" 
-                               value="{{ $mode === 'edit' ? number_format($reserva->adelanto, 2) : '0.00' }}" readonly>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Saldo Pendiente (USD)</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        <input type="text" id="saldo_display" class="form-control" 
-                               value="{{ $mode === 'edit' ? number_format($reserva->saldo, 2) : '0.00' }}" readonly>
-                    </div>
-                </div>
-            </div>
-
-            {{-- AGREGAR DEPÓSITOS --}}
-            <button type="button" class="btn btn-success mb-3" data-bs-toggle="collapse" 
-                    data-bs-target="#formDeposito">
-                <i class="fas fa-plus-circle me-1"></i> Agregar Depósito
-            </button>
-
-            <div class="collapse" id="formDeposito">
-                <div class="card card-body bg-light mb-3">
-                    <div class="row">
-                        <div class="col-md-3 mb-2">
-                            <label class="form-label">Nombre Depositante</label>
-                            <input type="text" id="deposito_nombre" class="form-control" placeholder="Juan Pérez">
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            <label class="form-label">Monto</label>
-                            <input type="number" step="0.01" id="deposito_monto" class="form-control" placeholder="0.00">
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            <label class="form-label">Fecha</label>
-                            <input type="date" id="deposito_fecha" class="form-control">
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <label class="form-label">Tipo</label>
-                            <select id="deposito_tipo" class="form-select">
-                                <option value="">Seleccionar...</option>
-                                <option value="Deposito WU">Depósito WU</option>
-                                <option value="Transferencia BCP">Transferencia BCP</option>
-                                <option value="Transferencia Interbank">Transferencia Interbank</option>
-                                <option value="Yape">Yape</option>
-                                <option value="Plin">Plin</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2 mb-2 d-flex align-items-end">
-                            <button type="button" class="btn btn-primary w-100" onclick="agregarDeposito()">
-                                <i class="fas fa-check"></i> Agregar
-                            </button>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Observaciones</label>
-                            <textarea id="deposito_obs" class="form-control" rows="2"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="listaDepositos" class="list-group">
-                @if($mode === 'edit')
-                    @foreach($reserva->depositos as $i => $deposito)
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <strong>{{ $deposito->nombre_depositante }}</strong> - 
-                                    ${{ number_format($deposito->monto, 2) }} 
-                                    <span class="badge bg-info">{{ $deposito->tipo_deposito }}</span>
-                                    <br><small class="text-muted">{{ $deposito->fecha->format('d/m/Y') }}</small>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                            <input type="hidden" name="depositos[{{ $i }}][nombre_depositante]" value="{{ $deposito->nombre_depositante }}">
-                            <input type="hidden" name="depositos[{{ $i }}][monto]" value="{{ $deposito->monto }}">
-                            <input type="hidden" name="depositos[{{ $i }}][fecha]" value="{{ $deposito->fecha->format('Y-m-d') }}">
-                            <input type="hidden" name="depositos[{{ $i }}][tipo_deposito]" value="{{ $deposito->tipo_deposito }}">
-                            <input type="hidden" name="depositos[{{ $i }}][observaciones]" value="{{ $deposito->observaciones }}">
-                        </div>
-                    @endforeach
-                @endif
-            </div>
-        </div>
-    </div>
-
-    {{-- ========================================
-        SECCIÓN 5: TOURS
-    ======================================== --}}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-danger text-white">
-            <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Tours Contratados</h5>
-        </div>
-        <div class="card-body">
-            
-            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="collapse" 
-                    data-bs-target="#formTour">
-                <i class="fas fa-plus-circle me-1"></i> Agregar Tour
-            </button>
-
-            <div class="collapse" id="formTour">
-                <div class="card card-body bg-light mb-4" style="border: 2px dashed #dee2e6;">
-                    <input type="hidden" id="tour_index_edit">
-                    <input type="hidden" id="tour_id_edit">
-                    
-                    {{-- INFORMACIÓN BÁSICA DEL TOUR --}}
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Tour *</label>
-                            <select id="tour_id" class="form-select form-select-lg">
-                                <option value="">-- Seleccionar Tour --</option>
-                                @foreach($tours as $tour)
-                                    <option value="{{ $tour->id }}" 
-                                            data-nombre="{{ $tour->nombreTour }}">
-                                        {{ $tour->nombreTour }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label fw-bold">Fecha</label>
-                            <input type="date" id="tour_fecha" class="form-control">
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label fw-bold">Estado</label>
-                            <select id="tour_estado" class="form-select">
-                                <option value="Programado">🟡 Programado</option>
-                                <option value="Confirmado">🟢 Confirmado</option>
-                                <option value="Cancelado">🔴 Cancelado</option>
-                                <option value="Completado">✅ Completado</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Tipo de Servicio</label>
-                            <select id="tour_tipo" class="form-select">
-                                <option value="Grupal">Grupal</option>
-                                <option value="Privado">Privado</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Lugar de Recojo</label>
-                            <input type="text" id="tour_lugar_recojo" class="form-control" placeholder="Hotel, dirección...">
-                        </div>
-
-                        <div class="col-md-2 mb-3">
-                            <label class="form-label">Hora Recojo</label>
-                            <input type="time" id="tour_hora_recojo" class="form-control">
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Idioma</label>
-                            <input type="text" id="tour_idioma" class="form-control" placeholder="Español, Inglés...">
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Empresa Operadora</label>
-                            <input type="text" id="tour_empresa" class="form-control" placeholder="Nombre de la empresa">
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Precio Unitario</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" step="0.01" id="tour_precio" class="form-control" value="0">
-                            </div>
-                        </div>
-
-                        <div class="col-md-2 mb-3">
-                            <label class="form-label">Cantidad</label>
-                            <input type="number" id="tour_cantidad" class="form-control" value="1" min="1">
-                        </div>
-
-                        <div class="col-md-3 mb-3 d-flex align-items-end">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="tour_incluye_entrada">
-                                <label class="form-check-label" for="tour_incluye_entrada">
-                                    Incluye Entrada
-                                </label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="tour_incluye_tren">
-                                <label class="form-check-label" for="tour_incluye_tren">
-                                    Incluye Tren
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Observaciones</label>
-                            <textarea id="tour_observaciones" class="form-control" rows="2" placeholder="Información adicional..."></textarea>
-                        </div>
-                    </div>
-
-                    {{-- INTEGRANTES DEL TOUR --}}
-                    <div class="border-top pt-3 mb-3">
-                        <h6 class="fw-bold mb-3"><i class="fas fa-users me-2"></i>¿Quiénes van a este tour?</h6>
-                        <div class="mb-3">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="tour_modo" 
-                                       id="modo_todos" value="todos" checked>
-                                <label class="form-check-label" for="modo_todos">
-                                    <i class="fas fa-users-cog me-1"></i> Todos los pasajeros
-                                </label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="tour_modo" 
-                                       id="modo_personalizado" value="personalizado">
-                                <label class="form-check-label" for="modo_personalizado">
-                                    <i class="fas fa-user-check me-1"></i> Seleccionar manualmente
-                                </label>
-                            </div>
-                        </div>
-
-                        <div id="integrantes_personalizados" class="d-none">
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Selecciona los pasajeros que participarán en este tour
-                            </div>
-                            <div id="lista_integrantes_tour" class="row">
-                                {{-- Se llena dinámicamente con JS --}}
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ===================================================
-                        🔴 DETALLES ESPECIALES: MACHUPICCHU
-                    =================================================== --}}
-                    <div id="detalles_machupicchu" class="d-none">
-                        <div class="campo-especial machu">
-                            <div class="seccion-titulo">
-                                <i class="fas fa-mountain text-danger fs-5"></i>
-                                <span class="text-danger fs-5">DETALLES MACHUPICCHU</span>
-                            </div>
-
-                            {{-- ENTRADA --}}
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <h6 class="fw-bold text-secondary mb-2">
-                                        <i class="fas fa-ticket-alt me-2"></i>Entrada a Machupicchu
-                                    </h6>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">¿Hay entrada?</label>
-                                    <select id="machu_hay_entrada" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="1">Sí, hay entrada</option>
-                                        <option value="0">No hay entrada</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-12" id="machu_entrada_fields" style="display:none;">
-                                    <div class="row">
-                                        <div class="col-md-3 mb-2">
-                                            <label class="form-label">Circuito</label>
-                                            <select id="machu_tipo_entrada" class="form-select">
-                                                <option value="">-- Seleccionar --</option>
-                                                <option value="circuito1">Circuito 1</option>
-                                                <option value="circuito2">Circuito 2</option>
-                                                <option value="circuito3">Circuito 3</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-3 mb-2" id="machu_ruta1_field" style="display:none;">
-                                            <label class="form-label">Ruta Circuito 1</label>
-                                            <select id="machu_ruta1" class="form-select">
-                                                <option value="">-- Seleccionar --</option>
-                                                <option value="ruta1a">1-A: Montaña Machupicchu</option>
-                                                <option value="ruta1b">1-B: Terraza Superior</option>
-                                                <option value="ruta1c">1-C: Portada Intipunku</option>
-                                                <option value="ruta1d">1-D: Puente Inka</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-3 mb-2" id="machu_ruta2_field" style="display:none;">
-                                            <label class="form-label">Ruta Circuito 2</label>
-                                            <select id="machu_ruta2" class="form-select">
-                                                <option value="">-- Seleccionar --</option>
-                                                <option value="ruta2a">2-A: Clásico Diseñado</option>
-                                                <option value="ruta2b">2-B: Terraza Inferior</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-3 mb-2" id="machu_ruta3_field" style="display:none;">
-                                            <label class="form-label">Ruta Circuito 3</label>
-                                            <select id="machu_ruta3" class="form-select">
-                                                <option value="">-- Seleccionar --</option>
-                                                <option value="ruta3a">3-A: Montaña Waynapicchu</option>
-                                                <option value="ruta3b">3-B: Realeza Diseñada</option>
-                                                <option value="ruta3c">3-C: Gran Caverna</option>
-                                                <option value="ruta3d">3-D: Huchuypicchu</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-3 mb-2">
-                                            <label class="form-label">Horario de Entrada</label>
-                                            <input type="time" id="machu_horario_entrada" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-12" id="machu_comentario_entrada_field" style="display:none;">
-                                    <label class="form-label">Observación sobre entrada</label>
-                                    <input type="text" id="machu_comentario_entrada" class="form-control" 
-                                           placeholder="Ej: Tramitar en pueblo">
-                                </div>
-                            </div>
-
-                            {{-- TREN --}}
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <h6 class="fw-bold text-secondary mb-2">
-                                        <i class="fas fa-train me-2"></i>Transporte en Tren
-                                    </h6>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Tipo de Tren</label>
-                                    <select id="machu_tipo_tren" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="Turístico">Tren Turístico</option>
-                                        <option value="Local">Tren Local</option>
-                                    </select>
-                                </div>
-
-                                {{-- TREN TURÍSTICO --}}
-                                <div class="col-md-12" id="machu_tren_turistico_fields" style="display:none;">
-                                    <div class="row">
-                                        <div class="col-md-3 mb-2">
-                                            <label class="form-label">Empresa de Tren</label>
-                                            <select id="machu_empresa_tren" class="form-select">
-                                                <option value="">-- Seleccionar --</option>
-                                                <option value="Inca Rail">Inca Rail</option>
-                                                <option value="Peru Rail">Peru Rail</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <label class="form-label">Código de Tren</label>
-                                            <input type="text" id="machu_codigo_tren" class="form-control" 
-                                                   placeholder="Ej: 1234AB">
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <label class="form-label">Horario Ida</label>
-                                            <input type="time" id="machu_horario_ida" class="form-control">
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <label class="form-label">Horario Retorno</label>
-                                            <input type="time" id="machu_horario_retorno" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- TREN LOCAL --}}
-                                <div class="col-md-12" id="machu_tren_local_fields" style="display:none;">
-                                    <div class="row">
-                                        <div class="col-md-4 mb-2">
-                                            <label class="form-label">¿Tiene Ticket?</label>
-                                            <select id="machu_tiene_ticket" class="form-select">
-                                                <option value="">-- Seleccionar --</option>
-                                                <option value="1">Sí, tiene ticket</option>
-                                                <option value="0">No tiene ticket</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-8 mb-2" id="machu_comentario_ticket_field" style="display:none;">
-                                            <label class="form-label">Observación Ticket</label>
-                                            <input type="text" id="machu_comentario_ticket" class="form-control" 
-                                                   placeholder="Ej: Hacer cola temprano">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- FECHAS TREN --}}
-                                <div class="col-md-12" id="machu_tren_fechas_fields" style="display:none;">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Fecha Tren Ida</label>
-                                            <input type="date" id="machu_fecha_tren_ida" class="form-control">
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Fecha Tren Retorno</label>
-                                            <input type="date" id="machu_fecha_tren_retorno" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- CONSETUR (BUS) --}}
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <h6 class="fw-bold text-secondary mb-2">
-                                        <i class="fas fa-bus me-2"></i>Bus Consettur (Aguas Calientes - Machupicchu)
-                                    </h6>
-                                </div>
-                                <div class="col-md-4 mb-2">
-                                    <label class="form-label">¿Consetur o a pie?</label>
-                                    <select id="machu_tipo_servicio" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="Comprar">Comprar</option>
-                                        <option value="Tiene">Ya tiene</option>
-                                        <option value="Caminando">Irá caminando</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-2" id="machu_tipo_consetur_field" style="display:none;">
-                                    <label class="form-label">Tipo de Consetur</label>
-                                    <select id="machu_tipo_consetur" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="ambos">Ida y Retorno</option>
-                                        <option value="ida">Solo Ida</option>
-                                        <option value="ret">Solo Retorno</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-2" id="machu_comentario_consetur_field" style="display:none;">
-                                    <label class="form-label">Observación Consetur</label>
-                                    <input type="text" id="machu_comentario_consetur" class="form-control" 
-                                           placeholder="Ej: Comprar en pueblo">
-                                </div>
-                            </div>
-
-                            {{-- TRANSPORTE CUSCO - OLLANTAYTAMBO --}}
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <h6 class="fw-bold text-secondary mb-2">
-                                        <i class="fas fa-shuttle-van me-2"></i>Transporte Cusco - Ollantaytambo - Cusco
-                                    </h6>
-                                </div>
-                                <div class="col-md-4 mb-2">
-                                    <label class="form-label">Transporte de Ida</label>
-                                    <select id="machu_transp_ida" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="busLucy">Bus Lucy</option>
-                                        <option value="Bimodal">Bimodal</option>
-                                        <option value="BimodalDoor">Bimodal Door to Door</option>
-                                        <option value="Privado">Transporte Privado</option>
-                                        <option value="otro">Otro</option>
-                                        <option value="porCuentaPropia">Por cuenta propia</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 mb-2" id="machu_horario_recojo_ida_field" style="display:none;">
-                                    <label class="form-label">Horario de Recojo (Ida)</label>
-                                    <input type="time" id="machu_horario_recojo_ida" class="form-control">
-                                </div>
-                                <div class="col-md-5 mb-2" id="machu_comentario_trans_ida_field" style="display:none;">
-                                    <label class="form-label">Observación Transporte Ida</label>
-                                    <input type="text" id="machu_comentario_trans_ida" class="form-control">
-                                </div>
-
-                                <div class="col-md-4 mb-2">
-                                    <label class="form-label">Transporte de Retorno</label>
-                                    <select id="machu_transp_ret" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="busLucy">Bus Lucy</option>
-                                        <option value="Bimodal">Bimodal</option>
-                                        <option value="BimodalDoor">Bimodal Door to Door</option>
-                                        <option value="Privado">Transporte Privado</option>
-                                        <option value="otro">Otro</option>
-                                        <option value="porCuentaPropia">Por cuenta propia</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 mb-2" id="machu_horario_recojo_ret_field" style="display:none;">
-                                    <label class="form-label">Horario de Recojo (Ret)</label>
-                                    <input type="time" id="machu_horario_recojo_ret" class="form-control">
-                                </div>
-                                <div class="col-md-5 mb-2" id="machu_comentario_trans_ret_field" style="display:none;">
-                                    <label class="form-label">Observación Transporte Retorno</label>
-                                    <input type="text" id="machu_comentario_trans_ret" class="form-control">
-                                </div>
-                            </div>
-
-                            {{-- HOSPEDAJE (PARA 2D/1N Y BY CAR) --}}
-                            <div class="row mb-3" id="machu_hospedaje_fields" style="display:none;">
-                                <div class="col-12">
-                                    <h6 class="fw-bold text-secondary mb-2">
-                                        <i class="fas fa-bed me-2"></i>Hospedaje en Aguas Calientes
-                                    </h6>
-                                </div>
-                                <div class="col-md-12 mb-2">
-                                    <label class="form-label">Nombre del Hospedaje</label>
-                                    <input type="text" id="machu_hospedaje" class="form-control" 
-                                           placeholder="Ej: Hotel Inka">
-                                </div>
-                            </div>
-
-                            {{-- BY CAR - FECHAS ESPECIALES --}}
-                            <div class="row mb-3" id="machu_bycar_fields" style="display:none;">
-                                <div class="col-12">
-                                    <h6 class="fw-bold text-secondary mb-2">
-                                        <i class="fas fa-car me-2"></i>Detalles By Car / Hidroeléctrica
-                                    </h6>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label">Fecha de Ida</label>
-                                    <input type="date" id="machu_fecha_ida" class="form-control">
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label">Fecha de Retorno</label>
-                                    <input type="date" id="machu_fecha_retorno" class="form-control">
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    {{-- ===================================================
-                        🟢 DETALLES ESPECIALES: BOLETO TURÍSTICO
-                    =================================================== --}}
-                    <div id="detalles_boleto" class="d-none">
-                        <div class="campo-especial boleto">
-                            <div class="seccion-titulo">
-                                <i class="fas fa-ticket-alt text-success fs-5"></i>
-                                <span class="text-success fs-5">DETALLES BOLETO TURÍSTICO</span>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Tipo de Boleto</label>
-                                    <select id="boleto_tipo_boleto" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="Integral">Boleto Integral</option>
-                                        <option value="Parcial">Boleto Parcial</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-4 mb-3" id="boleto_requiere_compra_field" style="display:none;">
-                                    <label class="form-label">¿Se debe comprar?</label>
-                                    <select id="boleto_requiere_compra" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="1">Sí, debe comprar</option>
-                                        <option value="0">No, ya tiene</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-4 mb-3" id="boleto_tipo_compra_field" style="display:none;">
-                                    <label class="form-label">¿Quién compra?</label>
-                                    <select id="boleto_tipo_compra" class="form-select">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="Personal">Compra personal</option>
-                                        <option value="Guia">Compra por el guía</option>
-                                    </select>
-                                </div>
-
-                                {{-- PROPIEDADES PRIVADAS --}}
-                                <div class="col-12" id="boleto_propiedad_privada_fields" style="display:none;">
-                                    <div class="alert alert-warning mb-3">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                        Este tour incluye entrada a <strong id="nombre_propiedad_privada"></strong>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-4 mb-2">
-                                            <label class="form-label">¿Incluye entrada a propiedad privada?</label>
-                                            <select id="boleto_incluye_entrada_priv" class="form-select">
-                                                <option value="">-- Seleccionar --</option>
-                                                <option value="1">Sí</option>
-                                                <option value="0">No</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4 mb-2" id="boleto_quien_compra_priv_field" style="display:none;">
-                                            <label class="form-label">¿Quién compra la entrada?</label>
-                                            <select id="boleto_quien_compra_priv" class="form-select">
-                                                <option value="">-- Seleccionar --</option>
-                                                <option value="guia">Guía</option>
-                                                <option value="pasajero">Pasajero</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4 mb-2" id="boleto_comentario_priv_field" style="display:none;">
-                                            <label class="form-label">Observación</label>
-                                            <input type="text" id="boleto_comentario_priv" class="form-control" 
-                                                   placeholder="Detalles adicionales">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- BOTONES DE ACCIÓN --}}
-                    <div class="border-top pt-3 mt-3">
-                        <button type="button" class="btn btn-success btn-lg" onclick="guardarTour()">
-                            <i class="fas fa-save me-2"></i>
-                            <span id="btn_tour_text">Agregar Tour</span>
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-lg" onclick="cancelarTour()">
-                            <i class="fas fa-times me-2"></i> Cancelar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {{-- LISTA DE TOURS AGREGADOS --}}
-            <div id="listaTours" class="list-group">
-                @if($mode === 'edit')
-                    @foreach($reserva->toursReservas as $i => $tr)
-                        <div class="list-group-item" data-index="{{ $i }}">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">
-                                        <i class="fas fa-route me-2 text-primary"></i>
-                                        {{ $tr->tour->nombreTour }}
-                                    </h6>
-                                    <div class="d-flex flex-wrap gap-2 mb-2">
-                                        <span class="badge bg-info">
-                                            <i class="far fa-calendar me-1"></i>
-                                            {{ $tr->fecha?->format('d/m/Y') }}
-                                        </span>
-                                        <span class="badge bg-secondary">{{ $tr->tipo_tour }}</span>
-                                        <span class="badge bg-{{ $tr->estado == 'Programado' ? 'warning' : ($tr->estado == 'Confirmado' ? 'success' : 'danger') }}">
-                                            {{ $tr->estado }}
-                                        </span>
-                                        <span class="badge bg-dark">
-                                            ${{ number_format($tr->precio_unitario, 2) }} x {{ $tr->cantidad }}
-                                        </span>
-                                    </div>
-                                    @if($tr->lugar_recojo || $tr->hora_recojo)
-                                        <small class="text-muted">
-                                            <i class="fas fa-map-marker-alt me-1"></i>
-                                            {{ $tr->lugar_recojo }} 
-                                            @if($tr->hora_recojo)
-                                                | <i class="far fa-clock me-1"></i>{{ $tr->hora_recojo->format('H:i') }}
-                                            @endif
-                                        </small>
-                                    @endif
-                                </div>
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-warning" onclick="editarTour({{ $i }})">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarTour(this)">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {{-- Hidden inputs (mantener datos) --}}
-                            <input type="hidden" name="tours[{{ $i }}][id]" value="{{ $tr->id }}">
-                            <input type="hidden" name="tours[{{ $i }}][tour_id]" value="{{ $tr->tour_id }}">
-                            <input type="hidden" name="tours[{{ $i }}][fecha]" value="{{ $tr->fecha?->format('Y-m-d') }}">
-                            <input type="hidden" name="tours[{{ $i }}][tipo_tour]" value="{{ $tr->tipo_tour }}">
-                            <input type="hidden" name="tours[{{ $i }}][estado]" value="{{ $tr->estado }}">
-                            <input type="hidden" name="tours[{{ $i }}][lugar_recojo]" value="{{ $tr->lugar_recojo }}">
-                            <input type="hidden" name="tours[{{ $i }}][hora_recojo]" value="{{ $tr->hora_recojo?->format('H:i') }}">
-                            <input type="hidden" name="tours[{{ $i }}][idioma]" value="{{ $tr->idioma }}">
-                            <input type="hidden" name="tours[{{ $i }}][empresa]" value="{{ $tr->empresa }}">
-                            <input type="hidden" name="tours[{{ $i }}][precio_unitario]" value="{{ $tr->precio_unitario }}">
-                            <input type="hidden" name="tours[{{ $i }}][cantidad]" value="{{ $tr->cantidad }}">
-                            <input type="hidden" name="tours[{{ $i }}][observaciones]" value="{{ $tr->observaciones }}">
-                            <input type="hidden" name="tours[{{ $i }}][incluye_entrada]" value="{{ $tr->incluye_entrada ? '1' : '0' }}">
-                            <input type="hidden" name="tours[{{ $i }}][incluye_tren]" value="{{ $tr->incluye_tren ? '1' : '0' }}">
-                            
-                            {{-- Detalles Machupicchu si existen --}}
-                            @if($tr->detalleMachupicchu)
-                                @foreach([
-                                    'hay_entrada', 'tipo_entrada', 'ruta1', 'ruta2', 'ruta3', 
-                                    'horario_entrada', 'comentario_entrada',
-                                    'tipo_tren', 'empresa_tren', 'codigo_tren', 
-                                    'horario_ida', 'horario_retorno',
-                                    'fecha_tren_ida', 'fecha_tren_retorno',
-                                    'tiene_ticket', 'comentario_ticket',
-                                    'fecha_ida', 'fecha_retorno', 'hospedaje',
-                                    'tipo_servicio', 'tipo_consetur', 'comentario_consetur',
-                                    'transp_ida', 'horario_recojo_ida', 'comentario_trans_ida',
-                                    'transp_ret', 'horario_recojo_ret', 'comentario_trans_ret'
-                                ] as $campo)
-                                    <input type="hidden" name="tours[{{ $i }}][detalles_machu][{{ $campo }}]" 
-                                           value="{{ $tr->detalleMachupicchu->$campo }}">
-                                @endforeach
-                            @endif
-
-                            {{-- Detalles Boleto Turístico si existen --}}
-                            @if($tr->detalleBoletoTuristico)
-                                @foreach([
-                                    'tipo_boleto', 'requiere_compra', 'tipo_compra',
-                                    'incluye_entrada_propiedad_priv', 
-                                    'quien_compra_propiedad_priv', 
-                                    'comentario_entrada_propiedad_priv'
-                                ] as $campo)
-                                    <input type="hidden" name="tours[{{ $i }}][detalles_boleto][{{ $campo }}]" 
-                                           value="{{ $tr->detalleBoletoTuristico->$campo }}">
-                                @endforeach
-                            @endif
-                        </div>
-                    @endforeach
-                @endif
-            </div>
-        </div>
-    </div>
-
-    {{-- ========================================
-        SECCIÓN 6: ESTADÍAS
-    ======================================== --}}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0"><i class="fas fa-hotel me-2"></i>Estadías</h5>
-        </div>
-        <div class="card-body">
-            
-            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="collapse" 
-                    data-bs-target="#formEstadia">
-                <i class="fas fa-plus-circle me-1"></i> Agregar Estadía
-            </button>
-
-            <div class="collapse" id="formEstadia">
-                <div class="card card-body bg-light mb-3">
-                    <div class="row">
-                        <div class="col-md-2 mb-2">
-                            <label class="form-label">Tipo</label>
-                            <select id="estadia_tipo" class="form-select">
-                                <option value="Hostal">Hostal</option>
-                                <option value="Hospedaje">Hospedaje</option>
-                                <option value="Airbnb">Airbnb</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <label class="form-label">Nombre *</label>
-                            <input type="text" id="estadia_nombre" class="form-control" 
-                                   placeholder="Ej: Hostal Chakana">
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <label class="form-label">Ubicación</label>
-                            <input type="text" id="estadia_ubicacion" class="form-control" 
-                                   placeholder="Dirección">
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            <label class="form-label">Fecha</label>
-                            <input type="date" id="estadia_fecha" class="form-control">
-                        </div>
-                        <div class="col-md-8 mb-2">
-                            <label class="form-label">Habitación</label>
-                            <input type="text" id="estadia_habitacion" class="form-control" 
-                                   placeholder="Ej: 201 - Matrimonial">
-                        </div>
-                        <div class="col-md-4 mb-2 d-flex align-items-end">
-                            <button type="button" class="btn btn-success w-100" onclick="agregarEstadia()">
-                                <i class="fas fa-check me-1"></i> Agregar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="listaEstadias" class="list-group">
-                @if($mode === 'edit')
-                    @foreach($reserva->estadias as $i => $estadia)
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong><i class="fas fa-bed me-2 text-secondary"></i>{{ $estadia->nombre_estadia }}</strong> 
-                                <span class="badge bg-secondary">{{ $estadia->tipo_estadia }}</span>
-                                <br><small class="text-muted">
-                                    <i class="fas fa-map-marker-alt me-1"></i>{{ $estadia->ubicacion }} | 
-                                    <i class="far fa-calendar me-1"></i>{{ $estadia->fecha?->format('d/m/Y') }} | 
-                                    Hab: {{ $estadia->habitacion }}
-                                </small>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarEstadia(this)">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <input type="hidden" name="estadias[{{ $i }}][tipo_estadia]" value="{{ $estadia->tipo_estadia }}">
-                            <input type="hidden" name="estadias[{{ $i }}][nombre_estadia]" value="{{ $estadia->nombre_estadia }}">
-                            <input type="hidden" name="estadias[{{ $i }}][ubicacion]" value="{{ $estadia->ubicacion }}">
-                            <input type="hidden" name="estadias[{{ $i }}][fecha]" value="{{ $estadia->fecha?->format('Y-m-d') }}">
-                            <input type="hidden" name="estadias[{{ $i }}][habitacion]" value="{{ $estadia->habitacion }}">
-                        </div>
-                    @endforeach
-                @endif
-            </div>
-        </div>
-    </div>
-
-    {{-- ========================================
-        BOTONES DE ACCIÓN FINAL
-    ======================================== --}}
-    <div class="d-flex gap-3 mb-5">
-        <button type="submit" class="btn btn-primary btn-lg px-5">
-            <i class="fas fa-save me-2"></i>
-            {{ $mode === 'create' ? 'Crear Reserva' : 'Actualizar Reserva' }}
-        </button>
-        <a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary btn-lg px-5">
-            <i class="fas fa-times me-2"></i> Cancelar
-        </a>
-    </div>
-</form>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        
-        // Variables globales
-        let depositoIndex = {{ $mode === 'edit' ? $reserva->depositos->count() : 0 }};
-        let tourIndex = {{ $mode === 'edit' ? $reserva->toursReservas->count() : 0 }};
-        let estadiaIndex = {{ $mode === 'edit' ? $reserva->estadias->count() : 0 }};
-        let tourEditando = null;
-
-        const pasajerosAgregados = new Set();
-        @if($mode === 'edit')
-            @foreach($reserva->pasajeros as $p)
-                pasajerosAgregados.add('{{ $p->id }}');
-            @endforeach
-        @endif
-
-        // Mapeos de tours especiales
-        const toursMachupicchu = [
-            'Machupicchu Full Day',
-            'Machupicchu Conexión',
-            'Machupicchu 2D/1N',
-            'Machupicchu By car'
-        ];
-
-        const toursBoleto = [
-            'Valle Sagrado',
-            'City Tour',
-            'Valle Sur',
-            'Maras Moray',
-            'Valle Sagrado VIP'
-        ];
-
-        const lugaresPrivados = {
-            'City Tour': 'Qoricancha',
-            'Valle Sagrado': 'Salineras',
-            'Valle Sagrado VIP': 'Salineras',
-            'Maras Moray': 'Salineras',
-            'Valle Sur': 'Andahuaylillas'
-        };
-
-        // =============================================================================
-        // 1. TIPO RESERVA → PROVEEDOR
-        // =============================================================================
-        const tipoReserva = document.getElementById('tipo_reserva');
-        const proveedorContainer = document.getElementById('proveedor_container');
-
-        tipoReserva.addEventListener('change', function() {
-            proveedorContainer.style.display = (this.value === 'Agencia') ? 'block' : 'none';
-            if (this.value !== 'Agencia') {
-                document.getElementById('proveedor_id').value = '';
-            }
-        });
-
-        if (tipoReserva.value === 'Agencia') {
-            proveedorContainer.style.display = 'block';
-        }
-
-        // =============================================================================
-        // 2. TITULAR
-        // =============================================================================
-        window.seleccionarTitular = function() {
-            const input = document.getElementById('busquedaTitular');
-            const valor = input.value.trim();
-            
-            if (!valor) {
-                alert('Escribe o selecciona un pasajero.');
-                return;
-            }
-
-            const options = document.querySelectorAll('#listaTitulares option');
-            let encontrado = false;
-            
-            options.forEach(opt => {
-                if (opt.value === valor) {
-                    const id = opt.dataset.id;
-                    document.getElementById('titular_id').value = id;
-                    
-                    document.getElementById('titularSeleccionado').innerHTML = `
-                        <div class="alert alert-success p-2 mb-0">
-                            <i class="fas fa-user-check me-2"></i>
-                            <strong>${valor}</strong>
-                        </div>
-                    `;
-                    encontrado = true;
-                }
-            });
-
-            if (!encontrado) {
-                alert('Selecciona un pasajero válido de la lista.');
-            }
-        };
-
-        // =============================================================================
-        // 3. PASAJEROS
-        // =============================================================================
-        window.agregarPasajero = function() {
-            const input = document.getElementById('busquedaPasajero');
-            const valor = input.value.trim();
-            
-            if (!valor) return;
-
-            const options = document.querySelectorAll('#listaPasajeros option');
-            let id = null;
-            let nombre = '';
-            
-            options.forEach(opt => {
-                if (opt.value === valor) {
-                    id = opt.dataset.id;
-                    nombre = opt.value;
-                }
-            });
-
-            if (!id) {
-                alert('Selecciona un pasajero válido.');
-                return;
-            }
-
-            if (pasajerosAgregados.has(id)) {
-                alert('Este pasajero ya está agregado.');
-                return;
-            }
-
-            pasajerosAgregados.add(id);
-
-            const lista = document.getElementById('listaPasajerosAgregados');
-            const div = document.createElement('div');
-            div.className = 'list-group-item d-flex justify-content-between align-items-center';
-            div.dataset.id = id;
-            div.innerHTML = `
-                <div>
-                    <i class="fas fa-user me-2 text-primary"></i>
-                    ${nombre}
-                </div>
-                <div>
-                    <input type="hidden" name="pasajeros[]" value="${id}">
-                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarPasajero(this)">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            lista.appendChild(div);
-            
-            input.value = '';
-            actualizarIntegrantesTour();
-        };
-
-        window.eliminarPasajero = function(btn) {
-            const item = btn.closest('.list-group-item');
-            const id = item.dataset.id;
-            pasajerosAgregados.delete(id);
-            item.remove();
-            actualizarIntegrantesTour();
-        };
-
-        // =============================================================================
-        // 4. DEPÓSITOS
-        // =============================================================================
-        window.agregarDeposito = function() {
-            const nombre = document.getElementById('deposito_nombre').value.trim();
-            const monto = parseFloat(document.getElementById('deposito_monto').value) || 0;
-            const fecha = document.getElementById('deposito_fecha').value;
-            const tipo = document.getElementById('deposito_tipo').value;
-            const obs = document.getElementById('deposito_obs').value.trim();
-
-            if (!nombre || monto <= 0 || !fecha || !tipo) {
-                alert('Completa todos los campos obligatorios.');
-                return;
-            }
-
-            const lista = document.getElementById('listaDepositos');
-            const div = document.createElement('div');
-            div.className = 'list-group-item';
-            div.innerHTML = `
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <strong>${nombre}</strong> - $${monto.toFixed(2)} 
-                        <span class="badge bg-info">${tipo}</span>
-                        <br><small class="text-muted">${formatearFecha(fecha)}</small>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDeposito(this)">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                <input type="hidden" name="depositos[${depositoIndex}][nombre_depositante]" value="${nombre}">
-                <input type="hidden" name="depositos[${depositoIndex}][monto]" value="${monto}">
-                <input type="hidden" name="depositos[${depositoIndex}][fecha]" value="${fecha}">
-                <input type="hidden" name="depositos[${depositoIndex}][tipo_deposito]" value="${tipo}">
-                <input type="hidden" name="depositos[${depositoIndex}][observaciones]" value="${obs}">
-            `;
-            lista.appendChild(div);
-            depositoIndex++;
-
-            // Limpiar
-            document.getElementById('deposito_nombre').value = '';
-            document.getElementById('deposito_monto').value = '';
-            document.getElementById('deposito_fecha').value = '';
-            document.getElementById('deposito_tipo').value = '';
-            document.getElementById('deposito_obs').value = '';
-
-            calcularFinanzas();
-        };
-
-        window.eliminarDeposito = function(btn) {
-            btn.closest('.list-group-item').remove();
-            calcularFinanzas();
-        };
-
-        function calcularFinanzas() {
-            const total = parseFloat(document.getElementById('total').value) || 0;
-            let adelanto = 0;
-
-            document.querySelectorAll('#listaDepositos input[name*="[monto]"]').forEach(input => {
-                adelanto += parseFloat(input.value) || 0;
-            });
-
-            const saldo = total - adelanto;
-
-            document.getElementById('adelanto_display').value = adelanto.toFixed(2);
-            document.getElementById('saldo_display').value = saldo.toFixed(2);
-        }
-
-        document.getElementById('total').addEventListener('input', calcularFinanzas);
-
-        // =============================================================================
-        // 5. TOURS - SELECTOR Y CAMPOS ESPECIALES
-        // =============================================================================
-        const tourSelect = document.getElementById('tour_id');
-        
-        tourSelect.addEventListener('change', function() {
-            const opt = this.options[this.selectedIndex];
-            const nombreTour = opt.dataset.nombre || '';
-
-            // Limpiar todos los campos especiales primero
-            limpiarCamposEspeciales();
-
-            // Verificar tipo de tour
-            const esMachu = toursMachupicchu.includes(nombreTour);
-            const esBoleto = toursBoleto.includes(nombreTour);
-
-            // Mostrar/ocultar secciones
-            document.getElementById('detalles_machupicchu').classList.toggle('d-none', !esMachu);
-            document.getElementById('detalles_boleto').classList.toggle('d-none', !esBoleto);
-
-            // Configurar campos especiales para Boleto Turístico
-            if (esBoleto) {
-                const lugarPrivado = lugaresPrivados[nombreTour];
-                if (lugarPrivado) {
-                    document.getElementById('nombre_propiedad_privada').textContent = lugarPrivado;
-                    document.getElementById('boleto_propiedad_privada_fields').style.display = 'block';
-                }
-            }
-
-            // Configurar hospedaje para Machupicchu 2D/1N y By Car
-            if (nombreTour === 'Machupicchu 2D/1N' || nombreTour === 'Machupicchu By car') {
-                document.getElementById('machu_hospedaje_fields').style.display = 'block';
-            }
-
-            // Mostrar campos By Car
-            if (nombreTour === 'Machupicchu By car') {
-                document.getElementById('machu_bycar_fields').style.display = 'block';
-            }
-        });
-
-        // =============================================================================
-        // 6. MACHUPICCHU - LÓGICA CONDICIONAL
-        // =============================================================================
-        
-        // Entrada
-        const machuHayEntrada = document.getElementById('machu_hay_entrada');
-        machuHayEntrada?.addEventListener('change', function() {
-            const entradaFields = document.getElementById('machu_entrada_fields');
-            const comentarioField = document.getElementById('machu_comentario_entrada_field');
-            
-            if (this.value == '1') {
-                entradaFields.style.display = 'block';
-                comentarioField.style.display = 'none';
-            } else if (this.value == '0') {
-                entradaFields.style.display = 'none';
-                comentarioField.style.display = 'block';
-            } else {
-                entradaFields.style.display = 'none';
-                comentarioField.style.display = 'none';
-            }
-        });
-
-        // Tipo de entrada → rutas
-        const machuTipoEntrada = document.getElementById('machu_tipo_entrada');
-        machuTipoEntrada?.addEventListener('change', function() {
-            document.getElementById('machu_ruta1_field').style.display = 
-                (this.value === 'circuito1') ? 'block' : 'none';
-            document.getElementById('machu_ruta2_field').style.display = 
-                (this.value === 'circuito2') ? 'block' : 'none';
-            document.getElementById('machu_ruta3_field').style.display = 
-                (this.value === 'circuito3') ? 'block' : 'none';
-        });
-
-        // Tipo de tren
-        const machuTipoTren = document.getElementById('machu_tipo_tren');
-        machuTipoTren?.addEventListener('change', function() {
-            const turisticoFields = document.getElementById('machu_tren_turistico_fields');
-            const localFields = document.getElementById('machu_tren_local_fields');
-            const fechasFields = document.getElementById('machu_tren_fechas_fields');
-
-            if (this.value === 'Turístico') {
-                turisticoFields.style.display = 'block';
-                localFields.style.display = 'none';
-                fechasFields.style.display = 'block';
-            } else if (this.value === 'Local') {
-                turisticoFields.style.display = 'none';
-                localFields.style.display = 'block';
-                fechasFields.style.display = 'block';
-            } else {
-                turisticoFields.style.display = 'none';
-                localFields.style.display = 'none';
-                fechasFields.style.display = 'none';
-            }
-        });
-
-        // Tiene ticket (tren local)
-        const machuTieneTicket = document.getElementById('machu_tiene_ticket');
-        machuTieneTicket?.addEventListener('change', function() {
-            const comentarioField = document.getElementById('machu_comentario_ticket_field');
-            comentarioField.style.display = (this.value !== '') ? 'block' : 'none';
-        });
-
-        // Consetur
-        const machuTipoServicio = document.getElementById('machu_tipo_servicio');
-        machuTipoServicio?.addEventListener('change', function() {
-            const show = (this.value === 'Comprar' || this.value === 'Tiene');
-            document.getElementById('machu_tipo_consetur_field').style.display = show ? 'block' : 'none';
-            document.getElementById('machu_comentario_consetur_field').style.display = show ? 'block' : 'none';
-        });
-
-        // Transporte ida
-        const machuTranspIda = document.getElementById('machu_transp_ida');
-        machuTranspIda?.addEventListener('change', function() {
-            const show = (this.value !== '');
-            document.getElementById('machu_horario_recojo_ida_field').style.display = show ? 'block' : 'none';
-            document.getElementById('machu_comentario_trans_ida_field').style.display = show ? 'block' : 'none';
-        });
-
-        // Transporte retorno
-        const machuTranspRet = document.getElementById('machu_transp_ret');
-        machuTranspRet?.addEventListener('change', function() {
-            const show = (this.value !== '');
-            document.getElementById('machu_horario_recojo_ret_field').style.display = show ? 'block' : 'none';
-            document.getElementById('machu_comentario_trans_ret_field').style.display = show ? 'block' : 'none';
-        });
-
-        // =============================================================================
-        // 7. BOLETO TURÍSTICO - LÓGICA CONDICIONAL
-        // =============================================================================
-        
-        const boletoTipo = document.getElementById('boleto_tipo_boleto');
-        boletoTipo?.addEventListener('change', function() {
-            document.getElementById('boleto_requiere_compra_field').style.display = 
-                (this.value !== '') ? 'block' : 'none';
-        });
-
-        const boletoRequiereCompra = document.getElementById('boleto_requiere_compra');
-        boletoRequiereCompra?.addEventListener('change', function() {
-            document.getElementById('boleto_tipo_compra_field').style.display = 
-                (this.value == '1') ? 'block' : 'none';
-        });
-
-        const boletoIncluyePriv = document.getElementById('boleto_incluye_entrada_priv');
-        boletoIncluyePriv?.addEventListener('change', function() {
-            const show = (this.value == '1');
-            document.getElementById('boleto_quien_compra_priv_field').style.display = show ? 'block' : 'none';
-            document.getElementById('boleto_comentario_priv_field').style.display = 
-                (this.value !== '') ? 'block' : 'none';
-        });
-
-        // =============================================================================
-        // 8. INTEGRANTES DEL TOUR
-        // =============================================================================
-        document.querySelectorAll('input[name="tour_modo"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const personalizado = document.getElementById('integrantes_personalizados');
-                if (this.value === 'personalizado') {
-                    personalizado.classList.remove('d-none');
-                    actualizarIntegrantesTour();
-                } else {
-                    personalizado.classList.add('d-none');
-                }
-            });
-        });
-
-        function actualizarIntegrantesTour() {
-            const contenedor = document.getElementById('lista_integrantes_tour');
-            contenedor.innerHTML = '';
-
-            const pasajeros = document.querySelectorAll('#listaPasajerosAgregados .list-group-item');
-            
-            if (pasajeros.length === 0) {
-                contenedor.innerHTML = '<div class="col-12"><div class="alert alert-warning">Primero agrega pasajeros a la reserva</div></div>';
-                return;
-            }
-
-            pasajeros.forEach(item => {
-                const id = item.dataset.id;
-                const nombre = item.querySelector('div').textContent.trim();
-                
-                const div = document.createElement('div');
-                div.className = 'col-md-6 mb-2';
-                div.innerHTML = `
-                    <div class="card">
-                        <div class="card-body p-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                    value="${id}" id="integrante_${id}" 
-                                    name="tour_pasajeros[]">
-                                <label class="form-check-label" for="integrante_${id}">
-                                    ${nombre}
-                                </label>
-                            </div>
-                            <input type="text" class="form-control form-control-sm mt-1" 
-                                placeholder="Comentario (opcional)" 
-                                name="tour_comentarios[${id}]">
-                        </div>
-                    </div>
-                `;
-                contenedor.appendChild(div);
-            });
-        }
-
-        // =============================================================================
-        // 9. GUARDAR TOUR
-        // =============================================================================
-        window.guardarTour = function() {
-            const tourId = document.getElementById('tour_id').value;
-            const tourOpt = document.querySelector(`#tour_id option[value="${tourId}"]`);
-            
-            if (!tourId) {
-                alert('Selecciona un tour.');
-                return;
-            }
-
-            const nombreTour = tourOpt.dataset.nombre;
-            const fecha = document.getElementById('tour_fecha').value;
-            const tipo = document.getElementById('tour_tipo').value;
-            const estado = document.getElementById('tour_estado').value;
-            const precio = document.getElementById('tour_precio').value;
-            const cantidad = document.getElementById('tour_cantidad').value;
-
-            const index = tourEditando !== null ? tourEditando : tourIndex;
-
-            // Recopilar todos los datos del tour
-            const tourData = {
-                tour_id: tourId,
-                nombreTour: nombreTour,
-                fecha: fecha,
-                tipo_tour: tipo,
-                estado: estado,
-                lugar_recojo: document.getElementById('tour_lugar_recojo').value,
-                hora_recojo: document.getElementById('tour_hora_recojo').value,
-                idioma: document.getElementById('tour_idioma').value,
-                empresa: document.getElementById('tour_empresa').value,
-                precio_unitario: precio,
-                cantidad: cantidad,
-                observaciones: document.getElementById('tour_observaciones').value,
-                incluye_entrada: document.getElementById('tour_incluye_entrada').checked ? '1' : '0',
-                incluye_tren: document.getElementById('tour_incluye_tren').checked ? '1' : '0'
-            };
-
-            // Recopilar modo de integrantes
-            const modo = document.querySelector('input[name="tour_modo"]:checked').value;
-            tourData.modo = modo;
-
-            // Si es personalizado, recopilar pasajeros seleccionados
-            if (modo === 'personalizado') {
-                tourData.pasajeros = [];
-                tourData.comentarios = {};
-                document.querySelectorAll('input[name="tour_pasajeros[]"]:checked').forEach(chk => {
-                    const pasajeroId = chk.value;
-                    tourData.pasajeros.push(pasajeroId);
-                    const comentario = document.querySelector(`input[name="tour_comentarios[${pasajeroId}]"]`).value;
-                    if (comentario) {
-                        tourData.comentarios[pasajeroId] = comentario;
-                    }
-                });
-            }
-
-            // Recopilar detalles de Machupicchu si aplica
-            if (toursMachupicchu.includes(nombreTour)) {
-                tourData.detalles_machu = {
-                    hay_entrada: getValue('machu_hay_entrada'),
-                    tipo_entrada: getValue('machu_tipo_entrada'),
-                    ruta1: getValue('machu_ruta1'),
-                    ruta2: getValue('machu_ruta2'),
-                    ruta3: getValue('machu_ruta3'),
-                    horario_entrada: getValue('machu_horario_entrada'),
-                    comentario_entrada: getValue('machu_comentario_entrada'),
-                    tipo_tren: getValue('machu_tipo_tren'),
-                    empresa_tren: getValue('machu_empresa_tren'),
-                    codigo_tren: getValue('machu_codigo_tren'),
-                    horario_ida: getValue('machu_horario_ida'),
-                    horario_retorno: getValue('machu_horario_retorno'),
-                    fecha_tren_ida: getValue('machu_fecha_tren_ida'),
-                    fecha_tren_retorno: getValue('machu_fecha_tren_retorno'),
-                    tiene_ticket: getValue('machu_tiene_ticket'),
-                    comentario_ticket: getValue('machu_comentario_ticket'),
-                    fecha_ida: getValue('machu_fecha_ida'),
-                    fecha_retorno: getValue('machu_fecha_retorno'),
-                    hospedaje: getValue('machu_hospedaje'),
-                    tipo_servicio: getValue('machu_tipo_servicio'),
-                    tipo_consetur: getValue('machu_tipo_consetur'),
-                    comentario_consetur: getValue('machu_comentario_consetur'),
-                    transp_ida: getValue('machu_transp_ida'),
-                    horario_recojo_ida: getValue('machu_horario_recojo_ida'),
-                    comentario_trans_ida: getValue('machu_comentario_trans_ida'),
-                    transp_ret: getValue('machu_transp_ret'),
-                    horario_recojo_ret: getValue('machu_horario_recojo_ret'),
-                    comentario_trans_ret: getValue('machu_comentario_trans_ret')
-                };
-            }
-
-            // Recopilar detalles de Boleto Turístico si aplica
-            if (toursBoleto.includes(nombreTour)) {
-                tourData.detalles_boleto = {
-                    tipo_boleto: getValue('boleto_tipo_boleto'),
-                    requiere_compra: getValue('boleto_requiere_compra'),
-                    tipo_compra: getValue('boleto_tipo_compra'),
-                    incluye_entrada_propiedad_priv: getValue('boleto_incluye_entrada_priv'),
-                    quien_compra_propiedad_priv: getValue('boleto_quien_compra_priv'),
-                    comentario_entrada_propiedad_priv: getValue('boleto_comentario_priv')
-                };
-            }
-
-            // Agregar o actualizar en la lista
-            agregarTourALista(index, tourData);
-
-            if (tourEditando === null) {
-                tourIndex++;
-            }
-
-            cancelarTour();
-        };
-
-        function agregarTourALista(index, data) {
-            const lista = document.getElementById('listaTours');
-            let item = tourEditando !== null 
-                ? lista.querySelector(`[data-index="${index}"]`)
-                : document.createElement('div');
-
-            if (tourEditando === null) {
-                item.className = 'list-group-item';
-                item.dataset.index = index;
-            }
-
-            const estadoBadge = data.estado === 'Programado' ? 'warning' : 
-                            data.estado === 'Confirmado' ? 'success' : 
-                            data.estado === 'Cancelado' ? 'danger' : 'secondary';
-
-            item.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="flex-grow-1">
-                        <h6 class="mb-1">
-                            <i class="fas fa-route me-2 text-primary"></i>
-                            ${data.nombreTour}
-                        </h6>
-                        <div class="d-flex flex-wrap gap-2 mb-2">
-                            <span class="badge bg-info">
-                                <i class="far fa-calendar me-1"></i>${formatearFecha(data.fecha)}
-                            </span>
-                            <span class="badge bg-secondary">${data.tipo_tour}</span>
-                            <span class="badge bg-${estadoBadge}">${data.estado}</span>
-                            <span class="badge bg-dark">$${parseFloat(data.precio_unitario).toFixed(2)} x ${data.cantidad}</span>
-                        </div>
-                        ${data.lugar_recojo ? `<small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>${data.lugar_recojo} | <i class="far fa-clock me-1"></i>${data.hora_recojo}</small>` : ''}
-                    </div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-warning" onclick="editarTour(${index})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarTour(this)">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                ${crearHiddenInputs(index, data)}
-            `;
-
-            if (tourEditando === null) {
-                lista.appendChild(item);
-            }
-        }
-
-        function crearHiddenInputs(index, data) {
-            let html = `
-                <input type="hidden" name="tours[${index}][tour_id]" value="${data.tour_id}">
-                <input type="hidden" name="tours[${index}][fecha]" value="${data.fecha}">
-                <input type="hidden" name="tours[${index}][tipo_tour]" value="${data.tipo_tour}">
-                <input type="hidden" name="tours[${index}][estado]" value="${data.estado}">
-                <input type="hidden" name="tours[${index}][lugar_recojo]" value="${data.lugar_recojo}">
-                <input type="hidden" name="tours[${index}][hora_recojo]" value="${data.hora_recojo}">
-                <input type="hidden" name="tours[${index}][idioma]" value="${data.idioma}">
-                <input type="hidden" name="tours[${index}][empresa]" value="${data.empresa}">
-                <input type="hidden" name="tours[${index}][precio_unitario]" value="${data.precio_unitario}">
-                <input type="hidden" name="tours[${index}][cantidad]" value="${data.cantidad}">
-                <input type="hidden" name="tours[${index}][observaciones]" value="${data.observaciones}">
-                <input type="hidden" name="tours[${index}][incluye_entrada]" value="${data.incluye_entrada}">
-                <input type="hidden" name="tours[${index}][incluye_tren]" value="${data.incluye_tren}">
-                <input type="hidden" name="tours[${index}][modo]" value="${data.modo}">
-            `;
-
-            // Pasajeros
-            if (data.modo === 'personalizado' && data.pasajeros) {
-                data.pasajeros.forEach(pid => {
-                    html += `<input type="hidden" name="tours[${index}][pasajeros][]" value="${pid}">`;
-                    if (data.comentarios && data.comentarios[pid]) {
-                        html += `<input type="hidden" name="tours[${index}][comentarios][${pid}]" value="${data.comentarios[pid]}">`;
-                    }
-                });
-            }
-
-            // Detalles Machupicchu
-            if (data.detalles_machu) {
-                Object.keys(data.detalles_machu).forEach(key => {
-                    const val = data.detalles_machu[key];
-                    if (val) {
-                        html += `<input type="hidden" name="tours[${index}][detalles_machu][${key}]" value="${val}">`;
-                    }
-                });
-            }
-
-            // Detalles Boleto
-            if (data.detalles_boleto) {
-                Object.keys(data.detalles_boleto).forEach(key => {
-                    const val = data.detalles_boleto[key];
-                    if (val) {
-                        html += `<input type="hidden" name="tours[${index}][detalles_boleto][${key}]" value="${val}">`;
-                    }
-                });
-            }
-
-            return html;
-        }
-
-        window.editarTour = function(index) {
-            // Implementación simplificada - cargar valores de los hidden inputs
-            alert('Función de editar tour - cargar valores del tour ' + index);
-            tourEditando = index;
-            document.getElementById('btn_tour_text').textContent = 'Actualizar Tour';
-            
-            const collapse = new bootstrap.Collapse(document.getElementById('formTour'), {
-                toggle: true
-            });
-        };
-
-        window.eliminarTour = function(btn) {
-            if (confirm('¿Eliminar este tour?')) {
-                btn.closest('.list-group-item').remove();
-            }
-        };
-
-        window.cancelarTour = function() {
-            tourEditando = null;
-            limpiarFormularioTour();
-            document.getElementById('btn_tour_text').textContent = 'Agregar Tour';
-            
-            const collapse = bootstrap.Collapse.getInstance(document.getElementById('formTour'));
-            if (collapse) collapse.hide();
-        };
-
-        // =============================================================================
-        // 10. ESTADÍAS
-        // =============================================================================
-        window.agregarEstadia = function() {
-            const tipo = document.getElementById('estadia_tipo').value;
-            const nombre = document.getElementById('estadia_nombre').value.trim();
-            const ubicacion = document.getElementById('estadia_ubicacion').value.trim();
-            const fecha = document.getElementById('estadia_fecha').value;
-            const habitacion = document.getElementById('estadia_habitacion').value.trim();
-
-            if (!nombre) {
-                alert('Ingresa el nombre de la estadía.');
-                return;
-            }
-
-            const lista = document.getElementById('listaEstadias');
-            const div = document.createElement('div');
-            div.className = 'list-group-item d-flex justify-content-between align-items-center';
-            div.innerHTML = `
-                <div>
-                    <strong><i class="fas fa-bed me-2 text-secondary"></i>${nombre}</strong> 
-                    <span class="badge bg-secondary">${tipo}</span>
-                    <br><small class="text-muted">
-                        <i class="fas fa-map-marker-alt me-1"></i>${ubicacion || 'Sin ubicación'} | 
-                        <i class="far fa-calendar me-1"></i>${formatearFecha(fecha)} | 
-                        Hab: ${habitacion || 'N/A'}
-                    </small>
-                </div>
-                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarEstadia(this)">
-                    <i class="fas fa-trash"></i>
-                </button>
-                <input type="hidden" name="estadias[${estadiaIndex}][tipo_estadia]" value="${tipo}">
-                <input type="hidden" name="estadias[${estadiaIndex}][nombre_estadia]" value="${nombre}">
-                <input type="hidden" name="estadias[${estadiaIndex}][ubicacion]" value="${ubicacion}">
-                <input type="hidden" name="estadias[${estadiaIndex}][fecha]" value="${fecha}">
-                <input type="hidden" name="estadias[${estadiaIndex}][habitacion]" value="${habitacion}">
-            `;
-            lista.appendChild(div);
-            estadiaIndex++;
-
-            // Limpiar formulario
-            document.getElementById('estadia_nombre').value = '';
-            document.getElementById('estadia_ubicacion').value = '';
-            document.getElementById('estadia_fecha').value = '';
-            document.getElementById('estadia_habitacion').value = '';
-        };
-
-        window.eliminarEstadia = function(btn) {
-            if (confirm('¿Eliminar esta estadía?')) {
-                btn.closest('.list-group-item').remove();
-            }
-        };
-
-        // =============================================================================
-        // UTILIDADES
-        // =============================================================================
-        function formatearFecha(fecha) {
-            if (!fecha) return 'Sin fecha';
-            const [y, m, d] = fecha.split('-');
-            return `${d}/${m}/${y}`;
-        }
-
-        function getValue(id) {
-            const el = document.getElementById(id);
-            return el ? el.value : '';
-        }
-
-        function limpiarFormularioTour() {
-            // Limpiar campos básicos
-            document.getElementById('tour_id').value = '';
-            document.getElementById('tour_fecha').value = '';
-            document.getElementById('tour_tipo').value = 'Grupal';
-            document.getElementById('tour_estado').value = 'Programado';
-            document.getElementById('tour_lugar_recojo').value = '';
-            document.getElementById('tour_hora_recojo').value = '';
-            document.getElementById('tour_idioma').value = '';
-            document.getElementById('tour_empresa').value = '';
-            document.getElementById('tour_precio').value = '0';
-            document.getElementById('tour_cantidad').value = '1';
-            document.getElementById('tour_observaciones').value = '';
-            document.getElementById('tour_incluye_entrada').checked = false;
-            document.getElementById('tour_incluye_tren').checked = false;
-
-            // Resetear modo de integrantes
-            document.getElementById('modo_todos').checked = true;
-            document.getElementById('integrantes_personalizados').classList.add('d-none');
-
-            // Limpiar campos especiales
-            limpiarCamposEspeciales();
-
-            // Ocultar secciones especiales
-            document.getElementById('detalles_machupicchu').classList.add('d-none');
-            document.getElementById('detalles_boleto').classList.add('d-none');
-        }
-
-        function limpiarCamposEspeciales() {
-            // Machupicchu
-            const camposMachu = [
-                'machu_hay_entrada', 'machu_tipo_entrada', 'machu_ruta1', 'machu_ruta2', 'machu_ruta3',
-                'machu_horario_entrada', 'machu_comentario_entrada',
-                'machu_tipo_tren', 'machu_empresa_tren', 'machu_codigo_tren',
-                'machu_horario_ida', 'machu_horario_retorno',
-                'machu_fecha_tren_ida', 'machu_fecha_tren_retorno',
-                'machu_tiene_ticket', 'machu_comentario_ticket',
-                'machu_fecha_ida', 'machu_fecha_retorno', 'machu_hospedaje',
-                'machu_tipo_servicio', 'machu_tipo_consetur', 'machu_comentario_consetur',
-                'machu_transp_ida', 'machu_horario_recojo_ida', 'machu_comentario_trans_ida',
-                'machu_transp_ret', 'machu_horario_recojo_ret', 'machu_comentario_trans_ret'
-            ];
-
-            camposMachu.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
-            });
-
-            // Boleto Turístico
-            const camposBoleto = [
-                'boleto_tipo_boleto', 'boleto_requiere_compra', 'boleto_tipo_compra',
-                'boleto_incluye_entrada_priv', 'boleto_quien_compra_priv', 'boleto_comentario_priv'
-            ];
-
-            camposBoleto.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
-            });
-
-            // Ocultar todos los campos condicionales
-            const fieldsToHide = [
-                'machu_entrada_fields', 'machu_comentario_entrada_field',
-                'machu_ruta1_field', 'machu_ruta2_field', 'machu_ruta3_field',
-                'machu_tren_turistico_fields', 'machu_tren_local_fields', 'machu_tren_fechas_fields',
-                'machu_comentario_ticket_field', 'machu_tipo_consetur_field', 'machu_comentario_consetur_field',
-                'machu_horario_recojo_ida_field', 'machu_comentario_trans_ida_field',
-                'machu_horario_recojo_ret_field', 'machu_comentario_trans_ret_field',
-                'machu_hospedaje_fields', 'machu_bycar_fields',
-                'boleto_requiere_compra_field', 'boleto_tipo_compra_field',
-                'boleto_propiedad_privada_fields', 'boleto_quien_compra_priv_field', 'boleto_comentario_priv_field'
-            ];
-
-            fieldsToHide.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = 'none';
-            });
-        }
-
-        // Inicializar
-        calcularFinanzas();
-    });
-</script>
-
-

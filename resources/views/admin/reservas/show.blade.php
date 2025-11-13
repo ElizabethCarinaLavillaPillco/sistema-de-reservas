@@ -490,141 +490,181 @@
                                 </div>
                             </div>
 
-                            <!-- Tours -->
-                            <div class="card">
-                                <div class="card-header">
-                                    <i class="fas fa-route section-icon"></i> Tours
-                                </div>
-                                <div class="card-body">
-                                    @if($reserva->toursReservas->count())
-                                        <div class="accordion" id="accordionTours">
-                                            @foreach($reserva->toursReservas as $index => $tour)
-                                                <div class="accordion-item mb-2 border-0">
-                                                    <h2 class="accordion-header" id="heading{{ $index }}">
-                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $index }}" aria-expanded="false" aria-controls="collapse{{ $index }}">
-                                                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                                                            {{ $tour->tour->nombreTour }}
-                                                            @if($tour->detalleBoletoTuristico)
-                                                                <span class="badge bg-primary ms-2">Boleto Turístico</span>
-                                                            @endif
-                                                            @if($tour->detalleMachupicchu)
-                                                                <span class="badge bg-success ms-2">Machu Picchu</span>
-                                                            @endif
-                                                        </button>
-                                                    </h2>
-                                                    <div id="collapse{{ $index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ $index }}" data-bs-parent="#accordionTours">
-                                                        <div class="accordion-body">
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <div class="detail-item">
-                                                                        <span class="detail-label">Fecha:</span>
-                                                                        <span class="detail-value">{{ $tour->fecha  ? \Carbon\Carbon::parse($tour->fecha)->format('d/m/Y') : 'N/A' }}</span>
-                                                                    </div>
-                                                                    <div class="detail-item">
-                                                                        <span class="detail-label">Empresa:</span>
-                                                                        <span class="detail-value">{{ $tour->empresa ?? '-' }}</span>
-                                                                    </div>
-                                                                    <div class="detail-item">
-                                                                        <span class="detail-label">Precio Unitario:</span>
-                                                                        <span class="detail-value">S/. {{ number_format($tour->precio_unitario ?? 0, 2) }}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <div class="detail-item">
-                                                                        <span class="detail-label">Cantidad:</span>
-                                                                        <span class="detail-value">{{ $tour->cantidad ?? 1 }}</span>
-                                                                    </div>
-                                                                    <div class="detail-item">
-                                                                        <span class="detail-label">Observaciones:</span>
-                                                                        <span class="detail-value">{{ $tour->observaciones ?? '-' }}</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            {{-- Detalles Boleto Turístico --}}
-                                                            @if($tour->detalleBoletoTuristico)
-                                                                <hr>
-                                                                <h6><i class="fas fa-ticket-alt me-2 text-primary"></i> Boleto Turístico</h6>
-                                                                <div class="row mt-3">
-                                                                    <div class="col-md-6">
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Tipo Boleto:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleBoletoTuristico->tipo_boleto }}</span>
-                                                                        </div>
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Requiere Compra:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleBoletoTuristico->requiere_compra ? 'Sí' : 'No' }}</span>
-                                                                        </div>
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Tipo Compra:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleBoletoTuristico->tipo_compra ?? '-' }}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Incluye Propiedad Privada:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleBoletoTuristico->incluye_entrada_propiedad_priv ? 'Sí' : 'No' }}</span>
-                                                                        </div>
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Quién Compra:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleBoletoTuristico->quien_compra_propiedad_priv ?? '-' }}</span>
-                                                                        </div>
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Comentario:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleBoletoTuristico->comentario_entrada_propiedad_priv ?? '-' }}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            @endif
-
-                                                            {{-- Detalles Machu Picchu --}}
-                                                            @if($tour->detalleMachupicchu)
-                                                                <hr>
-                                                                <h6><i class="fas fa-mountain me-2 text-primary"></i> Machu Picchu</h6>
-                                                                <div class="row mt-3">
-                                                                    <div class="col-md-6">
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Tipo Entrada:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleMachupicchu->tipo_entrada ?? '-' }}</span>
-                                                                        </div>
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Ruta 1:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleMachupicchu->ruta1 ?? '-' }}</span>
-                                                                        </div>
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Ruta 2:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleMachupicchu->ruta2 ?? '-' }}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Ruta 3:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleMachupicchu->ruta3 ?? '-' }}</span>
-                                                                        </div>
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Horario Entrada:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleMachupicchu->horario_entrada ?? '-' }}</span>
-                                                                        </div>
-                                                                        <div class="detail-item">
-                                                                            <span class="detail-label">Comentario:</span>
-                                                                            <span class="detail-value">{{ $tour->detalleMachupicchu->comentario_entrada ?? '-' }}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
+<!-- Tours -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-route section-icon"></i> Tours
+    </div>
+    <div class="card-body">
+        @if($reserva->toursReservas->count())
+            <div class="accordion" id="accordionTours">
+                @foreach($reserva->toursReservas as $index => $tour)
+                    <div class="accordion-item mb-2 border-0">
+                        <h2 class="accordion-header" id="heading{{ $index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $index }}" aria-expanded="false" aria-controls="collapse{{ $index }}">
+                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                {{ $tour->tour->nombreTour }}
+                                {{-- Usamos los métodos del modelo Tour para determinar si es un tour especial --}}
+                                @if($tour->tour->esBoletoTuristico() || $tour->detalleBoletoTuristico)
+                                    <span class="badge bg-primary ms-2">Boleto Turístico</span>
+                                @endif
+                                @if($tour->tour->esMachupicchuEspecial() || $tour->detalleMachupicchu)
+                                    <span class="badge bg-success ms-2">Machu Picchu</span>
+                                @endif
+                            </button>
+                        </h2>
+                        <div id="collapse{{ $index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ $index }}" data-bs-parent="#accordionTours">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Fecha:</span>
+                                            <span class="detail-value">{{ $tour->fecha  ? \Carbon\Carbon::parse($tour->fecha)->format('d/m/Y') : 'N/A' }}</span>
                                         </div>
-                                    @else
-                                        <div class="empty-state">
-                                            <i class="fas fa-route fa-3x"></i>
-                                            <p class="text-muted">No hay tours asociados.</p>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Empresa:</span>
+                                            <span class="detail-value">{{ $tour->empresa ?? '-' }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Precio Unitario:</span>
+                                            <span class="detail-value">S/. {{ number_format($tour->precio_unitario ?? 0, 2) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Cantidad:</span>
+                                            <span class="detail-value">{{ $tour->cantidad ?? 1 }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Observaciones:</span>
+                                            <span class="detail-value">{{ $tour->observaciones ?? '-' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Detalles Boleto Turístico --}}
+                                {{-- Verificamos si es un tour de boleto turístico y si tiene detalles --}}
+                                @if($tour->tour->esBoletoTuristico() && $tour->detalleBoletoTuristico)
+                                    <hr>
+                                    <h6><i class="fas fa-ticket-alt me-2 text-primary"></i> Boleto Turístico</h6>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label">Tipo Boleto:</span>
+                                                <span class="detail-value">{{ $tour->detalleBoletoTuristico->tipo_boleto }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Requiere Compra:</span>
+                                                <span class="detail-value">{{ $tour->detalleBoletoTuristico->requiere_compra ? 'Sí' : 'No' }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Tipo Compra:</span>
+                                                <span class="detail-value">{{ $tour->detalleBoletoTuristico->tipo_compra ?? '-' }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label">Incluye Propiedad Privada:</span>
+                                                <span class="detail-value">{{ $tour->detalleBoletoTuristico->incluye_entrada_propiedad_priv ? 'Sí' : 'No' }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Quién Compra:</span>
+                                                <span class="detail-value">{{ $tour->detalleBoletoTuristico->quien_compra_propiedad_priv ?? '-' }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Comentario:</span>
+                                                <span class="detail-value">{{ $tour->detalleBoletoTuristico->comentario_entrada_propiedad_priv ?? '-' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                {{-- Detalles Machu Picchu --}}
+                                {{-- Verificamos si es un tour de Machu Picchu y si tiene detalles --}}
+                                @if($tour->tour->esMachupicchuEspecial() && $tour->detalleMachupicchu)
+                                    <hr>
+                                    <h6><i class="fas fa-mountain me-2 text-primary"></i> Machu Picchu</h6>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label">Hay Entrada:</span>
+                                                <span class="detail-value">{{ $tour->detalleMachupicchu->hay_entrada ? 'Sí' : 'No' }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Tipo Entrada:</span>
+                                                <span class="detail-value">{{ $tour->detalleMachupicchu->tipo_entrada ?? '-' }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Ruta 1:</span>
+                                                <span class="detail-value">{{ $tour->detalleMachupicchu->ruta1 ?? '-' }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label">Ruta 2:</span>
+                                                <span class="detail-value">{{ $tour->detalleMachupicchu->ruta2 ?? '-' }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Ruta 3:</span>
+                                                <span class="detail-value">{{ $tour->detalleMachupicchu->ruta3 ?? '-' }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Horario Entrada:</span>
+                                                <span class="detail-value">{{ $tour->detalleMachupicchu->horario_entrada ? \Carbon\Carbon::parse($tour->detalleMachupicchu->horario_entrada)->format('H:i') : '-' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- Mostramos más detalles de Machu Picchu si existen --}}
+                                    @if($tour->detalleMachupicchu->tipo_tren || $tour->detalleMachupicchu->empresa_tren)
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Tipo Tren:</span>
+                                                    <span class="detail-value">{{ $tour->detalleMachupicchu->tipo_tren ?? '-' }}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Empresa Tren:</span>
+                                                    <span class="detail-value">{{ $tour->detalleMachupicchu->empresa_tren ?? '-' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Código Tren:</span>
+                                                    <span class="detail-value">{{ $tour->detalleMachupicchu->codigo_tren ?? '-' }}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Horario Ida:</span>
+                                                    <span class="detail-value">{{ $tour->detalleMachupicchu->horario_ida ? \Carbon\Carbon::parse($tour->detalleMachupicchu->horario_ida)->format('H:i') : '-' }}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     @endif
-                                </div>
+                                    
+                                    @if($tour->detalleMachupicchu->comentario_entrada)
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Comentario:</span>
+                                                    <span class="detail-value">{{ $tour->detalleMachupicchu->comentario_entrada }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endif
                             </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <div class="empty-state">
+                <i class="fas fa-route fa-3x"></i>
+                <p class="text-muted">No hay tours asociados.</p>
+            </div>
+        @endif
+    </div>
+</div>
 
                             <!-- Estadías -->
                             <div class="card">

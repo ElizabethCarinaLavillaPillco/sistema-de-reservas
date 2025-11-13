@@ -1,35 +1,44 @@
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
-    <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
-
-    <!-- Bootstrap Template CSS -->
-    <link href="{{ asset('admin_template/css/sb-admin-2.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('admin_template/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de gestión de Expediciones Allinkay">
+    <title>@yield('title', 'Expediciones Allinkay')</title>
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome desde CDN (esto corrige el error 404) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap desde CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Estilos propios -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    
+    <!-- Estilos específicos de la página -->
+    @yield('styles')
 </head>
 <body>
-    <div id="app">
-        @include('layouts.template') 
-
-        <main class="py-4">
-            @yield('content')
-        </main>
-    </div>
-
-    <!-- Bootstrap Template Scripts -->
-    <script src="{{ asset('admin_template/vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('admin_template/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('admin_template/js/sb-admin-2.min.js') }}"></script>
+    @include('admin.partials.header')
+    @include('admin.partials.sidebar')
+    
+    <main class="main-content" id="mainContent">
+        @yield('content')
+    </main>
+    
+    <!-- jQuery desde CDN (esto corrige el error 404) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap JS desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Scripts propios -->
+    <script src="{{ asset('js/app.js') }}"></script>
+    
+    <!-- Scripts específicos de la página -->
+    @yield('scripts')
 </body>
 </html>
